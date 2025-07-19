@@ -1,0 +1,54 @@
+.DB ramIndex = 0
+.DB i = 0
+
+.ORIGIN 0x00fa
+	
+FUNC +:
+	LOAD r1,@ramIndex
+	ADD r1,1
+	RET
+
+FUNC -:
+	LOAD r1,@ramIndex
+	SUB r1,1
+	RET	
+	
+FUNC <:
+	LOAD r1,ramIndex
+	SUB r1,1
+	RET
+	
+FUNC >:
+	LOAD r1,ramIndex
+	ADD r1,1
+	RET
+
+.ORIGIN 0x00
+
+MainLoop:
+	LOAD r0,@prog[i]
+	
+	;pluscheck
+		CMP prog[i],'+'
+		JMP minusCheck
+			CALL func +
+			
+	minusCheck:
+		CMP prog[i],'-'
+		JMP next
+			CALL func -
+	
+	next:
+		CMP prog[i], '>'
+		JMP next
+			CALL func >
+	
+	next:
+		CMP prog[i], '<'
+		JMP next
+			CALL func <
+
+	next:
+		CMP prog[i], '['		
+		JMP next
+			CALL func [
