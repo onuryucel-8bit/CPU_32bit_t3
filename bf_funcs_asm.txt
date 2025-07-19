@@ -1,0 +1,23 @@
+BF_INC:
+	LOAD r1,@ramIndex
+	ADD r1,1
+	RET
+
+BF_DEC:
+	LOAD r1,@ramIndex
+	SUB r1,1
+	RET	
+	
+BF_MOVE_LEFT:
+	LOAD r1,ramIndex
+	SUB r1,1
+	RET
+	
+BF_MOVE_RIGHT:
+	LOAD r1,ramIndex
+	ADD r1,1 
+	RET
+
+BF_START_LOOP:
+
+BF_END_LOOP:
