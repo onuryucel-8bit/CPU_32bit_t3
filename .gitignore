@@ -1,9 +1,13 @@
 .~lock.*#
 *.exe
-CPU_Patlican/IDE/*.bin
-CPU_Patlican/IDE/*.txt
+
+Emu/Emu/*
+Emu/x64/*
+
 Utils/ControlBitPrinter/ControlB.9b35a151
 Utils/ControlBitPrinter/x64
+
+
 .vs
 *.user
 *.filters
