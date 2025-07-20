@@ -2,8 +2,8 @@
 *.exe
 CPU_Patlican/IDE/*.bin
 CPU_Patlican/IDE/*.txt
-Utils/ControlB.9b35a151
-Utils/x64/*
+Utils/ControlBitPrinter/ControlB.9b35a151
+Utils/ControlBitPrinter/x64
 .vs
 *.user
 *.filters
