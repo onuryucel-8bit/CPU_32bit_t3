@@ -1,5 +1,7 @@
 #include <iostream>
 #include <vector>
+#include <cmath> 
+
 
 /*
 *	controlBits.txt =>[...] => ROM.txt
@@ -28,6 +30,8 @@
 
 enum ControlBits
 {
+	space,
+
 	Read,
 	Write,
 
@@ -50,6 +54,25 @@ enum ControlBits
 	ADR_Reg_out,
 };
 
+std::vector<int> input
+{
+	Read,
+	Write,
+
+	space,
+
+	Posta_we,
+	Posta_out
+
+};
+
+struct romLayout
+{
+	int x;
+};
+
+std::vector<romLayout> output;
+
 void readFile()
 {
 
@@ -71,6 +94,24 @@ void lexer()
 void parser()
 {
 	lexer();
+}
+
+void calcControlBits()
+{
+
+	int res = 0;
+	for (size_t i = 0; i < input.size(); i++)
+	{
+		if (input[i] == ControlBits::space)
+		{
+
+		}
+
+		res += std::pow(2, input[i]);
+	}
+	std::cout << "hex : " << std::hex << res << "\n";
+	//std::cout << std::dec;
+
 }
 
 int main()
