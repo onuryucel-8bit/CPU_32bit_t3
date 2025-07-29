@@ -3,6 +3,7 @@
 #include <cmath> 
 
 
+
 /*
 *	controlBits.txt =>[...] => ROM.txt
 *   controlBits.txt => [string => vector[ CB[Read, MDR_we,...], CB[IR_we, MDR_out,....] ) => LogisimPrinter ] => ROM.txt
@@ -26,6 +27,8 @@
 * 
 *  
 */
+
+
 
 
 enum ControlBits
@@ -113,6 +116,8 @@ void calcControlBits()
 	//std::cout << std::dec;
 
 }
+
+#include "Lexer.h"
 
 int main()
 {
