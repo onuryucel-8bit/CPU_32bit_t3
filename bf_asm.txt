@@ -16,8 +16,8 @@ MAIN_LOOP:
 
 	LOAD r0,@prog[i]
 	
-	casePlus:
-		CMP prog[i],'+'
+	casePlus:		
+		CMP @prog,'+' ;CMP prog[i],'+'
 		JMP minusCheck
 			CALL BF_INC
 			
