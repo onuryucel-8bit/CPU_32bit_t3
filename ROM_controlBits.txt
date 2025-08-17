@@ -1,0 +1,15 @@
+//fetch
+{
+	//pc => mar
+	//pc++	
+	PC_enb
+	MAR_we
+	,
+	//ram => mdr
+	Read
+	MDR_we
+	,
+	//mdr => ir
+	MDR_out
+	IR_we		
+}
