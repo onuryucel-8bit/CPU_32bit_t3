@@ -1,9 +1,3 @@
-#include <iostream>
-#include <vector>
-#include <cmath> 
-
-
-
 /*
 *	controlBits.txt =>[...] => ROM.txt
 *   controlBits.txt => [string => vector[ CB[Read, MDR_we,...], CB[IR_we, MDR_out,....] ) => LogisimPrinter ] => ROM.txt
@@ -29,104 +23,96 @@
 */
 
 
+/*
+	{
+		Read
+		PC_enb
+		MAR_enb
+		#
+		Read
+		PC_load
+		...
+		#
+		...
+		..
+		#
+	}
+	{
+		Read
+		...
+		..
+		#
+		..
+		..
+		#
+		...
+		...
+		#
+	}
+
+	bnf
+
+	<program> ::= "{" <controlBit> "#" "}"
+	<controlBit> ::= "Read" | "PC_load" | "PC_enb" | ...
+
+*/
+
+#include <iostream>
+#include <vector>
+#include <cmath> 
+
+#include "Lexer.h"
 
 
-enum ControlBits
-{
-	space,
-
-	Read,
-	Write,
-
-	PC_enb,
-	PC_load,
-
-	MDR_we,
-	MDR_out,
-
-	IR_we,
-	IR_out,
-
-	TEMP_we,
-	TEMP_out,
-
-	Posta_we,
-	Posta_out,
-	
-	ADR_Reg_we,
-	ADR_Reg_out,
-};
-
-std::vector<int> input
-{
-	Read,
-	Write,
-
-	space,
-
-	Posta_we,
-	Posta_out
-
-};
-
-struct romLayout
-{
-	int x;
-};
-
-std::vector<romLayout> output;
-
-void readFile()
-{
-
-}
-
-//CALL dynamic printer .exe
-void callLogisimPrinter()
-{
-
-}
-
-//Lexer
-void lexer()
-{
-
-}
-//Parser
-
-void parser()
-{
-	lexer();
-}
+std::vector<int> controlBits;
 
 void calcControlBits()
 {
-
 	int res = 0;
-	for (size_t i = 0; i < input.size(); i++)
+	for (size_t i = 0; i < controlBits.size(); i++)
 	{
-		if (input[i] == ControlBits::space)
-		{
-
-		}
-
-		res += std::pow(2, input[i]);
+		res += std::pow(2, controlBits[i]);
 	}
-	std::cout << "hex : " << std::hex << res << "\n";
+	std::cout << "control bits hex : " << std::hex << res << "\n";
 	//std::cout << std::dec;
 
 }
 
-#include "Lexer.h"
+void parser(std::string input)
+{
+	reflex::Input file(input);
+
+	Lexer lx(file);
+
+	cb::Token currentToken = lx.lex();
+	
+	while (currentToken.m_type != cb::TokenType::ENDOFFILE && 
+		currentToken.m_type != cb::TokenType::UNKNOWN)
+	{
+		std::cout << currentToken.m_text << "\n";
+
+		if (currentToken.m_type != cb::TokenType::LPAREN && 
+			currentToken.m_type != cb::TokenType::RPAREN &&
+			currentToken.m_type != cb::TokenType::HASH)
+		{
+			controlBits.push_back(currentToken.m_type);
+		}
+
+		if (currentToken.m_type == cb::TokenType::HASH)
+		{
+			calcControlBits();
+		}
+
+		currentToken = lx.lex();
+	}
+}
 
 int main()
 {
-	std::string txtFile;
-
-	readFile();
-
-	parser();
-	callLogisimPrinter();
+	
+    std::string input = "{Read\n Write \n #}";
+    
+    parser(input);
 	
 	return 0;
 }

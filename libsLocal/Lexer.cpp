@@ -30,7 +30,10 @@
 
 #line 6 "D:\\ProgrammingProjects\\Logisim\\32bitCPU_t3\\libsLocal\\ControlBits.l"
 
+#include <iostream>
+#include <string>
 
+#include "CbTokens.h";
 
 
 
@@ -40,7 +43,7 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-cb::Token Lexer::lex()
+int Lexer::lex(void)
 {
   static const char *REGEX_INITIAL = "(?m)((?:\\QRead\\E))|((?:\\QWrite\\E))|((?:\\QPC_enb\\E))|((?:\\QPC_load\\E))|((?:\\QMDR_we\\E))|((?:\\QMDR_out\\E))|((?:\\QIR_we\\E))|((?:\\QIR_out\\E))|((?:\\QTEMP_we\\E))|((?:\\QTEMP_out\\E))|((?:\\QPosta_we\\E))|((?:\\QPosta_out\\E))|((?:\\QADR_we\\E))|((?:\\QADR_out\\E))|((?:\\QI3B\\E))|((?:\\QMAR_load\\E))|((?:\\QMAR_we\\E))|((?:\\QACC_we\\E))|((?:\\QFR_cls\\E))|((?:\\QALU_in\\E))|((?:\\QALU_out\\E))|((?:\\QREG_out\\E))|((?:\\QREG_in\\E))|((?:\\Q@\\E))|((?:\\Q{\\E))|((?:\\Q}\\E))|((?:\\Q#\\E))|([\\x09\\x0a\\x20]+)|(.)";
   static const reflex::Pattern PATTERN_INITIAL(REGEX_INITIAL);
@@ -48,32 +51,22 @@ cb::Token Lexer::lex()
   {
     matcher(new Matcher(PATTERN_INITIAL, stdinit(), this));
   }
-
-  std::string yytext;
-
   while (true)
   {
-        int rule = matcher().scan();
-        std::string yytext = matcher().text();
-
-        switch (rule)
-        {                        
+        switch (matcher().scan())
+        {
           case 0:
             if (matcher().at_end())
             {
-                return cb::Token{ "EOF", cb::TokenType::ENDOFFILE };
+              return int();
             }
             else
             {
               out().put(matcher().input());
             }
             break;
-
-
-            
-
           case 1: // rule D:\ProgrammingProjects\Logisim\32bitCPU_t3\libsLocal\ControlBits.l:18: "Read" :
-#line 18 "D:\\ProgrammingProjects\\Logisim\\32bitCPU_t3\\libsLocal\\ControlBits.l"              
+#line 18 "D:\\ProgrammingProjects\\Logisim\\32bitCPU_t3\\libsLocal\\ControlBits.l"
 return cb::Token{yytext, cb::TokenType::Read};
             break;
           case 2: // rule D:\ProgrammingProjects\Logisim\32bitCPU_t3\libsLocal\ControlBits.l:19: "Write" :
@@ -194,10 +187,7 @@ return cb::Token{yytext, cb::TokenType::HASH};
             break;
           case 29: // rule D:\ProgrammingProjects\Logisim\32bitCPU_t3\libsLocal\ControlBits.l:54: . :
 #line 54 "D:\\ProgrammingProjects\\Logisim\\32bitCPU_t3\\libsLocal\\ControlBits.l"
-          {
-              std::cout << "TOKEN: UNKNOWN (" << yytext << ")\n";
-              return cb::Token{ yytext, cb::TokenType::UNKNOWN };
-          }
+{ std::cout << "TOKEN: UNKNOWN (" << yytext << ")\n"; }
 
             break;
         }

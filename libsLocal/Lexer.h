@@ -39,12 +39,6 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <iostream>
-#include <string>
-
-
-#include "CbTokens.h"
-
 class Lexer : public reflex::AbstractLexer<reflex::Matcher> {
  public:
   typedef reflex::AbstractLexer<reflex::Matcher> AbstractBaseLexer;
@@ -59,14 +53,14 @@ class Lexer : public reflex::AbstractLexer<reflex::Matcher> {
   }
   static const int INITIAL = 0;
   // the lexer function defined by SECTION 2
-  cb::Token lex();
+  virtual int lex(void);
   // lexer functions accepting new input to scan
-  cb::Token lex(const reflex::Input& input)
+  int lex(const reflex::Input& input)
   {
     in(input);
     return lex();
   }
-  cb::Token lex(const reflex::Input& input, std::ostream *os)
+  int lex(const reflex::Input& input, std::ostream *os)
   {
     in(input);
     if (os)
