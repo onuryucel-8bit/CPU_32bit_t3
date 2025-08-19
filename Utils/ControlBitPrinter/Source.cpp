@@ -138,7 +138,7 @@ int main()
 	parser(readFile());
 
 	DyLogisimPrinter dlp;
-	dlp.printROM(16, result);
+	dlp.printROM(20, result);
 
 	
 	

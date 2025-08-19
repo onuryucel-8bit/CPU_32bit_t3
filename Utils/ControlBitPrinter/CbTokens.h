@@ -32,7 +32,8 @@ namespace cb
 	enum TokenType
 	{
 		Read,
-		Write,
+		
+		PC_mux,
 
 		PC_enb,
 		PC_load,

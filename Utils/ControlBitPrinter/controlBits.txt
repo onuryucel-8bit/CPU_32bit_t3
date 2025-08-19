@@ -1,17 +1,14 @@
-
 {
-	Read
-	Write
 	PC_enb
+	MAR_we
 	#
 	Read
-	Write
+	MDR_we	
 	#
-	
-}
-
-{
+	PC_enb
+	MDR_we
+	#
+	MAR_we
 	Read
-	Write
 	#
 }

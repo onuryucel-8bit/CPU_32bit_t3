@@ -46,33 +46,33 @@
 #include "CbTokens.h"
 
 class Lexer : public reflex::AbstractLexer<reflex::Matcher> {
- public:
-  typedef reflex::AbstractLexer<reflex::Matcher> AbstractBaseLexer;
-  Lexer(
-      // a persistent source of input, empty by default
-      const reflex::Input& input = reflex::Input(),
-      // optional output stream, std::cout by default
-      std::ostream& os = std::cout)
-    :
-      AbstractBaseLexer(input, os)
-  {
-  }
-  static const int INITIAL = 0;
-  // the lexer function defined by SECTION 2
-  cb::Token lex();
-  // lexer functions accepting new input to scan
-  cb::Token lex(const reflex::Input& input)
-  {
-    in(input);
-    return lex();
-  }
-  cb::Token lex(const reflex::Input& input, std::ostream *os)
-  {
-    in(input);
-    if (os)
-      out(*os);
-    return lex();
-  }
+public:
+    typedef reflex::AbstractLexer<reflex::Matcher> AbstractBaseLexer;
+    Lexer(
+        // a persistent source of input, empty by default
+        const reflex::Input& input = reflex::Input(),
+        // optional output stream, std::cout by default
+        std::ostream& os = std::cout)
+        :
+        AbstractBaseLexer(input, os)
+    {
+    }
+    static const int INITIAL = 0;
+    // the lexer function defined by SECTION 2
+    cb::Token lex();
+    // lexer functions accepting new input to scan
+    cb::Token lex(const reflex::Input& input)
+    {
+        in(input);
+        return lex();
+    }
+    cb::Token lex(const reflex::Input& input, std::ostream* os)
+    {
+        in(input);
+        if (os)
+            out(*os);
+        return lex();
+    }
 };
 
 #endif
