@@ -58,13 +58,16 @@
 */
 
 #include <iostream>
+#include <fstream>
 #include <vector>
-#include <cmath> 
+#include <cmath>
 
 #include "Lexer.h"
 
 
 std::vector<int> controlBits;
+
+std::vector<int> result;
 
 void calcControlBits()
 {
@@ -74,8 +77,8 @@ void calcControlBits()
 		res += std::pow(2, controlBits[i]);
 	}
 	std::cout << "control bits hex : " << std::hex << res << "\n";
-	//std::cout << std::dec;
-
+	std::cout << std::dec;
+	result.push_back(res);
 }
 
 void parser(std::string input)
@@ -85,6 +88,7 @@ void parser(std::string input)
 	Lexer lx(file);
 
 	cb::Token currentToken = lx.lex();
+
 	
 	while (currentToken.m_type != cb::TokenType::ENDOFFILE && 
 		currentToken.m_type != cb::TokenType::UNKNOWN)
@@ -101,18 +105,42 @@ void parser(std::string input)
 		if (currentToken.m_type == cb::TokenType::HASH)
 		{
 			calcControlBits();
+			controlBits.clear();
 		}
 
 		currentToken = lx.lex();
 	}
+
+	
 }
 
-int main()
+std::string readFile()
 {
+	std::fstream file("controlBits.txt");
+
+	if (!file.is_open())
+	{
+		std::cout << "ERROR:: couldnt open the file\n";
+		return "";
+	}
+
+	std::stringstream ss;
+
+	ss << file.rdbuf();
+
+	return ss.str();
+}
+
+#include "DyLogisimPrinter.h"
+
+int main()
+{	        
+	parser(readFile());
+
+	DyLogisimPrinter dlp;
+	dlp.printROM(16, result);
+
 	
-    std::string input = "{Read\n Write \n #}";
-    
-    parser(input);
 	
 	return 0;
 }

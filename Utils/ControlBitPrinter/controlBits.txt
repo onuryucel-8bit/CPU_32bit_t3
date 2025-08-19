@@ -1,0 +1,17 @@
+
+{
+	Read
+	Write
+	PC_enb
+	#
+	Read
+	Write
+	#
+	
+}
+
+{
+	Read
+	Write
+	#
+}

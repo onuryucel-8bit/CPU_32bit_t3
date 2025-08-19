@@ -33,7 +33,6 @@
 
 
 
-
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
 //  SECTION 2: rules                                                          //
@@ -195,7 +194,10 @@ return cb::Token{yytext, cb::TokenType::HASH};
           case 29: // rule D:\ProgrammingProjects\Logisim\32bitCPU_t3\libsLocal\ControlBits.l:54: . :
 #line 54 "D:\\ProgrammingProjects\\Logisim\\32bitCPU_t3\\libsLocal\\ControlBits.l"
           {
-              std::cout << "TOKEN: UNKNOWN (" << yytext << ")\n";
+              std::string line = matcher().line();
+              line.erase(0, line.find_first_not_of(" \t"));
+
+              std::cout << "*******\nTOKEN: UNKNOWN (" << line << ") line number["<< matcher().lineno() <<"]\n*******\n";
               return cb::Token{ yytext, cb::TokenType::UNKNOWN };
           }
 
