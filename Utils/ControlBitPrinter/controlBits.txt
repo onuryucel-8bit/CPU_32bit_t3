@@ -1,14 +1,30 @@
+//fetch
 {
+	//t0
 	PC_enb
-	MAR_we
+	MAR_we	
+	//mar = pc
+	//pc++
 	#
+	//t1
 	Read
 	MDR_we	
+	//mdr = ram[mar]
 	#
-	PC_enb
-	MDR_we
+	//t2
+	MDR_out
+	IR_we	
+	//ir = mdr
 	#
-	MAR_we
-	Read
-	#
+}
+
+//LOAD r0,32bit
+{
+	//posta = reg
+
+	//mdr = ram[pc]
+
+	//regfile[posta] = mdr
+
+	//pc++
 }
