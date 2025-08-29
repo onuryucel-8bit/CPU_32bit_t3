@@ -1,19 +1,3 @@
-#include <iostream>
-#include <cstdint>
-
-
-//sfml3
-class FramSfml
-{
-
-};
-
-//sdl3
-class FrameSDL
-{
-
-};
-
 class InputOutput
 {
 public:
@@ -123,65 +107,9 @@ Keyboard::~Keyboard()
 }
 
 
-#define scpu_RAM_SIZE 1024
 
 
-class Cpu
-{
-public:
-	Cpu();
-	~Cpu();
-
-	void run();
-
-	int* ram;
-private:
-	uint32_t m_currentOpcode;
-	uint32_t m_pc;
-	uint32_t m_registerFile[8] = { 0 };
-	uint8_t m_stackPointer;
-	uint8_t m_interrupt;
-	uint8_t m_flagRegister;
-	
-	void op_LOADi();
-	
-};
-
-Cpu::Cpu()
-{
-	m_currentOpcode = 0;
-	m_pc = 0;	
-	m_stackPointer = 0;
-	m_interrupt = 0;
-	m_flagRegister = 0;
-
-	ram = new int[scpu_RAM_SIZE];
-}
-
-Cpu::~Cpu()
-{
-	delete[] ram;
-}
-
-void Cpu::run()
-{
-	m_currentOpcode = ram[0];
-	op_LOADi();
-}
-
-void Cpu::op_LOADi()
-{
-	uint32_t mask = 0x001c0000;
-	uint32_t registerAdr = m_currentOpcode & mask;
-
-	registerAdr = registerAdr >> 18;
-
-	m_pc++;
-	m_registerFile[registerAdr] = ram[m_pc];
-
-	std::cout << "r1["<< m_registerFile[1] << "]\n";
-}
-
+#include "Cpu.h"
 
 
 void print()
@@ -209,6 +137,7 @@ void print()
 #define scpu_LOADi_r1 0x01048000
 
 
+
 int main()
 {
 	Cpu cpu;
@@ -218,36 +147,10 @@ int main()
 
 	cpu.run();
 
-	
 
-
-
-	void (*ptr)();
-
-	ptr = &print;
-
-	ptr();	
-
-	//------------------------------//
-	int* iptr;
-
-	int a = 5;
-
-	iptr = &a;
-
-	//------------------------------//
-	void (*funcList[4])();
-
-	funcList[0] = &print;
-	funcList[1] = &print;
-
-	funcList[0]();
-	funcList[1]();
-
-	
-	using FuncPtr = void (*)();
-	
-	FuncPtr funcPtrList[5];
+	//using FuncPtr = void (*)();
+	//
+	//FuncPtr funcPtrList[5];
 
 
 }
