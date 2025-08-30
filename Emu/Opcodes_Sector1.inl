@@ -1,5 +1,5 @@
 //STACK
-void op_CALL(){}
-void op_RET(){}
-void op_PUSH(){}
-void op_POP(){}
+void Cpu::op_CALL(){}
+void Cpu::op_RET(){}
+void Cpu::op_PUSH(){}
+void Cpu::op_POP(){}

@@ -1,0 +1,19 @@
+.origin 0xfe
+
+.db 0x2, 0x5
+
+.origin 0x0
+
+LOAD r0, 5
+LOAD r1, 3
+CALL carpma
+
+.origin 0x5
+
+SUB carpma:
+	Loop:
+		ADD r2,r0
+		SUB r1, 1
+	
+		JGZ Loop
+	RET

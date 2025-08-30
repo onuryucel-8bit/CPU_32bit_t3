@@ -1,0 +1,21 @@
+#include "stdDefs"
+
+.origin 0x0
+
+MAIN:
+	
+	LOAD r0, KEYBOARD
+
+	CMP r0, 'A'
+	JMT pass 		//if(r0 != 'A') pc = pass
+		CALL A_pressed
+	pass:
+
+
+JMP MAIN
+
+.origin 0xff
+
+	SUB A_pressed:
+		//code
+		RET

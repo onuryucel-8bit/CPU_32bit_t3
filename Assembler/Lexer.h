@@ -7,13 +7,18 @@
 #include <cstdint>
 
 #include "../LibsLocal/magic_enum/magic_enum.hpp"
-#include "../LibsLocal/rang.hpp"
+#include "../libsLocal/rang.hpp"
 
 #undef OUT //isim cakismasi var windows.h la galiba?
 
 namespace asmc
 {
 
+//address = @ff
+//regAdr = @r4
+//register = r4
+//hexnumber = 0xfa
+//decimal  = 255
 enum TokenType
 {
 
@@ -29,33 +34,57 @@ enum TokenType
 	//Operands
 	REGISTER,
 	HEXNUMBER,
+	DECNUMBER,
 	ADDRESS,
 	REGADR,
 
 	//Opcodes
-	LOAD = 0x01,
-	STR = 0x03,
-	MOV = 0x04,
-	OUT = 0x05,
 
-	ADD = 0x08,
-	SUB = 0x09,
-	SHL = 0x0a,
-	SHR = 0x0b,
+	//REG - RAM
+	LOAD,
+	STR,
+	MOV,
 
-	AND = 0x0c,
-	OR = 0x0d,
-	NOT = 0x0e,
-	XOR = 0x0f,
+	// ???
+	PULL,
+	PFR,
+	CLF,
+	CCF,
 
-	ADC = 0x18,
+	//STACK
+	CALL,
+	RET,
+	PUSH,
+	POP,
 
-	JMP = 0x20,
-	JZ  = 0x21,
-	JLZ = 0x22,
-	JGZ = 0x23,
-	JSC = 0x25,
-	JUC = 0x26,
+			
+	//ALU
+	ADD ,
+	SUB ,
+	MUL ,
+	DIV ,
+	SHL ,
+	SHR ,
+		
+	AND ,
+	OR ,
+	NOT ,
+	XOR ,
+
+	CMP ,
+		
+	
+	//JUMP
+	JMP ,
+	JAZ ,
+	JLZ ,
+
+	JGZ ,
+	JSC ,
+	JUC ,
+
+	JCT ,
+	JMT ,
 	
 	EMPTY
 };
@@ -76,7 +105,7 @@ public:
 
 	//sonraki karakteri isaret eder
 	void nextChar();
-
+	
 	char peek();
 	//0x4f peeks over 'x' returns 4
 	char peekOverX();

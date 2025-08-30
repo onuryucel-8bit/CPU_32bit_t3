@@ -1,0 +1,9 @@
+LET A
+LET B
+
+A = INPUT()
+B = INPUT()
+
+A = A + B
+
+PRINT(A)

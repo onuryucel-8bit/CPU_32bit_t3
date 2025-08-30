@@ -1,0 +1,20 @@
+SUB sinx:
+	RET
+	
+SUB cosx:
+	RET
+
+SUB pow:
+	RET
+
+SUB sqrt:
+	RET
+
+SUB abs:
+	RET
+	
+SUB max:
+	RET
+	
+SUB min:
+	RET

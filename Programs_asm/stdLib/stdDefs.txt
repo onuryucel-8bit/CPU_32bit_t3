@@ -1,0 +1,6 @@
+//Memory Map I/O address
+
+#define TTY 0x01
+#define BUZZER 0x02
+#define FRAME  0x03
+#define KEYBOARD 0x04

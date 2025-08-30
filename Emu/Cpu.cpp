@@ -34,8 +34,38 @@ void Cpu::run()
 	std::cout << std::dec;
 
 	
-	op_LOADi();
+	op_LOADry();
 }
+
+uint32_t Cpu::getRegisterBits()
+{
+	uint32_t retVal = 0;
+
+	switch ((scpu_GET_ModBits(m_currentOpcode)) >> 15)
+	{
+
+	case 0:
+		std::cout << "TEST\n";
+		break;
+
+		//sayi
+	case 1: [[fallthrough]];
+		//@adr	
+	case 2:
+		retVal = scpu_SHIFT_RightRegister((m_currentOpcode & scpu_MASK_Rx));
+		break;
+		//@ry
+	case 3: [[fallthrough]];
+		//@adr + ry
+	case 4:
+		retVal = scpu_SHIFT_RightRegister((m_currentOpcode & scpu_MASK_RxRy));
+		break;
+	}
+
+	return retVal;
+}
+
+
 
 #include "Opcodes_Sector0.inl"
 

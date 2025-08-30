@@ -1,31 +1,5 @@
 #include "Cpu.h"
-uint32_t Cpu::getRegisterBits()
-{
-	uint32_t retVal = 0;
-	
-	switch ((scpu_GET_ModBits(m_currentOpcode)) >> 15)
-	{
-	
-	case 0:
-		std::cout << "TEST\n";
-		break;
 
-	//sayi
-	case 1: [[fallthrough]];
-	//@adr	
-	case 2:
-		retVal = scpu_SHIFT_RightRegister(m_currentOpcode & scpu_MASK_Rx);
-		break;					
-	//@ry
-	case 3: [[fallthrough]];
-	//@adr + ry
-	case 4:
-		retVal = scpu_SHIFT_RightRegister(m_currentOpcode & scpu_MASK_RxRy);
-		break;			
-	}
-
-	return retVal;
-}
 //LOAD rx,sayi
 void Cpu::op_LOADi()
 {
@@ -34,7 +8,7 @@ void Cpu::op_LOADi()
 	m_pc++;
 	m_registerFile[regBits] = ram[m_pc];
 
-	std::cout << "r1[" << m_registerFile[1] << "]\n";
+	
 }
 
 //LOAD rx,@adr
@@ -47,6 +21,8 @@ void Cpu::op_LOADadr()
 	uint32_t ramAdr = ram[m_pc];
 
 	m_registerFile[regBits] = ram[ramAdr];
+
+	std::cout << std::hex << "r1[" << m_registerFile[1] << "]\n";
 }
 
 //LOAD rx,@ry
@@ -56,6 +32,8 @@ void Cpu::op_LOADry()
 
 	uint32_t regx = regBits >> 21;
 	m_pc++;
+
+	regBits = regBits & 0x07;
 
 	uint32_t address = m_registerFile[regBits];
 
@@ -105,4 +83,17 @@ void Cpu::op_STRadrRx()
 {
 
 }
+
+//rx = ry
+void Cpu::op_MOV()
+{
+	uint32_t regBits = getRegisterBits();
+
+	uint8_t regy = regBits & 0x7;
+
+	uint8_t regx = regBits >> 3;
+
+	m_registerFile[regx] = m_registerFile[regy];
+}
+
 

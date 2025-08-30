@@ -5,11 +5,13 @@
 
 #define scpu_RAM_SIZE 1024
 
-#define scpu_MASK_Rx 0x001c0000
-#define scpu_MASK_RxRy 0x00fc0000
+//getRegisterBits()
+	#define scpu_MASK_Rx 0x001c0000
+	#define scpu_MASK_RxRy 0x00fc0000
 
-#define scpu_SHIFT_RightRegister(bits) bits >> 18
-#define scpu_GET_ModBits(bits) bits & 0x00038000
+	#define scpu_SHIFT_RightRegister(bits) bits >> 18
+	#define scpu_GET_ModBits(bits) bits & 0x00038000
+//END
 
 class Cpu
 {
@@ -20,12 +22,12 @@ public:
 	void run();
 
 	int* ram;
+	uint32_t m_registerFile[8] = { 0 };
 
 private:
 
 	uint32_t m_currentOpcode;
 	uint32_t m_pc;
-	uint32_t m_registerFile[8] = { 0 };
 	uint8_t m_stackPointer;
 	uint8_t m_interrupt;
 	uint8_t m_flagRegister;
@@ -49,7 +51,7 @@ private:
 	//STR @adr + rx, ry
 	void op_STRadrRx();
 
-	//void op_MOV();
+	void op_MOV();
 	//----------------------------------------------------//
 
 	///-----------------SECTOR_1-------------------------//
@@ -74,6 +76,14 @@ private:
 	void op_DIVrxri();
 	void op_DIVrxAdr();	
 	void op_DIVrxAdrRy();
+
+	void op_SHL();
+	void op_SHR();
+	void op_AND();
+	void op_OR();
+	void op_NOT();
+	void op_XOR();
+	void op_CMP();
 	
 
 	//----------------------------------------------------/

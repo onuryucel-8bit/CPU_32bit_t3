@@ -1,0 +1,6 @@
+LET A = 5
+LET B = 4
+
+A = A + B
+
+PRINT(A)
