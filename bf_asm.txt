@@ -1,54 +1,52 @@
-#define ramIndex 0
-#define index ##0
 
+#define prog 0xfff
+#define programSize 0xff
 
-.ORIGIN ##0xffff
-.DB ramIndex = 0
-.DB i = 0
-
-.ORIGIN 0x00fa
-
-#include "bf_funcs_asm.txt"	
-
-.ORIGIN 0x00
+LOAD r1,0
+LOAD r2,programSize
 
 MAIN_LOOP:
 
-	LOAD r0,@prog[i]
+	LOAD r0,@prog + r1
 	
 	casePlus:		
-		CMP @prog,'+' ;CMP prog[i],'+'
-		JMP minusCheck
+		CMP r0,'+' 
+		JMF _l0
 			CALL BF_INC
+	_l0:
 			
 	caseNegative:
-		CMP prog[i],'-'
-		JMP next
+		CMP r0,'-'
+		JMF _l1		
 			CALL BF_DEC
+	_l1:
 	
 	caseMoveRight:
-		CMP prog[i], '>'
-		JMP next
+		CMP r0, '>'
+		JMF _l2		
 			CALL BF_MOVE_RIGHT
+	_l2:
 	
 	caseMoveLeft:
-		CMP prog[i], '<'
-		JMP next
+		CMP r0, '<'
+		JMF _l3
 			CALL BF_MOVE_LEFT
-
+	_l3:
+	
 	caseLoopStart:
-		CMP prog[i], '['		
-		JMP next
+		CMP r0, '['		
+		JMF _l4	
 			CALL BF_START_LOOP
-			
+	_l4:
+	
 	caseLoopEnd:
-		CMP prog[i], ']'		
-		JMP next
+		CMP r0, ']'		
+		JMF _l5
 			CALL BF_END_LOOP
+	_l5:		
 			
-			
-	;if(i < program.size()) JUMP MAIN_LOOP		
-	CMP i, programSize
-	JGZ MAIN_LOOP
+		
+	CMP r1, programSize
+	JMT MAIN_LOOP
 	
 	

@@ -26,7 +26,9 @@ enum TokenType
 
 	ORIGIN = 0x52,	
 	DB,	//define byte
-	NEWLINE,	
+	NEWLINE,
+	DEFINE,
+
 
 	LABEL ,
 	JUMPLOC ,
