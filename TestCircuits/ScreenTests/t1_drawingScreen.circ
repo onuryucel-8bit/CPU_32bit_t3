@@ -61,11 +61,12 @@
     <a name="appearance" val="logisim_evolution"/>
     <a name="circuit" val="main"/>
     <a name="circuitnamedboxfixedsize" val="true"/>
-    <a name="simulationFrequency" val="2048000.0"/>
+    <a name="simulationFrequency" val="128.0"/>
     <comp lib="0" loc="(140,440)" name="Pin">
       <a name="appearance" val="NewPins"/>
       <a name="width" val="2"/>
     </comp>
+    <comp lib="0" loc="(2180,1230)" name="Clock"/>
     <comp lib="0" loc="(220,330)" name="Splitter">
       <a name="appear" val="center"/>
       <a name="facing" val="south"/>
@@ -94,7 +95,7 @@
       <a name="fanout" val="4"/>
       <a name="incoming" val="4"/>
     </comp>
-    <comp lib="0" loc="(840,190)" name="Pin">
+    <comp lib="0" loc="(850,170)" name="Pin">
       <a name="appearance" val="NewPins"/>
       <a name="facing" val="west"/>
       <a name="width" val="2"/>
@@ -255,7 +256,7 @@
     <wire from="(1250,740)" to="(1250,770)"/>
     <wire from="(1280,680)" to="(1330,680)"/>
     <wire from="(130,170)" to="(130,420)"/>
-    <wire from="(130,170)" to="(820,170)"/>
+    <wire from="(130,170)" to="(850,170)"/>
     <wire from="(130,420)" to="(160,420)"/>
     <wire from="(1330,620)" to="(1330,680)"/>
     <wire from="(140,440)" to="(160,440)"/>
@@ -263,6 +264,7 @@
     <wire from="(200,1270)" to="(650,1270)"/>
     <wire from="(200,430)" to="(200,1270)"/>
     <wire from="(200,430)" to="(260,430)"/>
+    <wire from="(2180,1230)" to="(2320,1230)"/>
     <wire from="(220,240)" to="(220,330)"/>
     <wire from="(220,240)" to="(780,240)"/>
     <wire from="(260,270)" to="(260,330)"/>
@@ -318,8 +320,6 @@
     <wire from="(780,640)" to="(820,640)"/>
     <wire from="(780,680)" to="(780,690)"/>
     <wire from="(780,690)" to="(920,690)"/>
-    <wire from="(820,170)" to="(820,190)"/>
-    <wire from="(820,190)" to="(840,190)"/>
     <wire from="(830,660)" to="(830,790)"/>
     <wire from="(830,790)" to="(920,790)"/>
     <wire from="(840,660)" to="(840,750)"/>
@@ -329,7 +329,7 @@
     <wire from="(860,320)" to="(970,320)"/>
     <wire from="(860,660)" to="(860,670)"/>
     <wire from="(860,670)" to="(920,670)"/>
-    <wire from="(950,420)" to="(950,620)"/>
+    <wire from="(950,520)" to="(950,620)"/>
     <wire from="(950,620)" to="(1120,620)"/>
     <wire from="(950,680)" to="(990,680)"/>
     <wire from="(950,720)" to="(970,720)"/>
@@ -343,4 +343,6 @@
     <wire from="(970,780)" to="(990,780)"/>
     <wire from="(990,300)" to="(990,340)"/>
   </circuit>
+
+
 </project>

@@ -1,0 +1,45 @@
+error = 0
+m = dy / dx
+
+drawPixel(x,y)
+
+for x = x1, x1 < x2, x++
+	
+	error = error + m
+	
+	if error >= 0.5
+		y0 = y0 + 1
+		error = error - 1
+	
+	drawPixel(x,y0)
+	
+	
+LOAD r0, error
+LOAD r1, x0
+LOAD r2, y0
+LOAD r3, x1
+LOAD r4, y1
+
+SUB r1,r3 //deltax
+SUB r2,r4 //deltay
+
+DIV dy, dx //m
+
+STR @xy, 1
+
+.l1:
+	ADD error, m
+
+	CMP error, 0.5
+	JMF .l0
+		ADD y0, 1
+		SUB error, 1
+	.l0:
+
+	STR @xy, 1
+	
+	ADD x, 1
+	CMP x, x2
+	JMF .l1:
+
+//------------------------------//
