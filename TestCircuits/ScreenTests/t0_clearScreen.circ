@@ -73,7 +73,7 @@
       <a name="incoming" val="4"/>
     </comp>
     <comp lib="0" loc="(330,210)" name="Constant"/>
-    <comp lib="0" loc="(460,430)" name="Constant">
+    <comp lib="0" loc="(450,430)" name="Constant">
       <a name="width" val="3"/>
     </comp>
     <comp lib="0" loc="(70,370)" name="Clock"/>
@@ -119,7 +119,7 @@
       <a name="scale" val="8"/>
       <a name="width" val="16"/>
     </comp>
-    <comp lib="8" loc="(590,72)" name="Text">
+    <comp lib="8" loc="(590,70)" name="Text">
       <a name="text" val="111 w 000 b"/>
     </comp>
     <comp lib="8" loc="(890,595)" name="Text">
@@ -170,8 +170,8 @@
     <wire from="(440,590)" to="(460,590)"/>
     <wire from="(440,670)" to="(440,690)"/>
     <wire from="(440,670)" to="(460,670)"/>
+    <wire from="(450,430)" to="(480,430)"/>
     <wire from="(460,190)" to="(460,230)"/>
-    <wire from="(460,430)" to="(480,430)"/>
     <wire from="(470,190)" to="(470,280)"/>
     <wire from="(480,190)" to="(480,430)"/>
     <wire from="(490,580)" to="(540,580)"/>
