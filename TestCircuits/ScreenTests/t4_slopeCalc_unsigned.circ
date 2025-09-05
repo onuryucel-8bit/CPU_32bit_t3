@@ -102,9 +102,11 @@
     </comp>
     <comp lib="4" loc="(130,460)" name="Random">
       <a name="appearance" val="logisim_evolution"/>
+      <a name="seed" val="4"/>
     </comp>
     <comp lib="4" loc="(130,560)" name="Random">
       <a name="appearance" val="logisim_evolution"/>
+      <a name="seed" val="5"/>
     </comp>
     <comp lib="4" loc="(130,660)" name="Random">
       <a name="appearance" val="logisim_evolution"/>
