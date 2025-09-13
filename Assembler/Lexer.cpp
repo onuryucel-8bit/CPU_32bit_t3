@@ -40,44 +40,7 @@ Token Lexer::getToken()
 		//keyword,label,jumploc
 		else
 		{
-			int startPos = m_position;
-			int length = 1;
-			while (std::isalpha(peek()))
-			{
-				nextChar();
-				length++;
-			}
-
-			std::string tokenStr = m_program.substr(startPos, length);
-
-			if (checkIfKeyword(tokenStr))
-			{
-				std::optional<TokenType> enumVal = magic_enum::enum_cast<TokenType>(tokenStr);
-				token = { tokenStr, enumVal.value() };
-			}
-			else
-			{
-				//label
-				if (f_newline == true && peek() != ':')
-				{
-					printError("LEXER:: label must end with ':' ");
-					f_error = true;
-				}
-				else if (peek() == ':')
-				{
-					token = { tokenStr, TokenType::LABEL };
-					nextChar();
-					
-				}
-				//variable
-				else
-				{
-					token = { tokenStr, TokenType::JUMPLOC };
-					//nextChar();
-					
-				}
-				
-			}
+			token = lexWord();
 		}
 		f_newline = false;
 	}
@@ -130,17 +93,6 @@ char Lexer::peekOverX()
 //--------------------------------------------//
 //--------------------------------------------//
 
-bool Lexer::checkIfKeyword(std::string token)
-{
-	std::optional<TokenType> tempToken = magic_enum::enum_cast<TokenType>(token);
-	if (tempToken.has_value())
-	{		
-		return true;
-	}
-
-	return false;
-}
-
 asmc::Token Lexer::lexDotPart()
 {
 	//get token str
@@ -153,6 +105,8 @@ asmc::Token Lexer::lexDotPart()
 	}
 
 	std::string tokenStr = m_program.substr(startPos, length);
+
+	toUpper(tokenStr);
 
 	if (checkIfKeyword(tokenStr))
 	{
@@ -257,6 +211,69 @@ asmc::Token Lexer::lexSingleChar()
 	return token;
 }
 
+asmc::Token Lexer::lexWord()
+{
+	asmc::Token token;
+
+	int startPos = m_position;
+	int length = 1;
+	while (std::isalpha(peek()))
+	{
+		nextChar();
+		length++;
+	}
+
+	std::string tokenStr = m_program.substr(startPos, length);
+
+	toUpper(tokenStr);
+
+	if (checkIfKeyword(tokenStr))
+	{
+		std::optional<TokenType> enumVal = magic_enum::enum_cast<TokenType>(tokenStr);
+		token = { tokenStr, enumVal.value() };
+	}
+	else
+	{
+		//label
+		if (f_newline == true && peek() != ':')
+		{
+			printError("LEXER:: label must end with ':' ");
+			f_error = true;
+		}
+		else if (peek() == ':')
+		{
+			token = { tokenStr, TokenType::LABEL };
+			nextChar();
+
+		}
+		//variable
+		else
+		{
+			token = { tokenStr, TokenType::JUMPLOC };
+			//nextChar();
+
+		}
+
+	}
+
+	return token;
+}
+
+//--------------------------------------------//
+//--------------------------------------------//
+//--------------------------------------------//
+
+bool Lexer::checkIfKeyword(std::string token)
+{
+	std::optional<TokenType> tempToken = magic_enum::enum_cast<TokenType>(token);
+	if (tempToken.has_value())
+	{
+		return true;
+	}
+
+	return false;
+}
+
 //is 0xfa
 bool Lexer::isNumberHex()
 {
@@ -308,22 +325,31 @@ void Lexer::skipWhiteSpace()
 	}
 }
 
-//skip ',' '\n'
+//skip ',' 
 void Lexer::skipNonEssential()
 {
-	while (m_currentChar == ',' || m_currentChar == '\t')
+	while (m_currentChar == ',')
 	{
 		if (m_currentChar == '\n')
 		{
 			f_newline = true;
 		}
-
+		
 		nextChar();
 	}
 }
 
-void Lexer::nextChar()
+void Lexer::toUpper(std::string& str)
 {
+	for (size_t i = 0; i < str.length(); i++)
+	{
+		str[i] = std::toupper(str[i]);
+	}
+}
+
+//returns next char if pos >= program.length returns enum::EOF
+void Lexer::nextChar()
+{	
 	m_position++;
 	if (m_position >= m_program.length())
 	{

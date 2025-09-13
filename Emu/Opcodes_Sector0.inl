@@ -22,7 +22,6 @@ void Cpu::op_LOADadr()
 
 	m_registerFile[regBits] = ram[ramAdr];
 
-	std::cout << std::hex << "r1[" << m_registerFile[1] << "]\n";
 }
 
 //LOAD rx,@ry
@@ -30,9 +29,10 @@ void Cpu::op_LOADry()
 {
 	uint32_t regBits = getRegisterBits();
 
-	uint32_t regx = regBits >> 21;
+	uint32_t regx = scpu_GET_rxPart(regBits);
 	m_pc++;
 
+	//ry & 0x07
 	regBits = regBits & 0x07;
 
 	uint32_t address = m_registerFile[regBits];
@@ -45,8 +45,10 @@ void Cpu::op_LOADadrRy()
 {
 	uint32_t regBits = getRegisterBits();
 
-	uint32_t regx = regBits >> 21;
+	uint32_t regx = scpu_GET_rxPart(regBits);
 	m_pc++;
+
+	regBits = regBits & 0x07;
 
 	uint32_t address = ram[m_pc] + m_registerFile[regBits];
 
@@ -70,12 +72,8 @@ void Cpu::op_STRrx()
 {
 	uint32_t regBits = getRegisterBits();
 
-	uint8_t regy = regBits & 0x7;
-
-	uint8_t regx = regBits >> 3;
-	//ram[rx] = m_registerFile[ry]
-	
-	ram[regx] = m_registerFile[regy];
+	uint32_t regx = scpu_GET_rxPart(regBits);
+	uint32_t regy = regBits & 0x7;
 }
 
 //STR @adr + rx, ry

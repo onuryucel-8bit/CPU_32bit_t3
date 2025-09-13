@@ -37,11 +37,18 @@ void Cpu::run()
 	op_LOADry();
 }
 
+
+/*
+	Returns rx,ry given current opcode modbits
+*/
 uint32_t Cpu::getRegisterBits()
 {
 	uint32_t retVal = 0;
 
-	switch ((scpu_GET_ModBits(m_currentOpcode)) >> 15)
+
+	uint32_t mod = (scpu_GET_ModBits(m_currentOpcode)) >> 15;
+
+	switch (mod)
 	{
 
 	case 0:
@@ -60,6 +67,9 @@ uint32_t Cpu::getRegisterBits()
 	case 4:
 		retVal = scpu_SHIFT_RightRegister((m_currentOpcode & scpu_MASK_RxRy));
 		break;
+
+	default:
+		throw std::runtime_error("Invalid addressing mode");
 	}
 
 	return retVal;

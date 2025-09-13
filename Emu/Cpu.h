@@ -11,7 +11,15 @@
 
 	#define scpu_SHIFT_RightRegister(bits) bits >> 18
 	#define scpu_GET_ModBits(bits) bits & 0x00038000
+
+	#define scpu_GET_rxPart(bits) bits >> 21;
 //END
+
+struct RegPart
+{
+	uint32_t rx = 0;
+	uint32_t ry = 0;
+};
 
 class Cpu
 {
@@ -23,6 +31,8 @@ public:
 
 	int* ram;
 	uint32_t m_registerFile[8] = { 0 };
+
+	int m_stack[256];
 
 private:
 
@@ -94,7 +104,14 @@ private:
 
 	void op_CALL();
 	void op_RET();
-	void op_PUSH();
+
+	/*
+	PUSH rx
+	PUSH @rx
+	PUSH @adr
+	PUSH @adr + rx
+	*/
+	void op_PUSH_rx();
 	void op_POP();
 	//void op_MOV_flag();
 	//void op_MOV_();

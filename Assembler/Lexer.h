@@ -9,7 +9,7 @@
 #include "../LibsLocal/magic_enum/magic_enum.hpp"
 #include "../libsLocal/rang.hpp"
 
-#undef OUT //isim cakismasi var windows.h la galiba?
+#undef OUT // ..rang.hpp/windows.h  name collision
 
 namespace asmc
 {
@@ -21,7 +21,7 @@ namespace asmc
 //decimal  = 255
 enum TokenType
 {
-
+	
 	ENDOFLINE = -1,
 
 	ORIGIN = 0x52,	
@@ -47,12 +47,6 @@ enum TokenType
 	STR,
 	MOV,
 
-	// ???
-	PULL,
-	PFR,
-	CLF,
-	CCF,
-
 	//STACK
 	CALL,
 	RET,
@@ -69,7 +63,7 @@ enum TokenType
 	SHR ,
 		
 	AND ,
-	OR ,
+	OR  ,
 	NOT ,
 	XOR ,
 
@@ -97,6 +91,7 @@ struct Token
 	TokenType m_type = TokenType::EMPTY;
 };
 
+//gereksiz ?
 #define EMPTY_TOKEN { "", asmc::TokenType::EMPTY }
 
 class Lexer
@@ -104,20 +99,23 @@ class Lexer
 public:
 	
 	Lexer(std::string program);
-
-	//sonraki karakteri isaret eder
-	void nextChar();
-	
-	char peek();
-	//0x4f peeks over 'x' returns 4
-	char peekOverX();
 	
 	[[nodiscard]] Token getToken();
 
 	bool getErrorFlag();
-	
+
 
 private:
+
+	void toUpper(std::string& str);
+
+	//sonraki karakteri isaret eder
+	void nextChar();
+
+	char peek();
+	//0x4f peeks over 'x' returns 4
+	char peekOverX();
+
 	//is 0xfa
 	bool isNumberHex();
 	bool isOperand();
@@ -143,6 +141,8 @@ private:
 	[[nodiscard]] asmc::Token lexHexNumberPart();
 	//+,-,@,\n,EOF.... single char
 	[[nodiscard]] asmc::Token lexSingleChar();
+	//keyword, label, jumploc
+	[[nodiscard]] asmc::Token lexWord();
 
 
 	int m_position;
@@ -150,6 +150,8 @@ private:
 	char m_currentChar;
 
 	bool f_error;
+
+	//label check
 	bool f_newline;
 };
 
