@@ -9,7 +9,6 @@
 #include "../LibsLocal/magic_enum/magic_enum.hpp"
 #include "../libsLocal/rang.hpp"
 
-#undef OUT // ..rang.hpp/windows.h  name collision
 
 namespace asmc
 {
@@ -37,8 +36,13 @@ enum TokenType
 	REGISTER,
 	HEXNUMBER,
 	DECNUMBER,
+	
 	ADDRESS,
 	REGADR,
+	ADR_P_REG,
+
+
+	PLUS,
 
 	//Opcodes
 
@@ -80,7 +84,7 @@ enum TokenType
 	JUC ,
 
 	JCT ,
-	JMT ,
+	JCF ,
 	
 	EMPTY
 };
@@ -143,7 +147,8 @@ private:
 	[[nodiscard]] asmc::Token lexSingleChar();
 	//keyword, label, jumploc
 	[[nodiscard]] asmc::Token lexWord();
-
+	//#define, #include
+	[[nodiscard]] asmc::Token lexMacro();
 
 	int m_position;
 	std::string m_program;

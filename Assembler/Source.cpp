@@ -33,8 +33,15 @@ int main()
 	{
 		if (token.m_type != asmc::TokenType::NEWLINE)
 		{
-			std::cout << token.m_text << " | " << magic_enum::enum_name(token.m_type) << "\n";
+			
+			
+			std::cout << token.m_text << " " << magic_enum::enum_name(token.m_type) << "\n";
+			std::cout << "--------------\n";
+			
+			
 		}
+
+		
 
 		token = lexer.getToken();
 		

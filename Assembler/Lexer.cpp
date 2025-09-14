@@ -19,13 +19,46 @@ Token Lexer::getToken()
 	skipWhiteSpace();
 	skipComments();
 	skipNonEssential();
-	
+	//TODO bosluklari es gecme mekanizmasi ekle
+	skipWhiteSpace();
+
+
+	//TODO aciklama satiri icerisinde * olunca hata veriyor duzelt bunu 
+	if (m_currentChar == '/')
+	{
+		if (peek() == '*')
+		{
+			nextChar();//*
+			nextChar();// \n
+			while (m_currentChar != asmc::TokenType::ENDOFLINE && m_currentChar != '*' && peek() != '/')
+			{
+				nextChar();
+			}
+			nextChar();// /
+			nextChar();// \n
+		}
+		else
+		{
+			printError("LEXER::Comment is not defined ::error current char = [" + std::string(1, m_currentChar) + "] current pos[" + std::to_string(m_position) + "]");
+			f_error = true;
+		}
+
+	}
+
+
 	Token token;
 
 	//.origin .db
 	if (m_currentChar == '.')
 	{
 		token = lexDotPart();
+
+		f_newline = false;
+	}
+	//#define, #include
+	else if (m_currentChar == '#')
+	{
+		token = lexMacro();
 
 		f_newline = false;
 	}
@@ -111,7 +144,7 @@ asmc::Token Lexer::lexDotPart()
 	if (checkIfKeyword(tokenStr))
 	{
 		//returns ORIGIN or DB token
-		std::optional<TokenType> enumVal = magic_enum::enum_cast<TokenType>(tokenStr);
+		std::optional<asmc::TokenType> enumVal = magic_enum::enum_cast<asmc::TokenType>(tokenStr);
 		return { tokenStr, enumVal.value() };
 	}
 	
@@ -130,7 +163,7 @@ asmc::Token Lexer::lexRegPart()
 	}
 
 	
-	return { std::string(1,m_currentChar), TokenType::REGISTER };
+	return { std::string(1,m_currentChar), asmc::TokenType::REGISTER };
 }
 
 asmc::Token Lexer::lexHexNumberPart()
@@ -165,17 +198,16 @@ asmc::Token Lexer::lexSingleChar()
 	
 	case '\n':
 		//std::cout << "LEXER newline detected\n";
-		token = { std::string(1,m_currentChar), TokenType::NEWLINE };
+		token = { std::string(1,m_currentChar), asmc::TokenType::NEWLINE };
 		f_newline = true;		
 		break;
 
 		//ADDRESS
-	case '@':
-		//OUT rx, OUT @fa, OUT @rx
+	case '@':		
 
 		nextChar();//move cursor to number OR r
 
-		//OUT @rx
+		
 		if (m_currentChar == 'r')
 		{
 			nextChar();
@@ -192,18 +224,48 @@ asmc::Token Lexer::lexSingleChar()
 			}
 
 			tokenStr = m_program.substr(startPos, length);
-			token = { tokenStr, asmc::TokenType::ADDRESS };
+			
+			//TODO + - arasi bosluklari kabul eden kod yaz
+
+			//peek() == '+' || '-'
+			if (peek() == '+' || peek() == '-')
+			{
+				nextChar();//+
+				tokenStr += m_currentChar;
+				
+				nextChar();//r
+				if (isOperand())
+				{
+					nextChar();//3
+					tokenStr += m_currentChar;
+
+					token = { tokenStr, asmc::TokenType::ADR_P_REG};
+				}
+			}
+			else
+			{
+				token = { tokenStr, asmc::TokenType::ADDRESS };
+			}
+
+			
 		}
 
 
 
 		break;
 
+	case '+':
+		token = { std::string(1,m_currentChar), asmc::TokenType::PLUS};
+		break;
+
+	
+
+
 	case ENDOFLINE:
-		token = { std::string(1,m_currentChar), TokenType::ENDOFLINE };
+		token = { std::string(1,m_currentChar), asmc::TokenType::ENDOFLINE };
 		break;
 	default:
-		printError("LEXER Error current char = [" + std::to_string(m_currentChar) + "] current pos[" + std::to_string(m_position) + "]");
+		printError("LEXER Error current char = [" + std::string(1, m_currentChar) + "] current pos[" + std::to_string(m_position) + "]");
 		f_error = true;
 		return EMPTY_TOKEN;	
 	}
@@ -255,6 +317,13 @@ asmc::Token Lexer::lexWord()
 		}
 
 	}
+
+	return token;
+}
+
+asmc::Token Lexer::lexMacro()
+{
+	Token token;
 
 	return token;
 }
