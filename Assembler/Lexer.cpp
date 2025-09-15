@@ -7,6 +7,7 @@ Lexer::Lexer(std::string program)
 	m_program = program;
 	m_position = -1;
 	m_currentChar = 0;
+	m_lineNumber = 0;
 
 	f_error = false;
 	f_newline = true;
@@ -23,14 +24,14 @@ Token Lexer::getToken()
 	skipWhiteSpace();
 
 
-	//TODO aciklama satiri icerisinde * olunca hata veriyor duzelt bunu 
+	//TODO aciklama satiri icerisinde / olunca hata veriyor duzelt bunu 
 	if (m_currentChar == '/')
 	{
 		if (peek() == '*')
 		{
 			nextChar();//*
 			nextChar();// \n
-			while (m_currentChar != asmc::TokenType::ENDOFLINE && m_currentChar != '*' && peek() != '/')
+			while (m_currentChar != asmc::TokenType::ENDOFLINE && m_currentChar != '/')
 			{
 				nextChar();
 			}
@@ -39,8 +40,8 @@ Token Lexer::getToken()
 		}
 		else
 		{
-			printError("LEXER::Comment is not defined ::error current char = [" + std::string(1, m_currentChar) + "] current pos[" + std::to_string(m_position) + "]");
-			f_error = true;
+			printError("LEXER::Comment is not defined ::error ");
+			
 		}
 
 	}
@@ -87,6 +88,7 @@ Token Lexer::getToken()
 		}			
 		else
 		{			
+			//FIXME ???
 			f_error = true;
 
 		}
@@ -101,7 +103,10 @@ Token Lexer::getToken()
 
 	nextChar();
 
+	m_lastToken = token;
+
 	return token;
+
 }
 
 char Lexer::peek()
@@ -128,6 +133,8 @@ char Lexer::peekOverX()
 
 asmc::Token Lexer::lexDotPart()
 {
+	Token token;
+
 	//get token str
 	int startPos = m_position + 1;
 	int length = 0;
@@ -145,12 +152,15 @@ asmc::Token Lexer::lexDotPart()
 	{
 		//returns ORIGIN or DB token
 		std::optional<asmc::TokenType> enumVal = magic_enum::enum_cast<asmc::TokenType>(tokenStr);
-		return { tokenStr, enumVal.value() };
+		token = { tokenStr, enumVal.value() };
+	}
+	else
+	{
+		f_error = true;
 	}
 	
-	f_error = true;
 
-	return EMPTY_TOKEN;
+	return token;
 }
 
 asmc::Token Lexer::lexRegPart()
@@ -170,19 +180,10 @@ asmc::Token Lexer::lexHexNumberPart()
 {
 	nextChar();//skip 0
 	nextChar();//skip x
+	
+	std::string tokenStr = getSubStr(m_position, 1, std::isxdigit);
 
-	if (!isxdigit(static_cast<uint8_t>(peek())))
-	{
-		std::cout << "ERROR invalid number operand it should be 4bit\n";
-		return EMPTY_TOKEN;
-	}
-
-	//get next hex number part
-	std::string number(1, m_currentChar);
-	nextChar();
-	number += m_currentChar;
-
-	return {number, asmc::TokenType::HEXNUMBER};
+	return {tokenStr, asmc::TokenType::HEXNUMBER};
 }
 
 asmc::Token Lexer::lexSingleChar()
@@ -200,6 +201,7 @@ asmc::Token Lexer::lexSingleChar()
 		//std::cout << "LEXER newline detected\n";
 		token = { std::string(1,m_currentChar), asmc::TokenType::NEWLINE };
 		f_newline = true;		
+		m_lineNumber++;
 		break;
 
 		//ADDRESS
@@ -215,15 +217,8 @@ asmc::Token Lexer::lexSingleChar()
 		}
 		else
 		{
-			startPos = m_position;
-			length = 1;
-			while (std::isxdigit(peek()))
-			{
-				nextChar();
-				length++;
-			}
-
-			tokenStr = m_program.substr(startPos, length);
+			
+			tokenStr = getSubStr(m_position, 1, std::isxdigit);
 			
 			//TODO + - arasi bosluklari kabul eden kod yaz
 
@@ -258,14 +253,38 @@ asmc::Token Lexer::lexSingleChar()
 		token = { std::string(1,m_currentChar), asmc::TokenType::PLUS};
 		break;
 
-	
+	case '$':
+		nextChar();//skip $
 
+		tokenStr = getSubStr(m_position, 1, std::isxdigit);
+
+		token = {tokenStr, asmc::TokenType::DECNUMBER };
+
+		break;
+
+	case '"':
+		nextChar();
+		
+		tokenStr = getSubStr(m_position, 1, std::isalnum);
+
+		nextChar(); 
+
+		token = { tokenStr, asmc::TokenType::STRING};
+		
+		break;
+
+	case '\'':
+		nextChar();
+		token = { std::string(1, m_currentChar), asmc::TokenType::ASCII};
+		nextChar();
+
+		break;
 
 	case ENDOFLINE:
 		token = { std::string(1,m_currentChar), asmc::TokenType::ENDOFLINE };
 		break;
 	default:
-		printError("LEXER Error current char = [" + std::string(1, m_currentChar) + "] current pos[" + std::to_string(m_position) + "]");
+		printError("LEXER Default CASE! ");
 		f_error = true;
 		return EMPTY_TOKEN;	
 	}
@@ -300,7 +319,7 @@ asmc::Token Lexer::lexWord()
 		if (f_newline == true && peek() != ':')
 		{
 			printError("LEXER:: label must end with ':' ");
-			f_error = true;
+			
 		}
 		else if (peek() == ':')
 		{
@@ -311,7 +330,20 @@ asmc::Token Lexer::lexWord()
 		//variable
 		else
 		{
-			token = { tokenStr, TokenType::JUMPLOC };
+			if (m_lastToken.m_type >= asmc::TokenType::JAZ &&
+				m_lastToken.m_type <= asmc::TokenType::JCF)
+			{
+				token = { tokenStr, TokenType::LABEL};
+			}
+			else if (m_lastToken.m_type == asmc::TokenType::FUNC)
+			{
+				token = { tokenStr, asmc::TokenType::FUNC_NAME };
+			}
+			else
+			{
+				token = { tokenStr, TokenType::ID};
+			}
+				
 			//nextChar();
 
 		}
@@ -324,6 +356,22 @@ asmc::Token Lexer::lexWord()
 asmc::Token Lexer::lexMacro()
 {
 	Token token;
+
+	nextChar();
+
+	std::string tokenStr = getSubStr(m_position, 1, std::isalpha);
+
+	toUpper(tokenStr);
+
+	if (checkIfKeyword(tokenStr))
+	{
+		std::optional<TokenType> enumVal = magic_enum::enum_cast<TokenType>(tokenStr);
+		token = { tokenStr, enumVal.value() };
+	}
+	else
+	{
+		printError("macro is not in list");
+	}
 
 	return token;
 }
@@ -408,6 +456,24 @@ void Lexer::skipNonEssential()
 	}
 }
 
+std::string Lexer::getSubStr(int startPos, int length, int (*cmpFunc)(int))
+{
+
+	//startPos = m_position;
+	//length = 1;
+	while (cmpFunc(peek()))
+	{
+		nextChar();
+		length++;
+	}
+
+	std::string tokenStr = m_program.substr(startPos, length);
+
+	toUpper(tokenStr);
+
+	return tokenStr;
+}
+
 void Lexer::toUpper(std::string& str)
 {
 	for (size_t i = 0; i < str.length(); i++)
@@ -428,6 +494,11 @@ void Lexer::nextChar()
 	{
 		m_currentChar = m_program[m_position];
 	}
+
+	if (m_currentChar == '\n')
+	{
+		m_lineNumber++;
+	}
 }
 
 //--------------------------------------------//
@@ -438,9 +509,12 @@ void Lexer::printError(std::string message)
 {
 	std::cout << rang::fg::red
 		<< "ERROR::" << message
-		//<< " line number = " << m_lineNumber
-		//<< " next and peek Token [" << m_currentToken.m_text << " " << m_peekToken.m_text
+		<< "current char[" << std::string(1, m_currentChar) <<"] "
+		<< "current pos [" << std::to_string(m_position) << "] "
+		<< "line number [" << m_lineNumber <<"]"
 		<< rang::style::reset << "\n";
+
+	f_error = true;
 }
 
 bool Lexer::getErrorFlag()

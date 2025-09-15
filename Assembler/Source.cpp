@@ -7,7 +7,7 @@
 
 std::string readFile()
 {
-	std::fstream file("program.txt");
+	std::fstream file("main.asm");
 
 	if (!file.is_open())
 	{
@@ -21,6 +21,15 @@ std::string readFile()
 
 	return ss.str();
 }
+
+//std::vector<FileData> inputStream;
+//
+//struct FileData
+//{
+//	int id;
+//	std::string path;
+//	int hashcode;
+//};
 
 int main()
 {

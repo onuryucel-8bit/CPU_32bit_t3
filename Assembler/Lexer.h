@@ -26,16 +26,18 @@ enum TokenType
 	ORIGIN = 0x52,	
 	DB,	//define byte
 	NEWLINE,
+
+	INCLUDE,
 	DEFINE,
-
-
+	ID,
 	LABEL ,
-	JUMPLOC ,
 
 	//Operands
 	REGISTER,
 	HEXNUMBER,
 	DECNUMBER,
+	ASCII,
+	STRING,
 	
 	ADDRESS,
 	REGADR,
@@ -43,6 +45,7 @@ enum TokenType
 
 
 	PLUS,
+	
 
 	//Opcodes
 
@@ -57,6 +60,8 @@ enum TokenType
 	PUSH,
 	POP,
 
+	FUNC,
+	FUNC_NAME,
 			
 	//ALU
 	ADD ,
@@ -133,11 +138,13 @@ private:
 	//skip ',' '\n'
 	void skipNonEssential();
 
+	//returns sub part of m_program
+	std::string getSubStr(int startPos, int length ,int (*cmpFunc)(int));
+
 	//str token enum icerisinde tanimlimi
 	bool checkIfKeyword(std::string token);
 
-	//.ORIGIN .DB
-	
+	//.ORIGIN .DB	
 	[[nodiscard]] asmc::Token lexDotPart();
 	//rx	
 	[[nodiscard]] asmc::Token lexRegPart();
@@ -150,9 +157,13 @@ private:
 	//#define, #include
 	[[nodiscard]] asmc::Token lexMacro();
 
+
+	size_t m_lineNumber;
 	int m_position;
 	std::string m_program;
 	char m_currentChar;
+
+	asmc::Token m_lastToken;
 
 	bool f_error;
 
