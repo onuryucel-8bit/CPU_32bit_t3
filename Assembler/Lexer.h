@@ -122,8 +122,6 @@ private:
 	void nextChar();
 
 	char peek();
-	//0x4f peeks over 'x' returns 4
-	char peekOverX();
 
 	//is 0xfa
 	bool isNumberHex();
@@ -137,6 +135,7 @@ private:
 	void skipComments();
 	//skip ',' '\n'
 	void skipNonEssential();
+
 
 	//returns sub part of m_program
 	std::string getSubStr(int startPos, int length ,int (*cmpFunc)(int));

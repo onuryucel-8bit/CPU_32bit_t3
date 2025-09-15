@@ -3,4 +3,4 @@
 	AssemblerV4
 */
 
-*
+LOAD r0, 0x60f

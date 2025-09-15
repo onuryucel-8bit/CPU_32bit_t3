@@ -4,6 +4,8 @@
 #include <sstream>
 
 #include "Lexer.h"
+#include "Parser.h"
+
 
 std::string readFile()
 {
@@ -34,7 +36,7 @@ std::string readFile()
 int main()
 {
 	asmc::Lexer lexer(readFile());
-	
+
 	asmc::Token token = lexer.getToken();
 
 	while (token.m_type != asmc::TokenType::ENDOFLINE &&
@@ -42,19 +44,20 @@ int main()
 	{
 		if (token.m_type != asmc::TokenType::NEWLINE)
 		{
-			
-			
+
+
 			std::cout << token.m_text << " " << magic_enum::enum_name(token.m_type) << "\n";
 			std::cout << "--------------\n";
-			
-			
+
+
 		}
 
-		
+
 
 		token = lexer.getToken();
-		
+
 	}
+
 
 }
 

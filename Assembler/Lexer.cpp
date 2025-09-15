@@ -24,29 +24,6 @@ Token Lexer::getToken()
 	skipWhiteSpace();
 
 
-	//TODO aciklama satiri icerisinde / olunca hata veriyor duzelt bunu 
-	if (m_currentChar == '/')
-	{
-		if (peek() == '*')
-		{
-			nextChar();//*
-			nextChar();// \n
-			while (m_currentChar != asmc::TokenType::ENDOFLINE && m_currentChar != '/')
-			{
-				nextChar();
-			}
-			nextChar();// /
-			nextChar();// \n
-		}
-		else
-		{
-			printError("LEXER::Comment is not defined ::error ");
-			
-		}
-
-	}
-
-
 	Token token;
 
 	//.origin .db
@@ -106,7 +83,6 @@ Token Lexer::getToken()
 	m_lastToken = token;
 
 	return token;
-
 }
 
 char Lexer::peek()
@@ -394,7 +370,19 @@ bool Lexer::checkIfKeyword(std::string token)
 //is 0xfa
 bool Lexer::isNumberHex()
 {
-	if (m_currentChar == '0' && peek() == 'x' && std::isxdigit(static_cast<uint8_t>(peekOverX())))
+	char peekoverX;
+
+	if (m_position + 2 >= m_program.length())
+	{
+		peekoverX = ENDOFLINE;
+	}
+	else
+	{
+		peekoverX = m_program[m_position + 2];
+	}
+	
+
+	if (m_currentChar == '0' && peek() == 'x' && std::isxdigit(static_cast<uint8_t>(peekoverX)))
 	{
 		return true;
 	}
@@ -431,6 +419,28 @@ void Lexer::skipComments()
 			nextChar();
 		}
 		f_newline = true;
+	}
+
+	//TODO aciklama satiri icerisinde / olunca hata veriyor duzelt bunu 
+	if (m_currentChar == '/')
+	{
+		if (peek() == '*')
+		{
+			nextChar();//*
+			nextChar();// \n
+			while (m_currentChar != asmc::TokenType::ENDOFLINE && m_currentChar != '/')
+			{
+				nextChar();
+			}
+			nextChar();// /
+			nextChar();// \n
+		}
+		else
+		{
+			printError("LEXER::Comment is not defined ::error ");
+
+		}
+
 	}
 }
 
