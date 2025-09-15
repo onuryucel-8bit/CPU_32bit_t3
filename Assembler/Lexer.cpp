@@ -94,33 +94,15 @@ char Lexer::peek()
 	return m_program[m_position + 1];
 }
 
-char Lexer::peekOverX()
-{
-	if (m_position + 2 >= m_program.length())
-	{
-		return ENDOFLINE;
-	}
-	return m_program[m_position + 2];
-}
-
 //--------------------------------------------//
 //--------------------------------------------//
 //--------------------------------------------//
 
 asmc::Token Lexer::lexDotPart()
 {
-	Token token;
+	asmc::Token token;
 
-	//get token str
-	int startPos = m_position + 1;
-	int length = 0;
-	while (std::isalpha(peek()))
-	{
-		nextChar();
-		length++;
-	}
-
-	std::string tokenStr = m_program.substr(startPos, length);
+	std::string tokenStr = getSubStr(m_position + 1, 0, std::isalpha);
 
 	toUpper(tokenStr);
 
@@ -141,25 +123,31 @@ asmc::Token Lexer::lexDotPart()
 
 asmc::Token Lexer::lexRegPart()
 {	
+	asmc::Token token;
+
 	nextChar();
 	if (isxdigit(static_cast<uint8_t>(peek())))
 	{
 		std::cout << "ERROR invalid reg operand it should be r[0-7]\n";
-		return EMPTY_TOKEN;
+
+		//empty token
+		return token;
 	}
 
 	
-	return { std::string(1,m_currentChar), asmc::TokenType::REGISTER };
+	return token = { std::string(1,m_currentChar), asmc::TokenType::REGISTER };
 }
 
 asmc::Token Lexer::lexHexNumberPart()
 {
+	asmc::Token token;
+
 	nextChar();//skip 0
 	nextChar();//skip x
 	
 	std::string tokenStr = getSubStr(m_position, 1, std::isxdigit);
 
-	return {tokenStr, asmc::TokenType::HEXNUMBER};
+	return token = {tokenStr, asmc::TokenType::HEXNUMBER};
 }
 
 asmc::Token Lexer::lexSingleChar()
@@ -271,16 +259,8 @@ asmc::Token Lexer::lexSingleChar()
 asmc::Token Lexer::lexWord()
 {
 	asmc::Token token;
-
-	int startPos = m_position;
-	int length = 1;
-	while (std::isalpha(peek()))
-	{
-		nextChar();
-		length++;
-	}
-
-	std::string tokenStr = m_program.substr(startPos, length);
+	
+	std::string tokenStr = getSubStr(m_position, 1, std::isalpha);
 
 	toUpper(tokenStr);
 
@@ -331,7 +311,7 @@ asmc::Token Lexer::lexWord()
 
 asmc::Token Lexer::lexMacro()
 {
-	Token token;
+	asmc::Token token;
 
 	nextChar();
 
