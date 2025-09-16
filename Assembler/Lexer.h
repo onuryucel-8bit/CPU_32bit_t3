@@ -16,8 +16,13 @@ namespace asmc
 //address = @ff
 //regAdr = @r4
 //register = r4
+//adr_p_reg = "@ff+r3"
+
 //hexnumber = 0xfa
-//decimal  = 255
+//decimal  = $255
+//ascii = 'a'
+//string = "abcde"
+
 enum TokenType
 {
 	

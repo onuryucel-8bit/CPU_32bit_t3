@@ -37,27 +37,9 @@ int main()
 {
 	asmc::Lexer lexer(readFile());
 
-	asmc::Token token = lexer.getToken();
+	asmc::Parser parser(lexer);
 
-	while (token.m_type != asmc::TokenType::ENDOFLINE &&
-		token.m_type != asmc::TokenType::EMPTY)
-	{
-		if (token.m_type != asmc::TokenType::NEWLINE)
-		{
-
-
-			std::cout << token.m_text << " " << magic_enum::enum_name(token.m_type) << "\n";
-			std::cout << "--------------\n";
-
-
-		}
-
-
-
-		token = lexer.getToken();
-
-	}
-
+	parser.run();
 
 }
 

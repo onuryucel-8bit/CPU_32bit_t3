@@ -154,8 +154,6 @@ asmc::Token Lexer::lexSingleChar()
 {
 	asmc::Token token;
 
-	int startPos;
-	int length;
 	std::string tokenStr;
 
 	switch (m_currentChar)
@@ -286,7 +284,7 @@ asmc::Token Lexer::lexWord()
 		//variable
 		else
 		{
-			if (m_lastToken.m_type >= asmc::TokenType::JAZ &&
+			if (m_lastToken.m_type >= asmc::TokenType::JMP &&
 				m_lastToken.m_type <= asmc::TokenType::JCF)
 			{
 				token = { tokenStr, TokenType::LABEL};
@@ -448,9 +446,6 @@ void Lexer::skipNonEssential()
 
 std::string Lexer::getSubStr(int startPos, int length, int (*cmpFunc)(int))
 {
-
-	//startPos = m_position;
-	//length = 1;
 	while (cmpFunc(peek()))
 	{
 		nextChar();
@@ -485,6 +480,7 @@ void Lexer::nextChar()
 		m_currentChar = m_program[m_position];
 	}
 
+	//for printError
 	if (m_currentChar == '\n')
 	{
 		m_lineNumber++;
