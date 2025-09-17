@@ -3,11 +3,8 @@
 	AssemblerV4
 */
 
-main:
-	LOAD r1, 0x5
-	LOAD r2, 0x2
-	ADD r1, r2
-	STR @ff, r1
+.ascii a,b,c,d,e
+.text hello world
 
-	JMP main
+
 
