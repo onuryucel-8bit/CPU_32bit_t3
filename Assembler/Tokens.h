@@ -16,30 +16,6 @@ namespace asmc
 
 		ENDOFLINE = -1,
 
-		ORIGIN = 0x52,
-		DB,	//define byte
-		NEWLINE,
-
-		INCLUDE,
-		DEFINE,
-		ID,
-		LABEL,
-
-		//Operands
-		REGISTER,
-		HEXNUMBER,
-		DECNUMBER,
-		ASCII,
-		STRING,
-
-		ADDRESS,
-		REGADR,
-		ADR_P_REG,
-
-
-		PLUS,
-
-
 		//Opcodes
 
 		//REG - RAM
@@ -84,6 +60,28 @@ namespace asmc
 		JCT,
 		JCF,
 
-		EMPTY
+		EMPTY,
+		LABEL,
+
+		ORIGIN,
+		DB,	//define byte
+		NEWLINE,
+
+		INCLUDE,
+		DEFINE,
+		ID,
+		
+		//Operands
+		REGISTER,
+		HEXNUMBER,
+		DECNUMBER,
+		ASCII,
+		STRING,
+
+		ADDRESS,
+		REGADR,
+		ADR_P_REG,
+
+		PLUS,
 	};
 }

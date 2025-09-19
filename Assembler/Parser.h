@@ -96,7 +96,7 @@ private:
 
 	using funcPtr = void (asmc::Parser::*)();
 
-	funcPtr m_parserFuncs[10];
+	funcPtr m_parserFuncs[32];
 	
 	std::string m_lastFuncName;
 
@@ -112,14 +112,44 @@ private:
 	*	output.push_back(opcode_val);
 	*/
 	//-----------parseX()--------------//
+	
 	void parseLOAD();
+	void parseMOV();
+
+
 	void parseADD();
+	void parseSUB();
+	void parseDIV();
+	void parseMUL();
+	void parseSHL();
+	void parseSHR();
+	void parseAND();
+	void parseOR();
+	void parseXOR();
+	void parseNOT();
+	void parseCMP();
+
+	void parsePUSH();
+	void parsePOP();
+
+
+
 	void parseSTR();
 	void parseLabel();
 	void parseJMP();
 	void parseCALL();
 	void parseFUNC();
 	void parseRET();
+
+
+	void parseJAZ();
+	void parseJLZ();
+	void parseJGZ();
+	void parseJSC();
+	void parseJUC();
+	void parseJCT();
+	void parseJCF();
+
 };
 
 }

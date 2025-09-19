@@ -12,8 +12,43 @@ Parser::Parser(asmc::Lexer& lexer)
 
 	m_lineNumber = 0;
 
-	m_parserFuncs[0x1] = &asmc::Parser::parseLOAD;
-	m_parserFuncs[0x2] = &asmc::Parser::parseSTR;
+	//REG - RAM
+	m_parserFuncs[asmc::TokenType::LOAD] = &asmc::Parser::parseLOAD;
+	m_parserFuncs[asmc::TokenType::STR] = &asmc::Parser::parseSTR;
+	m_parserFuncs[asmc::TokenType::MOV] = &asmc::Parser::parseMOV;
+
+	//STACK
+	m_parserFuncs[asmc::TokenType::CALL] = &asmc::Parser::parseCALL;
+	m_parserFuncs[asmc::TokenType::RET] = &asmc::Parser::parseRET;
+	m_parserFuncs[asmc::TokenType::PUSH] = &asmc::Parser::parsePUSH;
+	m_parserFuncs[asmc::TokenType::POP] = &asmc::Parser::parsePOP;
+	m_parserFuncs[asmc::TokenType::FUNC] = &asmc::Parser::parseFUNC;
+
+	//ALU
+	m_parserFuncs[asmc::TokenType::ADD] = &asmc::Parser::parseADD;
+	m_parserFuncs[asmc::TokenType::SUB] = &asmc::Parser::parseSUB;
+	m_parserFuncs[asmc::TokenType::MUL] = &asmc::Parser::parseMUL;
+	m_parserFuncs[asmc::TokenType::DIV] = &asmc::Parser::parseDIV;
+	m_parserFuncs[asmc::TokenType::SHL] = &asmc::Parser::parseSHL;
+	m_parserFuncs[asmc::TokenType::SHR] = &asmc::Parser::parseSHR;
+
+	m_parserFuncs[asmc::TokenType::AND] = &asmc::Parser::parseAND;
+	m_parserFuncs[asmc::TokenType::OR] = &asmc::Parser::parseOR;
+	m_parserFuncs[asmc::TokenType::NOT] = &asmc::Parser::parseNOT;
+	m_parserFuncs[asmc::TokenType::XOR] = &asmc::Parser::parseXOR;
+
+	m_parserFuncs[asmc::TokenType::CMP] = &asmc::Parser::parseCMP;
+
+	//JUMP
+	m_parserFuncs[asmc::TokenType::JMP] = &asmc::Parser::parseJMP;
+	m_parserFuncs[asmc::TokenType::JAZ] = &asmc::Parser::parseJAZ;
+	m_parserFuncs[asmc::TokenType::JLZ] = &asmc::Parser::parseJLZ;
+	m_parserFuncs[asmc::TokenType::JGZ] = &asmc::Parser::parseJGZ;
+	m_parserFuncs[asmc::TokenType::JSC] = &asmc::Parser::parseJSC;
+	m_parserFuncs[asmc::TokenType::JUC] = &asmc::Parser::parseJUC;
+	m_parserFuncs[asmc::TokenType::JCT] = &asmc::Parser::parseJCT;
+	m_parserFuncs[asmc::TokenType::JCF] = &asmc::Parser::parseJCF;
+
 }
 
 Parser::~Parser()
@@ -159,50 +194,20 @@ void Parser::printWarning(std::string message)
 
 void Parser::program()
 {
-
-	m_parserFuncs[m_currentToken.m_type];
-
-	switch (m_currentToken.m_type)
+	if (m_currentToken.m_type >= asmc::TokenType::LABEL)
 	{
-	case asmc::TokenType::LOAD:
-		parseLOAD();
-		break;
-
-	case asmc::TokenType::ADD:
-		parseADD();
-		break;
-
-	case asmc::TokenType::STR:
-		parseSTR();
-		break;
-
-	case asmc::TokenType::LABEL:
-		parseLabel();
-		break;
-
-	case asmc::TokenType::JMP:
-		parseJMP();
-		break;
-
-	case asmc::TokenType::CALL:
-		parseCALL();
-		break;
-
-	case asmc::TokenType::FUNC:
-		parseFUNC();
-		break;
-
-	case asmc::TokenType::RET:
-		parseRET();
-		break;
-
-	case asmc::TokenType::EMPTY:
-		break;
-
-	default:
 		printError("Undefined token");
-		break;
 	}
+	else
+	{
+
+#pragma warning(disable: C33010)
+		(this->*m_parserFuncs[m_currentToken.m_type])();
+#pragma warning(default: C33010)
+
+
+	}
+	
 }
 
 void Parser::parseLOAD()
@@ -291,6 +296,10 @@ void Parser::parseLOAD()
 
 }
 
+void Parser::parseMOV()
+{
+}
+
 void Parser::parseADD()
 {
 	if (m_peekToken.m_type != asmc::TokenType::REGISTER)
@@ -330,6 +339,54 @@ void Parser::parseADD()
 	
 	//printBinHex(memlay.m_opcode, 0);
 
+}
+
+void Parser::parseSUB()
+{
+}
+
+void Parser::parseDIV()
+{
+}
+
+void Parser::parseMUL()
+{
+}
+
+void Parser::parseSHL()
+{
+}
+
+void Parser::parseSHR()
+{
+}
+
+void Parser::parseAND()
+{
+}
+
+void Parser::parseOR()
+{
+}
+
+void Parser::parseXOR()
+{
+}
+
+void Parser::parseNOT()
+{
+}
+
+void Parser::parseCMP()
+{
+}
+
+void Parser::parsePUSH()
+{
+}
+
+void Parser::parsePOP()
+{
 }
 
 void Parser::parseSTR()
@@ -506,5 +563,35 @@ void Parser::parseRET()
 	
 
 }
+
+void Parser::parseJAZ()
+{
+}
+
+void Parser::parseJLZ()
+{
+}
+
+void Parser::parseJGZ()
+{
+}
+
+void Parser::parseJSC()
+{
+}
+
+void Parser::parseJUC()
+{
+}
+
+void Parser::parseJCT()
+{
+}
+
+void Parser::parseJCF()
+{
+}
+
+
 
 }

@@ -4,5 +4,5 @@
 */
 
 
-LOAD r0,@r5
+LOAD r0,0x56
 	
