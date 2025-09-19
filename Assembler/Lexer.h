@@ -35,6 +35,7 @@ public:
 
 	bool getErrorFlag();
 
+	size_t m_lineNumber;
 
 private:
 
@@ -79,17 +80,17 @@ private:
 	[[nodiscard]] asmc::Token lexMacro();
 
 
-	size_t m_lineNumber;
+	
 	int m_position;
-	std::string m_program;
 	char m_currentChar;
+	bool f_error;
+	bool f_newline;
 
+	std::string m_program;
 	asmc::Token m_lastToken;
 
-	bool f_error;
 
 	//label check
-	bool f_newline;
 };
 
 }

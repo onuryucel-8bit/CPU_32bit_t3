@@ -1,0 +1,95 @@
+//degiskenler
+LET x;
+LET x = 5;
+LET x = 3.14;
+------
+LET x = 4;
+LET y;
+y = x;
+
+------Char-----
+LET x = 'a'; //x a harfinin onaltilik karsiligi tutar
+
+------Str------
+LET* x = "abcdef" //x "abcdef" yazisinin baslangic adresini tutar
+
+//islemler
+LET x = 4;
+x = x + 1;
+x = x - 1;
+x = x * 1;
+x = x / 1;
+x = x % 1;
+x = x ^ 1;
+
+//bool degeri C tipi
+LET x = 1; //true
+LET x = 2; //true
+LET x = 0; //false
+//C deki gibi #define icinde true ve false degerleri tutulacak 
+#define true 1
+#define false 0
+
+//kosullar
+
+x == y
+x != y
+x <= y
+x >= y 
+x < y 
+x > y
+!x
+----------
+IF x >= y THEN
+	x = x + 1;
+END
+----------
+IF x >= y THEN
+	
+	x = x + 1;	
+ELSE	
+	x = 0;
+END
+----------
+IF x == y THEN
+	x = 0
+	
+ELIF x != y THEN
+	x = 1
+	
+ELSE
+	x = 0
+	
+END
+
+//donguler
+
+WHILE x < 0 THEN
+	
+	y = y + 1;
+
+	x = x - 1;
+END
+
+//fonksiyonlar ????
+
+FUNC toplama()
+	x = x + 1
+END
+
+//diziler
+LET dizi[5];
+LET dizi[5] = {1,2,3,4,5};
+LET dizi[] = {1,2,3,4,5};
+LET dizi[];//HATA
+
+//cikti
+PRINT ("adwaf");
+
+LET x = 10;
+PRINT (x);
+
+LET x;
+x = READ ();//???
+//girdi string ise isaretci... olmasi lazim
+//eger sayi ise hmmm

@@ -14,6 +14,23 @@
 
 #define PARSER_TEST_FUNCS
 
+//MOD bits
+//ozel bitler
+
+#define asmc_MOD_Empty 0
+#define asmc_MOD_Number 1
+//@adr
+#define asmc_MOD_Adr 2
+//@ry
+#define asmc_MOD_RegAdr 3
+//@adr + ry
+#define asmc_MOD_Adr_P_Reg 4
+//rx, ry
+#define asmc_MOD_Rx_Ry
+
+#define asmc_CombineMODBits(opcode, modBits) (opcode | (modBits << 15)) 
+
+
 namespace asmc
 {
 
@@ -22,7 +39,9 @@ enum class LabelStatus
 {
 	Used,
 	NotUsed,
-	Undefined
+	Undefined,
+	Called_Noc,
+	Called
 };
 
 struct symbolInfo
@@ -52,11 +71,12 @@ private:
 	
 	void checkTables();
 
-	void printError(std::string& message);
-	void printWarning(std::string& message);
+	void printError(std::string message);
+	void printWarning(std::string message);
 
 #ifdef PARSER_TEST_FUNCS
 	void printBinHex(std::bitset<32> opcode, std::bitset<32> operand);
+	void printCurrentPeekToken();
 #endif // PARSER_TEST_FUNCS
 
 	int m_ramLocation;
@@ -68,10 +88,18 @@ private:
 	asmc::Token m_peekToken;
 
 	std::unordered_map<std::string, asmc::symbolInfo> m_symbolTable;
+
 	std::unordered_map<std::string, asmc::MemoryLayout> m_jumpTable;
 
 
 	std::vector<asmc::MemoryLayout> m_output;
+
+	using funcPtr = void (asmc::Parser::*)();
+
+	funcPtr m_parserFuncs[10];
+	
+	std::string m_lastFuncName;
+
 	/*
 	*	opcode = opcode_HEX_VAL;
 	*	
@@ -89,6 +117,9 @@ private:
 	void parseSTR();
 	void parseLabel();
 	void parseJMP();
+	void parseCALL();
+	void parseFUNC();
+	void parseRET();
 };
 
 }

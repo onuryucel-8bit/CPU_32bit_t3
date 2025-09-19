@@ -163,7 +163,7 @@ asmc::Token Lexer::lexSingleChar()
 		//std::cout << "LEXER newline detected\n";
 		token = { std::string(1,m_currentChar), asmc::TokenType::NEWLINE };
 		f_newline = true;		
-		m_lineNumber++;
+		
 		break;
 
 		//ADDRESS
@@ -247,8 +247,8 @@ asmc::Token Lexer::lexSingleChar()
 		break;
 	default:
 		printError("LEXER Default CASE! ");
-		f_error = true;
-		return EMPTY_TOKEN;	
+		//f_error = true;
+		break;
 	}
 
 	return token;
@@ -493,12 +493,13 @@ void Lexer::nextChar()
 
 void Lexer::printError(std::string message)
 {
-	std::cout << rang::fg::red
+	std::cout 
+		<< rang::fg::red
 		<< "ERROR::" << message
 		<< "current char[" << std::string(1, m_currentChar) <<"] "
 		<< "current pos [" << std::to_string(m_position) << "] "
 		<< "line number [" << m_lineNumber <<"]"
-		<< rang::style::reset << "\n";
+	<< rang::style::reset << "\n";
 
 	f_error = true;
 }

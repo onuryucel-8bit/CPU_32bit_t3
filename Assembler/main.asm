@@ -3,8 +3,6 @@
 	AssemblerV4
 */
 
-.ascii a,b,c,d,e
-.text hello world
 
-
-
+LOAD r0,@r5
+	

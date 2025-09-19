@@ -11,6 +11,9 @@ Parser::Parser(asmc::Lexer& lexer)
 	m_ramLocation = 0;
 
 	m_lineNumber = 0;
+
+	m_parserFuncs[0x1] = &asmc::Parser::parseLOAD;
+	m_parserFuncs[0x2] = &asmc::Parser::parseSTR;
 }
 
 Parser::~Parser()
@@ -27,10 +30,28 @@ void Parser::moveCurrentToken()
 #ifdef PARSER_TEST_FUNCS
 void Parser::printBinHex(std::bitset<32> opcode, std::bitset<32> operand)
 {
-	/*std::cout << opcode << " : " << std::hex << opcode.to_ulong() << "\n"
-			  << operand << " : " << operand.to_ulong() << "\n";
+	std::cout 
+		<< opcode << " : " << std::hex << opcode.to_ulong() << "\n"
+		<< operand << " : " << operand.to_ulong() << "\n"
+		<< "m_currentToken.text[" << m_currentToken.m_text <<"]"
+	<< "\n";
 		
-	std::cout << std::dec;*/
+	std::cout << std::dec;
+}
+
+void Parser::printCurrentPeekToken()
+{
+	std::cout 
+		<< "m_currentToken.text[" << m_currentToken.m_text << "]"
+		<< "m_currentToken.type[" << magic_enum::enum_name(m_currentToken.m_type) << "]"
+		<<"\n"
+		<< "m_peekToken.text[" << m_peekToken.m_text << "]"
+		<< "m_peekToken.type[" << magic_enum::enum_name(m_peekToken.m_type)<< "]"
+	<< "\n";
+
+	
+
+	std::cout << std::dec;
 }
 
 #endif // PARSER_TEST_FUNCS
@@ -39,8 +60,7 @@ void Parser::run()
 {
 	
 
-	while (m_currentToken.m_type != asmc::TokenType::ENDOFLINE &&
-		m_currentToken.m_type != asmc::TokenType::EMPTY)
+	while (m_currentToken.m_type != asmc::TokenType::ENDOFLINE)
 	{
 		if (m_currentToken.m_type != asmc::TokenType::NEWLINE)
 		{	
@@ -48,9 +68,9 @@ void Parser::run()
 			//std::cout << m_currentToken.m_text <<" " << magic_enum::enum_name(m_currentToken.m_type) << "\n";
 			program();
 
-			m_lineNumber;
+			
 		}
-
+		
 		moveCurrentToken();
 
 	}
@@ -82,12 +102,18 @@ void Parser::checkTables()
 
 	for (const auto& [key, value] : m_symbolTable)
 	{
-		if (value.m_status == LabelStatus::Undefined)
+		if (value.m_status == asmc::LabelStatus::Undefined)
 		{
 			//printError("Undefined label [" + key + "] line number [test]");
 			//return;
+
+			std::cout << "undefined label/func\n";
 		}
-		else if (value.m_status == LabelStatus::NotUsed)
+		else if (value.m_status == asmc::LabelStatus::Called_Noc)
+		{
+			std::cout << "hata RET yok\n";
+		}
+		else if (value.m_status == asmc::LabelStatus::NotUsed)
 		{
 			//printWarning("Not used label[" + key + "]");
 
@@ -99,14 +125,16 @@ void Parser::checkTables()
 					//combine label address with jmp instructions
 					//std::cout << "ramIndex " << value.m_ramIndex << "\n";
 					m_jumpTable[labelName].m_secondPart = value.m_ramIndex;
-					m_symbolTable[key].m_status = LabelStatus::Used;
+					m_symbolTable[key].m_status = asmc::LabelStatus::Used;
 
 					//m_output.push_back(m_jumpTable[labelName]);
 				}
 			}
 
+
+
 			//for warning
-			if (value.m_status == LabelStatus::NotUsed)
+			if (value.m_status == asmc::LabelStatus::NotUsed)
 			{
 				//printWarning("Label not used[" + key + "]");
 			}
@@ -114,16 +142,26 @@ void Parser::checkTables()
 	}
 }
 
-void Parser::printError(std::string& message)
+void Parser::printError(std::string message)
 {
+	std::cout << rang::fg::red
+			  << "ERROR::Parser:: " << message 
+			  << " line number [" << m_lexer.m_lineNumber << "]"
+			  << " currentToken[" << m_currentToken.m_text <<"]"
+			  << " type	[" << magic_enum::enum_name(m_currentToken.m_type) << "]"
+			  << rang::style::reset
+			  << "\n";
 }
 
-void Parser::printWarning(std::string& message)
+void Parser::printWarning(std::string message)
 {
 }
 
 void Parser::program()
 {
+
+	m_parserFuncs[m_currentToken.m_type];
+
 	switch (m_currentToken.m_type)
 	{
 	case asmc::TokenType::LOAD:
@@ -146,8 +184,23 @@ void Parser::program()
 		parseJMP();
 		break;
 
+	case asmc::TokenType::CALL:
+		parseCALL();
+		break;
+
+	case asmc::TokenType::FUNC:
+		parseFUNC();
+		break;
+
+	case asmc::TokenType::RET:
+		parseRET();
+		break;
+
+	case asmc::TokenType::EMPTY:
+		break;
+
 	default:
-		std::cout << rang::fg::red << "undefined token"<< rang::style::reset <<"\n";
+		printError("Undefined token");
 		break;
 	}
 }
@@ -173,15 +226,63 @@ void Parser::parseLOAD()
 
 	MemoryLayout memlay;
 
+	memlay = { opcode, 0};
+
+	uint32_t rx;
+
 	switch (m_currentToken.m_type)
 	{
 		case asmc::TokenType::HEXNUMBER:
+			
+				opcode = asmc_CombineMODBits(opcode, asmc_MOD_Number);
 
-			opcode = opcode | (1 << 15);
-			memlay = { opcode, rdx::hexToDec(m_currentToken.m_text)};
+				memlay.m_secondPart = rdx::hexToDec(m_currentToken.m_text);
 
-			m_ramLocation += 2;
-		break;
+				m_ramLocation += 2;
+			break;
+
+		case asmc::TokenType::ADDRESS:
+
+				opcode = asmc_CombineMODBits(opcode, asmc_MOD_Adr);
+			
+				memlay.m_secondPart = rdx::hexToDec(m_currentToken.m_text);
+
+				m_ramLocation += 2;
+			break;
+
+		case asmc::TokenType::REGADR:
+				
+				rx = opcode & 0x00ff'0000;//get rx part
+				opcode = opcode & 0xff00'0000;//clear regx part
+
+				opcode = opcode | (rx << 3);//shift rx part to left
+
+				opcode = opcode | (rdx::hexToDec(m_currentToken.m_text) << 18);//get ry part shift left
+
+				opcode = asmc_CombineMODBits(opcode, asmc_MOD_RegAdr);//insert mod bits
+
+				memlay.m_opcode = opcode;
+
+				m_ramLocation += 1;
+			break;
+
+		case asmc::TokenType::ADR_P_REG:
+				
+				//TODO substr
+				
+				/*
+					adrPart = substrFunc();
+					regPart = substrFunc();
+
+
+				*/
+				
+				opcode = asmc_CombineMODBits(opcode, asmc_MOD_Adr_P_Reg);
+
+				memlay.m_secondPart = rdx::hexToDec(m_currentToken.m_text);
+
+				m_ramLocation += 2;
+			break;
 	}
 
 	
@@ -227,7 +328,7 @@ void Parser::parseADD()
 		break;
 	}
 	
-	printBinHex(memlay.m_opcode, 0);
+	//printBinHex(memlay.m_opcode, 0);
 
 }
 
@@ -268,7 +369,7 @@ void Parser::parseSTR()
 		break;
 	}
 
-	printBinHex(memlay.m_opcode, memlay.m_secondPart);
+	//printBinHex(memlay.m_opcode, memlay.m_secondPart);
 
 }
 
@@ -330,6 +431,80 @@ void Parser::parseJMP()
 	}
 
 	m_ramLocation += 2;
+}
+
+void Parser::parseCALL()
+{
+	if (m_peekToken.m_type != asmc::TokenType::ID)
+	{
+		std::cout << "parse CALL hata\n";
+	}
+
+	uint32_t opcode = 0xff;
+
+	opcode <<= 24;
+
+	moveCurrentToken();
+
+	if (!m_symbolTable.contains(m_currentToken.m_text))
+	{
+		m_symbolTable[m_currentToken.m_text] = { -1, LabelStatus::Undefined };
+
+		m_jumpTable[m_currentToken.m_text] =
+		{
+			.m_opcode = opcode,
+			.m_secondPart = 0
+
+		};
+
+		
+	}
+
+	m_ramLocation += 2;
+
+}
+
+void Parser::parseFUNC()
+{
+	//printCurrentPeekToken();
+
+	if (m_peekToken.m_type != asmc::TokenType::FUNC_NAME)
+	{
+		std::cout << "parse FUNC hata\n";
+	}
+
+	moveCurrentToken();
+
+	if (m_symbolTable.contains(m_currentToken.m_text))
+	{
+		m_symbolTable[m_currentToken.m_text].m_ramIndex = m_ramLocation;
+		m_symbolTable[m_currentToken.m_text].m_status = asmc::LabelStatus::Called_Noc;
+		
+	}
+
+	m_lastFuncName = m_currentToken.m_text;
+
+	//TODO FUNC mult donus RET komutu yok ise hata versin
+
+}
+
+void Parser::parseRET()
+{
+
+	if (m_lastFuncName == "")
+	{
+		std::cout << "RET qwrqwrqw hata\n";
+	}
+
+	if (m_symbolTable.contains(m_lastFuncName))
+	{
+		m_symbolTable[m_lastFuncName].m_status = asmc::LabelStatus::Called;
+
+		m_lastFuncName = "";
+	}
+
+	
+
 }
 
 }
