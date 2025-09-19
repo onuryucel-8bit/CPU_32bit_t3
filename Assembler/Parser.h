@@ -26,10 +26,13 @@
 //@adr + ry
 #define asmc_MOD_Adr_P_Reg 4
 //rx, ry
-#define asmc_MOD_Rx_Ry
+#define asmc_MOD_Rx_Ry 5
 
 #define asmc_CombineMODBits(opcode, modBits) (opcode | (modBits << 15)) 
 
+#define asmc_ShiftAmount_Opcode 24
+#define asmc_ShiftAmount_RegA 22
+#define asmc_ShiftAmount_RegB 18
 
 namespace asmc
 {

@@ -190,6 +190,13 @@ void Parser::printError(std::string message)
 
 void Parser::printWarning(std::string message)
 {
+	std::cout << rang::fg::yellow
+		<< "WARNING::Parser:: " << message
+		<< " line number [" << m_lexer.m_lineNumber << "]"
+		<< " currentToken[" << m_currentToken.m_text << "]"
+		<< " type	[" << magic_enum::enum_name(m_currentToken.m_type) << "]"
+		<< rang::style::reset
+		<< "\n";
 }
 
 void Parser::program()
@@ -210,6 +217,7 @@ void Parser::program()
 	
 }
 
+//-------------REG/RAM---------------------//
 void Parser::parseLOAD()
 {
 	if (m_peekToken.m_type != asmc::TokenType::REGISTER)
@@ -296,9 +304,101 @@ void Parser::parseLOAD()
 
 }
 
+void Parser::parseSTR()
+{
+	if (m_peekToken.m_type != asmc::TokenType::ADDRESS && 
+		m_peekToken.m_type != asmc::TokenType::ADR_P_REG)
+	{
+		std::cout << "HATA\n";
+	}
+
+
+	uint32_t opcode = 0x2;
+
+	opcode <<= 24;
+
+	moveCurrentToken();
+	uint32_t address = rdx::hexToDec(m_currentToken.m_text);
+
+	moveCurrentToken();
+
+	MemoryLayout memlay;
+
+	uint32_t secondPart = 0;
+
+	switch (m_currentToken.m_type)
+	{
+		case asmc::TokenType::REGISTER:
+				secondPart = rdx::hexToDec(m_currentToken.m_text);
+
+				opcode = opcode | (secondPart << 18);
+
+				opcode = asmc_CombineMODBits(opcode, asmc_MOD_Adr);
+				
+				memlay = { opcode, address};
+		
+				m_ramLocation += 2;
+			break;
+
+		case asmc::TokenType::REGADR:
+				secondPart = rdx::hexToDec(m_currentToken.m_text);
+
+				
+
+				m_ramLocation += 1;
+			break;
+
+		case asmc::TokenType::ADR_P_REG:
+				secondPart = rdx::hexToDec(m_currentToken.m_text);
+
+				opcode = opcode | (secondPart << 18);
+
+				opcode = asmc_CombineMODBits(opcode, asmc_MOD_Adr_P_Reg);
+
+				memlay = { opcode, address };
+				m_ramLocation += 2;
+			break;
+	}
+
+	printBinHex(memlay.m_opcode, memlay.m_secondPart);
+
+}
+
 void Parser::parseMOV()
 {
+	if (m_peekToken.m_type != asmc::TokenType::REGISTER)
+	{
+		printError("expected register for first operand");
+	}
+
+	uint32_t opcode = 0xff << asmc_ShiftAmount_Opcode;
+	
+	moveCurrentToken();
+	uint32_t rx = rdx::hexToDec(m_currentToken.m_text);
+
+	moveCurrentToken();
+	if (m_currentToken.m_type != asmc::TokenType::REGISTER)
+	{
+		printError("expected register for second operand");
+		
+	}
+	else
+	{
+		uint32_t ry = rdx::hexToDec(m_currentToken.m_text);
+
+		rx <<= asmc_ShiftAmount_RegA;
+		ry <<= asmc_ShiftAmount_RegB;
+
+		opcode = (opcode | rx) | ry;
+
+		printBinHex(opcode, 0);
+	}
+
+	
+	
 }
+
+//-----------------------------------------//
 
 void Parser::parseADD()
 {
@@ -389,46 +489,6 @@ void Parser::parsePOP()
 {
 }
 
-void Parser::parseSTR()
-{
-	if (m_peekToken.m_type != asmc::TokenType::ADDRESS)
-	{
-		std::cout << "HATA\n";
-	}
-
-
-	uint32_t opcode = 0x2;
-
-	opcode <<= 24;
-
-	moveCurrentToken();
-	uint32_t address = rdx::hexToDec(m_currentToken.m_text);
-
-	moveCurrentToken();
-
-	MemoryLayout memlay;
-
-	uint32_t secondPart = 0;
-
-	switch (m_currentToken.m_type)
-	{
-	case asmc::TokenType::REGISTER:
-			secondPart = rdx::hexToDec(m_currentToken.m_text);
-
-			secondPart <<= 18;
-			opcode |= secondPart;
-
-			opcode = opcode | (2 << 15);
-
-			memlay = { opcode, address};
-		
-			m_ramLocation += 2;
-		break;
-	}
-
-	//printBinHex(memlay.m_opcode, memlay.m_secondPart);
-
-}
 
 void Parser::parseLabel()
 {
