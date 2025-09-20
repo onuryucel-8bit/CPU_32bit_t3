@@ -3,5 +3,4 @@
 	AssemblerV4
 */
 
-
-MOV r0,r3
+LOAD r2,@aaaaffff0+r4

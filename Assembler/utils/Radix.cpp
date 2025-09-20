@@ -36,7 +36,7 @@ namespace rdx {
     }
 
     uint32_t hexToDec(std::string hex)
-    {
+    {        
 
         //0xFE => FE
 

@@ -72,12 +72,13 @@ namespace asmc
 		ID,
 		
 		//Operands
-		REGISTER,
-		HEXNUMBER,
+		
 		DECNUMBER,
 		ASCII,
 		STRING,
 
+		REGISTER,
+		HEXNUMBER,
 		ADDRESS,
 		REGADR,
 		ADR_P_REG,

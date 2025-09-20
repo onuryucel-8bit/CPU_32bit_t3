@@ -59,6 +59,12 @@ struct MemoryLayout
 	uint32_t m_secondPart = 0;
 };
 
+struct PacketAdrPReg
+{
+	uint32_t m_adrPart;
+	uint32_t m_regPart;
+};
+
 class Parser
 {
 public:
@@ -76,6 +82,10 @@ private:
 
 	void printError(std::string message);
 	void printWarning(std::string message);
+
+	MemoryLayout parseOperand(uint32_t opcode);
+
+	PacketAdrPReg getAdr_P_RegPart(std::string& operand);
 
 #ifdef PARSER_TEST_FUNCS
 	void printBinHex(std::bitset<32> opcode, std::bitset<32> operand);
@@ -102,6 +112,9 @@ private:
 	funcPtr m_parserFuncs[32];
 	
 	std::string m_lastFuncName;
+
+
+	
 
 	/*
 	*	opcode = opcode_HEX_VAL;
