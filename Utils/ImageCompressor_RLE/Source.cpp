@@ -1,5 +1,6 @@
 #include <vector>
 #include <string>
+#include <fstream>
 
 #include "libLocal/StbImage.h"
 #include "utils/Radix.h"
@@ -14,7 +15,7 @@ struct rleInfo
 
 std::vector<stb::Pixel> readImage(stb::StbImage& stb, std::string path)
 {
-	stb.loadImg(path, false);
+	stb.loadImg(path, true);
 
 	if (stb.getImage() == nullptr)
 	{
@@ -25,11 +26,21 @@ std::vector<stb::Pixel> readImage(stb::StbImage& stb, std::string path)
 
 	imgRawData.reserve(stb.getImageWidth() * stb.getImageHeight() * stb.getImageChannels());
 
+	std::cout << "Print PIXEL\n";
+
+	//load image pixels to vector
 	for (size_t i = 0; i < stb.getImageHeight(); i++)
 	{
 		for (size_t j = 0; j < stb.getImageWidth(); j++)
 		{
 			stb::Pixel pixel = stb.getPixel(j, i);
+
+#ifdef DEBUG_PIXEL
+			std::cout << std::hex << "x[" << j << "] i[" << i <<"]\n"
+				<< (int)pixel.r << " "
+				<< (int)pixel.g << " "
+				<< (int)pixel.b << " " << "\n";
+#endif // DEBUG_PIXEL
 
 			imgRawData.push_back(pixel);
 		}
@@ -40,11 +51,20 @@ std::vector<stb::Pixel> readImage(stb::StbImage& stb, std::string path)
 
 std::vector<rleInfo> compressRLE(std::vector<stb::Pixel> imgRawData)
 {
+	/*
+		INPUT : (r,g,b) (r,g,b) ....
+				a,a,a,b,b,b,c,b,a,b....
+
+		OUTPUT: vector = { [3,a] [3,b] [1,c] [1,b] [1,a] [1,b]... }
+	
+	*/
+
 	stb::Pixel lastColor = imgRawData[0];
 	size_t counter = 1;
 	
 	std::vector<rleInfo> output;
 
+	//RLE compression
 	for (size_t i = 1; i < imgRawData.size(); i++)
 	{
 		if (lastColor == imgRawData[i])
@@ -61,16 +81,29 @@ std::vector<rleInfo> compressRLE(std::vector<stb::Pixel> imgRawData)
 	}
 
 	//std::cout << output << "\n";
-	std::cout << "raw data length in bytes[" << imgRawData.size() * 3 << "]\n";
-	std::cout << "output length[" << output.size() << "]\n";
-	std::cout << "output length in bytes[" << output.size() * 3 << "]\n";
+	std::cout << "raw data in bytes  [" << imgRawData.size() * 3 << "]\n";
+	std::cout << "output in bytes    [" << output.size() * 3 << "]\n";
 
 	return output;
 }
 
-void writeRleToFile(std::vector<rleInfo>& data, size_t fileIndex)
+void writeRleToFile(std::vector<rleInfo>& data)
 {
-	
+	std::ofstream file("test.txt");
+
+	if (!file.is_open())
+	{
+		std::cout << "ERROR::writeRleToFile:: couldnt open the file\n";
+		return;
+	}
+
+	for (size_t i = 0; i < data.size(); i++)
+	{
+		file << rdx::decToHex(data[i].counter) << ","
+			 << rdx::decToHex(data[i].color.r) << "\n";
+	}
+
+	file.close();
 }
 
 int main(int argc, char* argv[])
@@ -82,45 +115,40 @@ int main(int argc, char* argv[])
 		std::cout << "Expected file path...\n";
 		std::cout << "Usage:: [.exe name] [bmp path]\n";
 
-		return 1;
+		return -1;
 	}
 
-	stb::StbImage stb;		
+	stb::StbImage stb;			
+	
+	std::vector<stb::Pixel> rawdata = readImage(stb, argv[1]);
 
-	std::cout << "argv " <<argv[1] << "\n";
-	std::cout << "argc " <<argc << "\n";
-
-	for (size_t i = 1; i < argc; i++)
+	if (rawdata.empty())
 	{
-		std::vector<stb::Pixel> rawdata = readImage(stb, argv[i]);
-
-		if (rawdata.empty())
-		{
-			return -1;
-		}
-
-		std::vector<rleInfo> dataRLE = compressRLE(rawdata);
-
-		writeRleToFile(dataRLE, i);
+		return -1;
 	}
+
+	std::vector<rleInfo> dataRLE = compressRLE(rawdata);
+
+	writeRleToFile(dataRLE);
+	
 
 #else
 	stb::StbImage stb;
-	std::string path = "test";
+		
+	//std::string path = "frame_00015.bmp";
+	std::string path = "test.bmp";
+	
+	std::vector<stb::Pixel> rawdata = readImage(stb, path);
 
-	for (size_t i = 1; i < 2; i++)
+	if (rawdata.empty())
 	{
-		std::vector<stb::Pixel> rawdata = readImage(stb, path);
-
-		if (rawdata.empty())
-		{
-			return -1;
-		}
-
-		std::vector<rleInfo> dataRLE = compressRLE(rawdata);
-
-		writeRleToFile(dataRLE, i);
+		return -1;
 	}
+
+	std::vector<rleInfo> dataRLE = compressRLE(rawdata);
+
+	writeRleToFile(dataRLE);
+	
 
 #endif // INPUT_ARG_TYPE
 	

@@ -1,3 +1,10 @@
+/*
+HATALAR:
+	stb bmp dosyasini sag ustten => sol alt kisma dogru okuyor
+
+*/
+
+
 #pragma once
 
 #include <iostream>
@@ -24,13 +31,14 @@ struct Pixel
 	uint8_t g;
 	uint8_t b;
 
-	bool operator== (Pixel pixel)
+	bool operator== (Pixel& pixel)
 	{
 		return 
 			r == pixel.r &&
 			g == pixel.g &&
 			b == pixel.b;
 	}
+
 };
 
 class StbImage
