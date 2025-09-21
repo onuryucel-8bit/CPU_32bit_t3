@@ -2,6 +2,7 @@
 #include <string>
 
 #include "libLocal/StbImage.h"
+#include "utils/Radix.h"
 
 std::unordered_map<int, int> rleTable;
 
@@ -56,10 +57,10 @@ int main()
 	{
 		std::cout <<std::hex << "key" << key << " value" << std::dec << value << "\n";
 
-		rleData += std::to_string(key) + std::to_string(value);
+		rleData += rdx::decToHex(key) + std::to_string(value);
 	}
 
-	std::cout << rleData.length() << "\n";
+	std::cout << rleData << "\n";
 
 	
 }

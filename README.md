@@ -35,6 +35,8 @@ utils/CharsetROMPrinter
 	
 -----------------
 
+- Makefile ekle
+
 +Yakalama(Fetch) Dongusu
 	t0 
 	Mar = pc
