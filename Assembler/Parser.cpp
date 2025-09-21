@@ -58,11 +58,34 @@ Parser::~Parser()
 #ifdef PARSER_TEST_FUNCS
 void Parser::printBinHex(std::bitset<32> opcode, std::bitset<32> operand)
 {
+	std::string str = opcode.to_string();
+
 	std::cout
 		<< rang::bg::green
 		<< "printBinHex()\n"
 		<< rang::style::reset
-		<< opcode << " : " << std::hex << opcode.to_ulong() << "\n"
+			
+			<<"oooooooo rrrrrr mmm\n"
+			
+			//opcode bits
+			<< rang::fg::blue			
+			<< str.substr(0,8) << " "
+			<< rang::style::reset
+
+			//reg bits
+			<< rang::fg::yellow
+			<< str.substr(8,6) << " "
+			<< rang::style::reset
+
+			//mod bits
+			<< rang::fg::cyan
+			<<  str.substr(14,3) << " "
+			<< rang::style::reset
+
+			//empty bits
+			<< str.substr(17, str.length())
+
+		<< " : " << std::hex << opcode.to_ulong() << "\n"
 		<< operand << " : " << operand.to_ulong() << "\n"
 		<< "m_currentToken.text[" << m_currentToken.m_text << "]\n"
 		<< "----------------"
@@ -82,9 +105,6 @@ void Parser::printCurrentPeekToken()
 		<< "m_peekToken.type[" << magic_enum::enum_name(m_peekToken.m_type) << "]"		
 		<< "\n";
 
-
-
-	std::cout << std::dec;
 }
 
 #endif // PARSER_TEST_FUNCS
@@ -274,9 +294,7 @@ MemoryLayout Parser::parseOperand(uint32_t opcode)
 		opcode = opcode | (rx << 3);//shift rx part to left
 
 		opcode = opcode | (packet.m_regPart << 18);//shift ry part to left 
-
-
-		memlay.m_opcode = opcode;
+		
 		memlay.m_secondPart = packet.m_adrPart;
 
 		m_ramLocation += 2;
@@ -284,6 +302,7 @@ MemoryLayout Parser::parseOperand(uint32_t opcode)
 		break;
 	}
 
+	memlay.m_opcode = opcode;
 
 	return memlay;
 }
@@ -334,7 +353,7 @@ PacketAdrPReg Parser::getAdr_P_RegPart(std::string& operand)
 
 	return retVal;
 }
-
+ 
 //-------------REG/RAM---------------------//
 void Parser::parseLOAD()
 {
@@ -343,23 +362,26 @@ void Parser::parseLOAD()
 		std::cout << "HATA\n";
 	}
 
-	uint32_t opcode = 0x01;
-
-	opcode <<= 24;
+	uint32_t opcode = 0x01 << asmc_ShiftAmount_Opcode;
 
 	moveCurrentToken();
 	uint32_t registerPart = rdx::hexToDec(m_currentToken.m_text);
 
-	registerPart <<= 18;
+	registerPart <<= asmc_ShiftAmount_RegB;
 	opcode |= registerPart;
 
 	moveCurrentToken();
 
-	MemoryLayout memlay = parseOperand(opcode);
-
+	MemoryLayout memlay;
+	if (m_currentToken.m_type == asmc::TokenType::REGISTER)
+	{
+		printError("unexpected operand type");
+	}
+	else
+	{
+		memlay = parseOperand(opcode);
+	}
 	
-
-	uint32_t rx;
 
 	//switch (m_currentToken.m_type)
 	//{

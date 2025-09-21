@@ -8,9 +8,10 @@
 #include <bitset>
 
 #include "../libsLocal/rang.hpp"
+#include "../libsLocal/utils/Radix.h"
 
 #include "Lexer.h"
-#include "utils/Radix.h"
+
 
 #define PARSER_TEST_FUNCS
 
@@ -28,7 +29,7 @@
 //rx, ry
 #define asmc_MOD_Rx_Ry 5
 
-#define asmc_CombineMODBits(opcode, modBits) (opcode | (modBits << 15)) 
+#define asmc_CombineMODBits(opcode, modBits) ((uint32_t)opcode | ((uint32_t)modBits << 15))
 
 #define asmc_ShiftAmount_Opcode 24
 #define asmc_ShiftAmount_RegA 22
