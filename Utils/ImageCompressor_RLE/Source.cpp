@@ -32,7 +32,7 @@ std::vector<stb::Pixel> readImage(stb::StbImage& stb, std::string path)
 	return imgRawData;
 }
 
-std::vector<uint8_t> compressRLE(std::vector<stb::Pixel> imgRawData)
+std::vector<rleInfo> compressRLE(std::vector<stb::Pixel> imgRawData)
 {
 	stb::Pixel lastColor = imgRawData[0];
 	size_t counter = 1;
@@ -68,7 +68,7 @@ int main()
 	//"frame_00015.bmp"
 	std::vector<stb::Pixel> rawdata = readImage(stb, "frame_00015.bmp");
 			
-	std::vector<uint8_t> dataRLE = compressRLE(rawdata);
+	std::vector<rleInfo> dataRLE = compressRLE(rawdata);
 
 
 	
