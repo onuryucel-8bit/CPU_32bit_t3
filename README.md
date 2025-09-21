@@ -1,11 +1,11 @@
 Hedefler
 =======
-Donen kup
-Donen 3d Model
-Bad Apple
-Mandelbrot
-Pong
-Xox minmax
+-Donen kup
+-Donen 3d Model
+-Bad Apple
+-Mandelbrot
+-Pong
+-Xox minmax
 =======
 
 -------
