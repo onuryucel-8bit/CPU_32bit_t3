@@ -25,13 +25,6 @@ std::vector<stb::Pixel> readImage(stb::StbImage& stb, std::string path)
 		{
 			stb::Pixel pixel = stb.getPixel(j, i);
 
-			/*std::cout
-				<< std::hex
-				<< (int)pixel.r << ","
-				<< (int)pixel.g << ","
-				<< (int)pixel.b << "| ";
-			*/
-
 			imgRawData.push_back(pixel);
 		}
 	}
@@ -39,7 +32,7 @@ std::vector<stb::Pixel> readImage(stb::StbImage& stb, std::string path)
 	return imgRawData;
 }
 
-std::vector<rleInfo> RLE(std::vector<stb::Pixel> imgRawData)
+std::vector<uint8_t> compressRLE(std::vector<stb::Pixel> imgRawData)
 {
 	stb::Pixel lastColor = imgRawData[0];
 	size_t counter = 1;
@@ -74,8 +67,8 @@ int main()
 	stb::StbImage stb;
 	//"frame_00015.bmp"
 	std::vector<stb::Pixel> rawdata = readImage(stb, "frame_00015.bmp");
-
-	std::vector<uint8_t> dataRLE = RLE(rawdata);
+			
+	std::vector<uint8_t> dataRLE = compressRLE(rawdata);
 
 
 	
