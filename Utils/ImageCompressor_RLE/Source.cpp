@@ -10,10 +10,16 @@ struct rleInfo
 	stb::Pixel color;
 };
 
+//#define INPUT_ARG_TYPE
 
 std::vector<stb::Pixel> readImage(stb::StbImage& stb, std::string path)
 {
 	stb.loadImg(path, false);
+
+	if (stb.getImage() == nullptr)
+	{
+		return {};
+	}
 
 	std::vector<stb::Pixel> imgRawData;
 
@@ -62,16 +68,60 @@ std::vector<rleInfo> compressRLE(std::vector<stb::Pixel> imgRawData)
 	return output;
 }
 
-int main()
+void writeRleToFile(std::vector<rleInfo>& data, size_t fileIndex)
 {
+	
+}
+
+int main(int argc, char* argv[])
+{
+
+#ifdef INPUT_ARG_TYPE
+	if (argc < 2)
+	{
+		std::cout << "Expected file path...\n";
+		std::cout << "Usage:: [.exe name] [bmp path]\n";
+
+		return 1;
+	}
+
+	stb::StbImage stb;		
+
+	std::cout << "argv " <<argv[1] << "\n";
+	std::cout << "argc " <<argc << "\n";
+
+	for (size_t i = 1; i < argc; i++)
+	{
+		std::vector<stb::Pixel> rawdata = readImage(stb, argv[i]);
+
+		if (rawdata.empty())
+		{
+			return -1;
+		}
+
+		std::vector<rleInfo> dataRLE = compressRLE(rawdata);
+
+		writeRleToFile(dataRLE, i);
+	}
+
+#else
 	stb::StbImage stb;
-	//"frame_00015.bmp"
-	std::vector<stb::Pixel> rawdata = readImage(stb, "frame_00015.bmp");
-			
-	std::vector<rleInfo> dataRLE = compressRLE(rawdata);
+	std::string path = "test";
 
+	for (size_t i = 1; i < 2; i++)
+	{
+		std::vector<stb::Pixel> rawdata = readImage(stb, path);
 
-	
-	
+		if (rawdata.empty())
+		{
+			return -1;
+		}
+
+		std::vector<rleInfo> dataRLE = compressRLE(rawdata);
+
+		writeRleToFile(dataRLE, i);
+	}
+
+#endif // INPUT_ARG_TYPE
 	
 }

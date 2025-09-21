@@ -70,12 +70,12 @@ void StbImage::loadImg(std::string path, bool verticallFlip)
 
 	stbi_set_flip_vertically_on_load(verticallFlip);
 	m_file = stbi_load(path.c_str(), &m_width, &m_height, &m_channels, 0);
-	if (m_file == NULL)
+	if (m_file == nullptr)
 	{
-		std::cerr << "ERROR::StbImage::removeColorX() | check image path or image file | img is NULL\n";
+		std::cerr << "ERROR::StbImage::loadImg() | check image path or image extension\n";
 		return;
 	}
-}
+} 
 
 void StbImage::saveImg()
 {
