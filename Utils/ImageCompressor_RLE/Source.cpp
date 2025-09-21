@@ -1,66 +1,84 @@
-#include <unordered_map>
+#include <vector>
 #include <string>
 
 #include "libLocal/StbImage.h"
 #include "utils/Radix.h"
 
-std::unordered_map<int, int> rleTable;
-
-void checkTable(int colorVal)
+struct rleInfo
 {
-	if (rleTable.contains(colorVal))
-	{
-		rleTable[colorVal]++;
-	}
-	else
-	{
-		rleTable[colorVal] = 1;
-	}
-}
+	size_t counter;
+	stb::Pixel color;
+};
 
-int main()
+
+std::vector<stb::Pixel> readImage(stb::StbImage& stb, std::string path)
 {
-	StbImage stb;
-	//"frame_00015.bmp"
-	stb.loadImg("test.bmp", false);
-	
-	std::string rawData;
+	stb.loadImg(path, false);
+
+	std::vector<stb::Pixel> imgRawData;
+
+	imgRawData.reserve(stb.getImageWidth() * stb.getImageHeight() * stb.getImageChannels());
 
 	for (size_t i = 0; i < stb.getImageHeight(); i++)
 	{
 		for (size_t j = 0; j < stb.getImageWidth(); j++)
 		{
-			Pixel pixel = stb.getPixel(j, i);
+			stb::Pixel pixel = stb.getPixel(j, i);
 
-			std::cout
+			/*std::cout
 				<< std::hex
 				<< (int)pixel.r << ","
 				<< (int)pixel.g << ","
 				<< (int)pixel.b << "| ";
+			*/
 
-			checkTable(pixel.r);
-			checkTable(pixel.g);
-			checkTable(pixel.b);
-
-			rawData += std::to_string(pixel.r) + std::to_string(pixel.g) + std::to_string(pixel.b);
+			imgRawData.push_back(pixel);
 		}
-		std::cout << "\n";
 	}
 
-	std::cout << "PRINT table...\n";
+	return imgRawData;
+}
 
-	std::cout << std::dec << rawData.length() << "\n";
+std::vector<rleInfo> RLE(std::vector<stb::Pixel> imgRawData)
+{
+	stb::Pixel lastColor = imgRawData[0];
+	size_t counter = 1;
+	
+	std::vector<rleInfo> output;
 
-	std::string rleData;
-
-	for (const auto& [key, value] : rleTable)
+	for (size_t i = 1; i < imgRawData.size(); i++)
 	{
-		std::cout <<std::hex << "key" << key << " value" << std::dec << value << "\n";
+		if (lastColor == imgRawData[i])
+		{
+			counter++;
+		}
+		else
+		{
+			output.push_back({ counter, lastColor });
 
-		rleData += rdx::decToHex(key) + std::to_string(value);
+			lastColor = imgRawData[i];
+			counter = 1;
+		}
 	}
 
-	std::cout << rleData << "\n";
+	//std::cout << output << "\n";
+	std::cout << "raw data length in bytes[" << imgRawData.size() * 3 << "]\n";
+	std::cout << "output length[" << output.size() << "]\n";
+	std::cout << "output length in bytes[" << output.size() * 3 << "]\n";
 
+	return output;
+}
+
+int main()
+{
+	stb::StbImage stb;
+	//"frame_00015.bmp"
+	std::vector<stb::Pixel> rawdata = readImage(stb, "frame_00015.bmp");
+
+	std::vector<uint8_t> dataRLE = RLE(rawdata);
+
+
+	
+	
 	
 }

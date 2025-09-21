@@ -12,6 +12,11 @@
 
 #pragma warning(pop)
 
+namespace stb
+{
+
+
+
 //void StbImage::convertToPNG()
 //{
 //	int width, height, channels;
@@ -57,6 +62,11 @@
 
 void StbImage::loadImg(std::string path, bool verticallFlip)
 {
+	if (m_file != nullptr)
+	{
+		releaseImgData();
+	}
+
 
 	stbi_set_flip_vertically_on_load(verticallFlip);
 	m_file = stbi_load(path.c_str(), &m_width, &m_height, &m_channels, 0);
@@ -76,20 +86,21 @@ void StbImage::saveImg()
 		return;
 	}
 
-	
-}
 
-void StbImage::releaseImgData()
-{
-	stbi_image_free(m_file);
 }
 
 Pixel StbImage::getPixel(size_t x, size_t y)
-{		
+{
+	if (m_file == nullptr)
+	{
+		std::cout << "WARNING::StbImage::getPixel() image data is null\n";
+		return { 0,0,0 };
+	}
+
 	Pixel retPixel = { 0,0,0 };
 
-	int index = (y * m_width + x)* m_channels;
-	
+	int index = (y * m_width + x) * m_channels;
+
 	retPixel.r = m_file[index];
 	retPixel.g = m_file[index + 1];
 	retPixel.b = m_file[index + 2];
@@ -122,7 +133,22 @@ int StbImage::getImageChannels()
 	return m_channels;
 }
 
+void StbImage::releaseImgData()
+{
+	if (m_file != nullptr)
+	{
+		stbi_image_free(m_file);
+
+		m_file = nullptr;
+	}
+}
+
 StbImage::~StbImage()
 {
-	stbi_image_free(m_file);
+	if (m_file != nullptr)
+	{
+		stbi_image_free(m_file);
+	}
+}
+
 }
