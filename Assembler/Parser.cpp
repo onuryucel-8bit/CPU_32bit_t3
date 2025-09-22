@@ -172,9 +172,10 @@ void Parser::printBinHex(std::bitset<32> opcode, std::bitset<32> operand)
 
 	std::cout
 		<< rang::bg::green
-		<< "printBinHex()\n"
-		<< rang::style::reset
-			
+		<< "printBinHex()" 
+		<< rang::style::reset 
+		<< "\n"
+								
 			<<"oooooooo rrr rrr mmm\n"
 			
 			//opcode bits
@@ -185,9 +186,7 @@ void Parser::printBinHex(std::bitset<32> opcode, std::bitset<32> operand)
 			//reg bits
 			<< rang::fg::yellow
 			<< str.substr(8,3) << " "
-			<< rang::style::reset
-
-			<< rang::fg::yellow
+						
 			<< str.substr(11, 3) << " "
 			<< rang::style::reset
 
@@ -225,6 +224,8 @@ void Parser::printCurrentPeekToken()
 
 void Parser::printError(std::string message)
 {
+	//TODO hold previous token for better error printing..
+
 	std::cout << rang::fg::red
 		<< "ERROR::Parser:: " << message
 		<< " line number [" << m_lexer.m_lineNumber << "]"
@@ -257,7 +258,7 @@ void Parser::moveCurrentToken()
 
 MemoryLayout Parser::parseOperand(uint32_t opcode)
 {
-	MemoryLayout memlay{ opcode, 0 };	
+	MemoryLayout memlay;	
 
 	uint32_t rx;
 
@@ -275,6 +276,7 @@ MemoryLayout Parser::parseOperand(uint32_t opcode)
 	case asmc::TokenType::REGISTER:
 
 			rx = rdx::hexToDec(m_currentToken.m_text);
+			
 			opcode = opcode | (rx << 18);
 
 			opcode = asmc_CombineMODBits(opcode, asmc_MOD_Rx_Ry);
@@ -291,31 +293,39 @@ MemoryLayout Parser::parseOperand(uint32_t opcode)
 			m_ramLocation += 2;
 		break;
 
-	case asmc::TokenType::REGADR:		
+	case asmc::TokenType::REGADR:	
 
-		m_ramLocation += 1;
+			rx = opcode & 0x00ff'0000;//get rx part
+			opcode = opcode & 0xff00'0000; //clear regx part
+
+			opcode = opcode | (rx << 3);//shift rx part to left
+
+			opcode = opcode | (rdx::hexToDec(m_currentToken.m_text) << asmc_ShiftAmount_RegB);//shift ry part to left
+			
+			opcode = asmc_CombineMODBits(opcode, asmc_MOD_RegAdr);
+
+			m_ramLocation += 1;
 		break;
 
 	case asmc::TokenType::ADR_P_REG:
+			
+			PacketAdrPReg packet = getAdr_P_RegPart(m_currentToken.m_text);
 
-		opcode = asmc_CombineMODBits(opcode, asmc_MOD_Adr_P_Reg);
+			//insert reg ry
+			rx = opcode & 0x00ff'0000;//get rx part
+			opcode = opcode & 0xff00'0000;//clear regx part
+			
+			opcode = opcode | (rx << 3);//shift rx part to left
 
-		PacketAdrPReg packet = getAdr_P_RegPart(m_currentToken.m_text);
-
-		//insert reg ry
-		rx = opcode & 0x00ff'0000;//get rx part
-		opcode = opcode & 0xff00'0000;//clear regx part
-
-		opcode = opcode | (rx << 3);//shift rx part to left
-
-		opcode = opcode | (packet.m_regPart << 18);//shift ry part to left 
+			opcode = opcode | (packet.m_regPart << asmc_ShiftAmount_RegB);//shift ry part to left 
 		
-		memlay.m_secondPart = packet.m_adrPart;
+			opcode = asmc_CombineMODBits(opcode, asmc_MOD_Adr_P_Reg);
 
-		m_ramLocation += 2;
+			memlay.m_secondPart = packet.m_adrPart;
 
+			m_ramLocation += 2;
 		break;
-	}
+	}	
 
 	memlay.m_opcode = opcode;
 
@@ -382,8 +392,15 @@ void Parser::parseLOAD()
 	moveCurrentToken();
 	uint32_t registerPart = rdx::hexToDec(m_currentToken.m_text);
 
+	if (registerPart > 7)
+	{
+		printError("Register must be in range [0-7]");
+	}
+
 	registerPart <<= asmc_ShiftAmount_RegB;
 	opcode |= registerPart;
+
+	
 
 	moveCurrentToken();
 

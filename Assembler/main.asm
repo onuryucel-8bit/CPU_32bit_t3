@@ -3,10 +3,9 @@
 	AssemblerV4
 */
 
-;LOAD r1,0xf
+;tamamlandi
+;LOAD r0,0xf
 ;LOAD r1,@ff
-
-;hata var
 ;LOAD r1,@r2
 ;LOAD r1,@ff+r1
 
@@ -20,6 +19,7 @@
 ;hata var
 ;add r1,r2
 
+;calisiyor
 ;add r1,0x5
 ;add r2,@ff
 
