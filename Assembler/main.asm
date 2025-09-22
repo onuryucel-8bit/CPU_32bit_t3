@@ -3,24 +3,29 @@
 	AssemblerV4
 */
 
-;tamamlandi
+;---------tamamlandi---------
 ;LOAD r0,0xf
 ;LOAD r1,@ff
 ;LOAD r1,@r2
 ;LOAD r1,@ff+r1
 
-;???
+;---------tamamlandi---------
 ;STR @ff,r1
 
 ;hata var
 ;STR @r2,r1
 ;STR @ff+r2,r1
 
+;---------tamamlandi---------
+;MOV r4,r4
+
+
 ;hata var
 ;add r1,r2
 
-;calisiyor
+;---------tamamlandi---------
 ;add r1,0x5
+
 ;add r2,@ff
 
 ;hata var
@@ -45,4 +50,9 @@
 
 ;calisiyor
 ;pop
+
+loop:
+	load r0,0xff
+	
+	jmp loop
 

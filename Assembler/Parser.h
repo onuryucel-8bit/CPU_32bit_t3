@@ -32,7 +32,7 @@
 #define asmc_CombineMODBits(opcode, modBits) ((uint32_t)opcode | ((uint32_t)modBits << 15))
 
 #define asmc_ShiftAmount_Opcode 24
-#define asmc_ShiftAmount_RegA 22
+#define asmc_ShiftAmount_RegA 21
 #define asmc_ShiftAmount_RegB 18
 
 namespace asmc
@@ -113,6 +113,7 @@ private:
 
 	std::vector<asmc::MemoryLayout> m_output;
 
+	//8byte
 	using funcPtr = void (asmc::Parser::*)();
 
 	funcPtr m_parserFuncs[32];

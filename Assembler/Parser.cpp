@@ -146,7 +146,7 @@ void Parser::checkTables()
 
 void Parser::program()
 {
-	if (m_currentToken.m_type >= asmc::TokenType::LABEL || m_currentToken.m_type < 0)
+	if (m_currentToken.m_type > asmc::TokenType::LABEL || m_currentToken.m_type < 0)
 	{
 		printError("Undefined token");
 	}
@@ -154,6 +154,7 @@ void Parser::program()
 	{
 		(this->*m_parserFuncs[m_currentToken.m_type])();
 	}
+
 	for (size_t i = 0; i < m_output.size(); i++)
 	{
 		printBinHex(m_output[i].m_opcode, m_output[i].m_secondPart);
@@ -394,7 +395,7 @@ void Parser::parseLOAD()
 
 	if (registerPart > 7)
 	{
-		printError("Register must be in range [0-7]");
+		printError("Register(s) must be in range [0-7]");
 	}
 
 	registerPart <<= asmc_ShiftAmount_RegB;
@@ -544,11 +545,13 @@ void Parser::parseMOV()
 		printError("expected register for first operand");
 	}
 
-	uint32_t opcode = 0xff << asmc_ShiftAmount_Opcode;
+	uint32_t opcode = 0xaa << asmc_ShiftAmount_Opcode;
 	
 	moveCurrentToken();
-	uint32_t rx = rdx::hexToDec(m_currentToken.m_text);
+	MemoryLayout memlay;
 
+	uint32_t rx = rdx::hexToDec(m_currentToken.m_text);
+	
 	moveCurrentToken();
 	if (m_currentToken.m_type != asmc::TokenType::REGISTER)
 	{
@@ -556,18 +559,23 @@ void Parser::parseMOV()
 		
 	}
 	else
-	{
+	{		
 		uint32_t ry = rdx::hexToDec(m_currentToken.m_text);
+
+		if (rx > 7 || ry > 7)
+		{
+			printError("Registers must in range [0-7]");
+		}
 
 		rx <<= asmc_ShiftAmount_RegA;
 		ry <<= asmc_ShiftAmount_RegB;
 
 		opcode = (opcode | rx) | ry;
-
-		printBinHex(opcode, 0);
+		
 	}
+	memlay = { opcode, 0 };
 
-	
+	m_output.push_back(memlay);
 	
 }
 
@@ -880,9 +888,41 @@ void Parser::parseJMP()
 		std::cout << "hata\n";
 	}
 
-	uint32_t opcode = 0xff;
+	uint32_t opcode;
+	switch (m_currentToken.m_type)
+	{
+	case asmc::TokenType::JMP:
+		opcode = 0x1b << asmc_ShiftAmount_Opcode;
+		break;
 
-	opcode <<= 24;
+	case asmc::TokenType::JAZ:
+		opcode = 0x1c << asmc_ShiftAmount_Opcode;
+		break;
+
+	case asmc::TokenType::JLZ:
+		opcode = 0x1d << asmc_ShiftAmount_Opcode;
+		break;
+
+	case asmc::TokenType::JGZ:
+		opcode = 0x1e << asmc_ShiftAmount_Opcode;
+		break;
+
+	case asmc::TokenType::JSC:
+		opcode = 0x1f << asmc_ShiftAmount_Opcode;
+		break;
+
+	case asmc::TokenType::JUC:
+		opcode = 0x20 << asmc_ShiftAmount_Opcode;
+		break;
+
+	case asmc::TokenType::JCT:
+		opcode = 0x21 << asmc_ShiftAmount_Opcode;
+		break;
+
+	case asmc::TokenType::JCF:
+		opcode = 0x22 << asmc_ShiftAmount_Opcode;
+		break;
+	}
 
 	moveCurrentToken();
 
