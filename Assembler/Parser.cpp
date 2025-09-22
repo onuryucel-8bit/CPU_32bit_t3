@@ -49,6 +49,8 @@ Parser::Parser(asmc::Lexer& lexer)
 	m_parserFuncs[asmc::TokenType::JCT] = &asmc::Parser::parseJCT;
 	m_parserFuncs[asmc::TokenType::JCF] = &asmc::Parser::parseJCF;
 
+	m_parserFuncs[asmc::TokenType::LABEL] = &asmc::Parser::parseLabel;
+
 }
 
 Parser::~Parser()
