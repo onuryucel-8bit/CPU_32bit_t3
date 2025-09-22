@@ -38,6 +38,11 @@
 namespace asmc
 {
 
+enum CommandType
+{
+	ALU,
+	OTHER
+};
 
 enum class LabelStatus
 {

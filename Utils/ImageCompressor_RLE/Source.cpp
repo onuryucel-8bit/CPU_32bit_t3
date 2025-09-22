@@ -124,36 +124,51 @@ int main(int argc, char* argv[])
 
 	RleCompressor rle;
 			
-	std::string path = "frame_00015.bmp";
+	std::string path = "C:\\Users\\local1\\Videos\\frames_1fps10MB\\frame_00001.bmp";
+
+	size_t frameNoStartPos = path.find("00001");
+
 	//std::string path = "test.bmp";
 
-	//std::string arg3 = "200";
+	std::string arg3 = "221";
 
-	//int limit = std::stoi(arg3);
+	int limit = std::stoi(arg3);
 
 	//std::cout << "substr test " << path.substr(0, 6) << "\n";
 	//std::cout << "number substr test " << std::stoi(path.substr(6, path.length() - 10)) << "\n";
 
 	//std::cout << std::stoi(arg3) << "\n";
 	
-	
-	std::cout << "Compressing[" << path << "]\n";
+	for (size_t i = 0; i < limit; i++)
+	{	
+		std::cout << "Compressing[" << path << "]\n";
 
-	std::vector<stb::Pixel> rawdata = readImage(stb, path);
+		std::vector<stb::Pixel> rawdata = readImage(stb, path);
 
-	if (rawdata.empty())
-	{
-		return -1;
+		if (rawdata.empty())
+		{
+			return -1;
+		}
+
+		std::vector<rleInfo> dataRLE = rle.compressBMP(rawdata, false);
+
+		writeRleToFile(dataRLE);
+
+		std::vector<stb::Pixel> decompressedData = rle.deCompressBMP(dataRLE);
+
+		stb.saveAsBMP("outFrame00015.bmp", true, 128, 128, 3, decompressedData);
+		
+		std::cout << "FRAME NO " << std::stoi(path.substr(frameNoStartPos, 5));
+
+		int frameNumber = std::stoi(path.substr(frameNoStartPos, 5));
+
+		frameNumber++;
+
+		//TODO 00001,00002,00003....
+		path.replace(frameNoStartPos, 6, std::to_string(frameNumber));
+
+		std::cout << "PATH " << path <<"\n";
 	}
-
-	std::vector<rleInfo> dataRLE = rle.compressBMP(rawdata);
-
-	writeRleToFile(dataRLE);
-
-	std::vector<stb::Pixel> decompressedData = rle.deCompressBMP(dataRLE);
-
-	stb.saveAsBMP("outFrame00015.bmp", true, 128, 128, 3, decompressedData);
-	
 
 #endif // INPUT_ARG_TYPE
 	

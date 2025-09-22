@@ -432,8 +432,6 @@
     </comp>
     <comp lib="5" loc="(2370,2460)" name="RGB Video">
       <a name="color" val="8-Color RGB (3 bit)"/>
-      <a name="height" val="256"/>
-      <a name="width" val="256"/>
     </comp>
     <comp lib="5" loc="(260,1540)" name="Hex Digit Display">
       <a name="bg" val="#000000"/>

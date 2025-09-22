@@ -55,91 +55,9 @@ Parser::~Parser()
 {
 }
 
-#ifdef PARSER_TEST_FUNCS
-void Parser::printBinHex(std::bitset<32> opcode, std::bitset<32> operand)
-{
-	std::string str = opcode.to_string();
-
-	std::cout
-		<< rang::bg::green
-		<< "printBinHex()\n"
-		<< rang::style::reset
-			
-			<<"oooooooo rrrrrr mmm\n"
-			
-			//opcode bits
-			<< rang::fg::blue			
-			<< str.substr(0,8) << " "
-			<< rang::style::reset
-
-			//reg bits
-			<< rang::fg::yellow
-			<< str.substr(8,6) << " "
-			<< rang::style::reset
-
-			//mod bits
-			<< rang::fg::cyan
-			<<  str.substr(14,3) << " "
-			<< rang::style::reset
-
-			//empty bits
-			<< str.substr(17, str.length())
-
-		<< " : " << std::hex << opcode.to_ulong() << "\n"
-		<< operand << " : " << operand.to_ulong() << "\n"
-		<< "m_currentToken.text[" << m_currentToken.m_text << "]\n"
-		<< "----------------"
-		<< "\n";
-
-	std::cout << std::dec;
-}
-
-void Parser::printCurrentPeekToken()
-{
-	std::cout		
-		<< "printCurrentPeekToken()\n"		
-		<< "m_currentToken.text[" << m_currentToken.m_text << "]"
-		<< "m_currentToken.type[" << magic_enum::enum_name(m_currentToken.m_type) << "]"
-		<< "\n"
-		<< "m_peekToken.text[" << m_peekToken.m_text << "]"
-		<< "m_peekToken.type[" << magic_enum::enum_name(m_peekToken.m_type) << "]"		
-		<< "\n";
-
-}
-
-#endif // PARSER_TEST_FUNCS
-
-void Parser::printError(std::string message)
-{
-	std::cout << rang::fg::red
-		<< "ERROR::Parser:: " << message
-		<< " line number [" << m_lexer.m_lineNumber << "]"
-		<< " currentToken[" << m_currentToken.m_text << "]"
-		<< " type	[" << magic_enum::enum_name(m_currentToken.m_type) << "]"
-		<< rang::style::reset
-		<< "\n";
-}
-
-void Parser::printWarning(std::string message)
-{
-	std::cout << rang::fg::yellow
-		<< "WARNING::Parser:: " << message
-		<< " line number [" << m_lexer.m_lineNumber << "]"
-		<< " currentToken[" << m_currentToken.m_text << "]"
-		<< " type	[" << magic_enum::enum_name(m_currentToken.m_type) << "]"
-		<< rang::style::reset
-		<< "\n";
-}
-
-
-void Parser::moveCurrentToken()
-{
-	m_currentToken = m_peekToken;
-	m_peekToken = m_lexer.getToken();
-}
-
-
-
+//-------------------------------------------------//
+//-------------------------------------------------//
+//-------------------------------------------------//
 
 void Parser::run()
 {
@@ -179,7 +97,6 @@ void Parser::run()
 	}
 
 }
-
 
 void Parser::checkTables()
 {
@@ -237,7 +154,105 @@ void Parser::program()
 	{
 		(this->*m_parserFuncs[m_currentToken.m_type])();
 	}
+	for (size_t i = 0; i < m_output.size(); i++)
+	{
+		printBinHex(m_output[i].m_opcode, m_output[i].m_secondPart);
+	}
 	
+}
+
+//-------------------------------------------------//
+//------------------PRINT_X()----------------------//
+//-------------------------------------------------//
+
+#ifdef PARSER_TEST_FUNCS
+void Parser::printBinHex(std::bitset<32> opcode, std::bitset<32> operand)
+{
+	std::string str = opcode.to_string();
+
+	std::cout
+		<< rang::bg::green
+		<< "printBinHex()\n"
+		<< rang::style::reset
+			
+			<<"oooooooo rrr rrr mmm\n"
+			
+			//opcode bits
+			<< rang::fg::blue			
+			<< str.substr(0,8) << " "
+			<< rang::style::reset
+
+			//reg bits
+			<< rang::fg::yellow
+			<< str.substr(8,3) << " "
+			<< rang::style::reset
+
+			<< rang::fg::yellow
+			<< str.substr(11, 3) << " "
+			<< rang::style::reset
+
+			//mod bits
+			<< rang::fg::cyan
+			<<  str.substr(14,3) << " "
+			<< rang::style::reset
+
+			//empty bits
+			<< str.substr(17, str.length())
+
+		<< " : " << std::hex << opcode.to_ulong() << "\n"
+		<< operand << " : " << operand.to_ulong() << "\n"
+		<< "m_currentToken.text[" << m_currentToken.m_text << "]\n"
+		<< "----------------"
+		<< "\n";
+
+	std::cout << std::dec;
+}
+
+void Parser::printCurrentPeekToken()
+{
+	std::cout		
+		<< "printCurrentPeekToken()\n"		
+		<< "m_currentToken.text[" << m_currentToken.m_text << "]"
+		<< "m_currentToken.type[" << magic_enum::enum_name(m_currentToken.m_type) << "]"
+		<< "\n"
+		<< "m_peekToken.text[" << m_peekToken.m_text << "]"
+		<< "m_peekToken.type[" << magic_enum::enum_name(m_peekToken.m_type) << "]"		
+		<< "\n";
+
+}
+
+#endif // PARSER_TEST_FUNCS
+
+void Parser::printError(std::string message)
+{
+	std::cout << rang::fg::red
+		<< "ERROR::Parser:: " << message
+		<< " line number [" << m_lexer.m_lineNumber << "]"
+		<< " currentToken[" << m_currentToken.m_text << "]"
+		<< " type	[" << magic_enum::enum_name(m_currentToken.m_type) << "]"
+		<< rang::style::reset
+		<< "\n";
+}
+
+void Parser::printWarning(std::string message)
+{
+	std::cout << rang::fg::yellow
+		<< "WARNING::Parser:: " << message
+		<< " line number [" << m_lexer.m_lineNumber << "]"
+		<< " currentToken[" << m_currentToken.m_text << "]"
+		<< " type	[" << magic_enum::enum_name(m_currentToken.m_type) << "]"
+		<< rang::style::reset
+		<< "\n";
+}
+
+//-------------------------------------------------//
+//-------------------------------------------------//
+//-------------------------------------------------//
+
+void Parser::moveCurrentToken()
+{
+	m_currentToken = m_peekToken;
+	m_peekToken = m_lexer.getToken();
 }
 
 MemoryLayout Parser::parseOperand(uint32_t opcode)
@@ -249,7 +264,7 @@ MemoryLayout Parser::parseOperand(uint32_t opcode)
 	switch (m_currentToken.m_type)
 	{
 	case asmc::TokenType::HEXNUMBER:
-
+			
 			opcode = asmc_CombineMODBits(opcode, asmc_MOD_Number);
 
 			memlay.m_secondPart = rdx::hexToDec(m_currentToken.m_text);
@@ -258,6 +273,13 @@ MemoryLayout Parser::parseOperand(uint32_t opcode)
 		break;
 
 	case asmc::TokenType::REGISTER:
+
+			rx = rdx::hexToDec(m_currentToken.m_text);
+			opcode = opcode | (rx << 18);
+
+			opcode = asmc_CombineMODBits(opcode, asmc_MOD_Rx_Ry);
+
+			m_ramLocation += 1;
 		break;
 
 	case asmc::TokenType::ADDRESS:
@@ -547,16 +569,17 @@ void Parser::parseADD()
 
 	moveCurrentToken();
 	uint32_t registerPart = rdx::hexToDec(m_currentToken.m_text);
-
-	registerPart <<= 21;
+	
+	registerPart <<= asmc_ShiftAmount_RegB;
 	opcode |= registerPart;
-
 
 	moveCurrentToken();
 
 	MemoryLayout memlay;
 
-	switch (m_currentToken.m_type)
+	memlay = parseOperand(opcode);
+
+	/*switch (m_currentToken.m_type)
 	{
 		case asmc::TokenType::REGISTER:
 
@@ -569,9 +592,9 @@ void Parser::parseADD()
 			
 			m_ramLocation += 1;
 		break;
-	}
+	}*/
 	
-	//printBinHex(memlay.m_opcode, 0);
+	m_output.push_back(memlay);	
 
 }
 
@@ -599,10 +622,62 @@ void Parser::parseSHR()
 
 void Parser::parseAND()
 {
+	if (m_peekToken.m_type != asmc::TokenType::REGISTER)
+	{
+		printError("Expected register as first operand");
+	}
+
+
+	uint32_t opcode = 0x01 << asmc_ShiftAmount_Opcode;
+
+	moveCurrentToken();
+	uint32_t registerPart = rdx::hexToDec(m_currentToken.m_text);
+
+	registerPart <<= asmc_ShiftAmount_RegB;
+	opcode |= registerPart;
+
+	moveCurrentToken();
+
+	MemoryLayout memlay;
+	if (m_currentToken.m_type != asmc::TokenType::REGISTER)
+	{
+		printError("unexpected operand type");
+	}
+	else
+	{
+		memlay = parseOperand(opcode);
+		m_output.push_back(memlay);
+	}
 }
 
 void Parser::parseOR()
 {
+	if (m_peekToken.m_type != asmc::TokenType::REGISTER)
+	{
+		printError("Expected register as first operand");
+	}
+
+	uint32_t opcode = 0x01 << asmc_ShiftAmount_Opcode;
+
+	moveCurrentToken();
+	uint32_t registerPart = rdx::hexToDec(m_currentToken.m_text);
+
+	registerPart <<= asmc_ShiftAmount_RegB;
+	opcode |= registerPart;
+
+	moveCurrentToken();
+
+	MemoryLayout memlay;
+	if (m_currentToken.m_type != asmc::TokenType::REGISTER)
+	{
+		printError("unexpected operand type");
+	}
+	else
+	{
+		memlay = parseOperand(opcode);
+		m_output.push_back(memlay);
+
+	}
 }
 
 void Parser::parseXOR()
@@ -621,10 +696,71 @@ void Parser::parseCMP()
 
 void Parser::parsePUSH()
 {
+	uint32_t opcode = 0x01 << asmc_ShiftAmount_Opcode;
+
+	moveCurrentToken();
+	
+	uint32_t rx;
+	MemoryLayout memlay{ opcode, 0 };
+
+	switch (m_currentToken.m_type)
+	{
+	case asmc::TokenType::REGISTER:
+
+			rx = rdx::hexToDec(m_currentToken.m_text);
+
+			opcode = opcode | (rx << asmc_ShiftAmount_RegB);
+			
+			opcode = asmc_CombineMODBits(opcode, asmc_MOD_Rx_Ry);
+
+			memlay.m_opcode = opcode;
+
+			m_output.push_back(memlay);
+			m_ramLocation += 1;			
+		break;
+
+	case asmc::TokenType::REGADR:
+			rx = rdx::hexToDec(m_currentToken.m_text);
+
+			opcode = opcode | (rx << asmc_ShiftAmount_RegB);
+
+			opcode = asmc_CombineMODBits(opcode, asmc_MOD_RegAdr);
+
+			memlay.m_opcode = opcode;
+
+			m_output.push_back(memlay);
+			m_ramLocation += 1;
+		break;
+
+	case asmc::TokenType::ADDRESS:
+			//address
+			rx = rdx::hexToDec(m_currentToken.m_text);
+			
+			opcode = asmc_CombineMODBits(opcode, asmc_MOD_Adr);
+
+			memlay.m_opcode = opcode;
+			memlay.m_secondPart = rx;
+			
+			m_output.push_back(memlay);
+			m_ramLocation += 2;
+		break;
+
+	default:
+			printError("unexpected operand");
+		break;
+	}
+
+
 }
 
 void Parser::parsePOP()
 {
+	uint32_t opcode = 0x01 << asmc_ShiftAmount_Opcode;
+
+	MemoryLayout memlay{ opcode, 0};
+
+	m_output.push_back(memlay);
+	
 }
 
 void Parser::parseLabel()

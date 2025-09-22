@@ -8,7 +8,7 @@ RleCompressor::~RleCompressor()
 {
 }
 
-std::vector<rleInfo> RleCompressor::compressBMP(std::vector<stb::Pixel> imgRawData)
+std::vector<rleInfo> RleCompressor::compressBMP(std::vector<stb::Pixel> imgRawData, bool writeCompResult)
 {
 	stb::Pixel lastColor = imgRawData[0];
 	size_t counter = 1;
@@ -35,16 +35,17 @@ std::vector<rleInfo> RleCompressor::compressBMP(std::vector<stb::Pixel> imgRawDa
 	output.push_back({ counter, lastColor });
 
 
-
-	std::cout << "-------------------\n";
-	std::cout << "raw data in kb  [" << (float)(imgRawData.size() * 3) / 1204 << "]\n";
-	std::cout << "raw data in mb  [" << (float)(imgRawData.size() * 3) / (1204 * 1204) << "]\n";
-	std::cout << "-------------------\n";
-	std::cout << "raw data in bytes  [" << imgRawData.size() * 3 << "]\n";
-	std::cout << "output in bytes    [" << output.size() * 3 << "]\n";
-	std::cout << "-------------------\n";
-	std::cout << "output in kb    [" << (float)(output.size() * 3) / 1204<< "]\n";
-
+	if (writeCompResult)
+	{
+		std::cout << "-------------------\n";
+		std::cout << "raw data in kb  [" << (float)(imgRawData.size() * 3) / 1204 << "]\n";
+		std::cout << "raw data in mb  [" << (float)(imgRawData.size() * 3) / (1204 * 1204) << "]\n";
+		std::cout << "-------------------\n";
+		std::cout << "raw data in bytes  [" << imgRawData.size() * 3 << "]\n";
+		std::cout << "output in bytes    [" << output.size() * 3 << "]\n";
+		std::cout << "-------------------\n";
+		std::cout << "output in kb    [" << (float)(output.size() * 3) / 1204 << "]\n";
+	}
 	return output;
 }
 
