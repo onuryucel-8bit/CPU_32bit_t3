@@ -1,15 +1,10 @@
-#include <vector>
+﻿#include <vector>
 #include <string>
 #include <fstream>
 
 #include "libLocal/StbImage.h"
 #include "utils/Radix.h"
-
-struct rleInfo
-{
-	size_t counter;
-	stb::Pixel color;
-};
+#include "RleCompressor.h"
 
 //#define INPUT_ARG_TYPE
 
@@ -26,7 +21,9 @@ std::vector<stb::Pixel> readImage(stb::StbImage& stb, std::string path)
 
 	imgRawData.reserve(stb.getImageWidth() * stb.getImageHeight() * stb.getImageChannels());
 
+#ifdef DEBUG_PIXEL
 	std::cout << "Print PIXEL\n";
+#endif // DEBUG_PIXEL
 
 	//load image pixels to vector
 	for (size_t i = 0; i < stb.getImageHeight(); i++)
@@ -42,6 +39,21 @@ std::vector<stb::Pixel> readImage(stb::StbImage& stb, std::string path)
 				<< (int)pixel.b << " " << "\n";
 #endif // DEBUG_PIXEL
 
+			uint8_t averageColor = (pixel.r + pixel.g + pixel.b) / 3;
+
+			if (averageColor < 120)
+			{
+				pixel.r = 0;
+				pixel.g = 0;
+				pixel.b = 0;			
+			}
+			else
+			{
+				pixel.r = 0xff;
+				pixel.g = 0xff;
+				pixel.b = 0xff;
+			}
+
 			imgRawData.push_back(pixel);
 		}
 	}
@@ -49,43 +61,6 @@ std::vector<stb::Pixel> readImage(stb::StbImage& stb, std::string path)
 	return imgRawData;
 }
 
-std::vector<rleInfo> compressRLE(std::vector<stb::Pixel> imgRawData)
-{
-	/*
-		INPUT : (r,g,b) (r,g,b) ....
-				a,a,a,b,b,b,c,b,a,b....
-
-		OUTPUT: vector = { [3,a] [3,b] [1,c] [1,b] [1,a] [1,b]... }
-	
-	*/
-
-	stb::Pixel lastColor = imgRawData[0];
-	size_t counter = 1;
-	
-	std::vector<rleInfo> output;
-
-	//RLE compression
-	for (size_t i = 1; i < imgRawData.size(); i++)
-	{
-		if (lastColor == imgRawData[i])
-		{
-			counter++;
-		}
-		else
-		{
-			output.push_back({ counter, lastColor });
-
-			lastColor = imgRawData[i];
-			counter = 1;
-		}
-	}
-
-	//std::cout << output << "\n";
-	std::cout << "raw data in bytes  [" << imgRawData.size() * 3 << "]\n";
-	std::cout << "output in bytes    [" << output.size() * 3 << "]\n";
-
-	return output;
-}
 
 void writeRleToFile(std::vector<rleInfo>& data)
 {
@@ -97,10 +72,22 @@ void writeRleToFile(std::vector<rleInfo>& data)
 		return;
 	}
 
+	file << ".db ";
+
 	for (size_t i = 0; i < data.size(); i++)
 	{
-		file << rdx::decToHex(data[i].counter) << ","
-			 << rdx::decToHex(data[i].color.r) << "\n";
+		file << "0x"<< rdx::decToHex(data[i].counter) << ",0x"
+			 << rdx::decToHex(data[i].color.r);
+
+		if (i != data.size() - 1)
+		{
+			file << ",";
+		}
+
+		if ((i + 1) % 8 == 0)
+		{
+			file << "\n";
+		}
 	}
 
 	file.close();
@@ -134,10 +121,24 @@ int main(int argc, char* argv[])
 
 #else
 	stb::StbImage stb;
-		
-	//std::string path = "frame_00015.bmp";
-	std::string path = "test.bmp";
+
+	RleCompressor rle;
+			
+	std::string path = "frame_00015.bmp";
+	//std::string path = "test.bmp";
+
+	//std::string arg3 = "200";
+
+	//int limit = std::stoi(arg3);
+
+	//std::cout << "substr test " << path.substr(0, 6) << "\n";
+	//std::cout << "number substr test " << std::stoi(path.substr(6, path.length() - 10)) << "\n";
+
+	//std::cout << std::stoi(arg3) << "\n";
 	
+	
+	std::cout << "Compressing[" << path << "]\n";
+
 	std::vector<stb::Pixel> rawdata = readImage(stb, path);
 
 	if (rawdata.empty())
@@ -145,9 +146,13 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
-	std::vector<rleInfo> dataRLE = compressRLE(rawdata);
+	std::vector<rleInfo> dataRLE = rle.compressBMP(rawdata);
 
 	writeRleToFile(dataRLE);
+
+	std::vector<stb::Pixel> decompressedData = rle.deCompressBMP(dataRLE);
+
+	stb.saveAsBMP("outFrame00015.bmp", true, 128, 128, 3, decompressedData);
 	
 
 #endif // INPUT_ARG_TYPE

@@ -1,12 +1,14 @@
 /*
 HATALAR:
 	stb bmp dosyasini sag ustten => sol alt kisma dogru okuyor
-
+	flip:true ise okuma yonu
+		sol alt => sag ust
 */
 
 
 #pragma once
 
+#include <vector>
 #include <iostream>
 #include <cstdint>
 
@@ -20,8 +22,6 @@ HATALAR:
 
 namespace stb
 {
-
-
 
 using imageData = unsigned char*;
 
@@ -48,7 +48,9 @@ public:
 
 	//Before loading an image, releases the current image data if its loaded
 	void loadImg(std::string path, bool verticallFlip);
-	void saveImg();
+	void saveAsPNG(std::string path, bool verticallFlip);
+	void saveAsBMP(std::string path, bool verticallFlip, int width, int height, int channels, std::vector<stb::Pixel> image);
+
 	void releaseImgData();
 
 	//If image file released returns {0,0,0}

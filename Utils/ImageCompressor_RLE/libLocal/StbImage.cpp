@@ -15,58 +15,13 @@
 namespace stb
 {
 
-
-
-//void StbImage::convertToPNG()
-//{
-//	int width, height, channels;
-//	imageData img = stbi_load("fall.jpg", &width, &height, &channels, 0);
-//	if (img == NULL)
-//	{
-//		std::cerr << "ERROR::StbImage::convertToPNG() | check image path or image file | img is NULL\n";
-//		return;
-//	}
-//
-//	stbi_write_png("fall.png", width, height, channels, img, width * channels);
-//
-//	stbi_image_free(img);
-//}
-
-//void StbImage::removeColorX(COLOR color)
-//{
-//	int width, height, channels;
-//	imageData img = stbi_load("fall.png", &width, &height, &channels, 0);
-//	if (img == NULL)
-//	{
-//		std::cerr << "ERROR::StbImage::removeColorX() | check image path or image file | img is NULL\n";
-//		return;
-//	}
-//
-//
-//	int pixel_count = width * height;
-//	for (int i = 0; i < pixel_count; ++i) 
-//	{
-//		img[i * channels + color] = 0; 
-//	}
-//
-//	if (!stbi_write_png("output.png", width, height, channels, img, width * channels)) 
-//	{
-//		std::cerr << "Failed to write image\n";
-//		stbi_image_free(img);
-//		return;
-//	}
-//
-//	stbi_image_free(img);
-//
-//}
-
 void StbImage::loadImg(std::string path, bool verticallFlip)
 {
+	//Before loading an file, throw old file to garbage
 	if (m_file != nullptr)
 	{
 		releaseImgData();
 	}
-
 
 	stbi_set_flip_vertically_on_load(verticallFlip);
 	m_file = stbi_load(path.c_str(), &m_width, &m_height, &m_channels, 0);
@@ -77,16 +32,26 @@ void StbImage::loadImg(std::string path, bool verticallFlip)
 	}
 } 
 
-void StbImage::saveImg()
+void StbImage::saveAsPNG(std::string path, bool verticallFlip)
 {
-	if (!stbi_write_png("output.png", m_width, m_height, m_channels, m_file, m_width * m_channels))
+	stbi_flip_vertically_on_write(verticallFlip);
+	if (!stbi_write_png(path.c_str(), m_width, m_height, m_channels, m_file, m_width * m_channels))
 	{
 		std::cerr << "Failed to write image\n";
 		stbi_image_free(m_file);
 		return;
 	}
+}
 
-
+void StbImage::saveAsBMP(std::string path, bool verticallFlip, int width, int height, int channels, std::vector<stb::Pixel> image)
+{
+	stbi_flip_vertically_on_write(verticallFlip);
+	if (!stbi_write_bmp(path.c_str(), width, height, channels, image.data()))
+	{
+		std::cerr << "Failed to write image\n";
+		stbi_image_free(m_file);		
+		return;
+	}
 }
 
 Pixel StbImage::getPixel(size_t x, size_t y)

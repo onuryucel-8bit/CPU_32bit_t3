@@ -227,22 +227,15 @@ void Parser::checkTables()
 	}
 }
 
-
-
 void Parser::program()
 {
-	if (m_currentToken.m_type >= asmc::TokenType::LABEL)
+	if (m_currentToken.m_type >= asmc::TokenType::LABEL || m_currentToken.m_type < 0)
 	{
 		printError("Undefined token");
 	}
 	else
 	{
-
-#pragma warning(disable: C33010)
 		(this->*m_parserFuncs[m_currentToken.m_type])();
-#pragma warning(default: C33010)
-
-
 	}
 	
 }
