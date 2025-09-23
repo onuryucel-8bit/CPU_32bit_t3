@@ -9,8 +9,9 @@ Parser::Parser(asmc::Lexer& lexer)
 	moveCurrentToken();
 
 	m_ramLocation = 0;
-
 	m_lineNumber = 0;
+
+	f_error = false;
 
 	//REG - RAM
 	m_parserFuncs[asmc::TokenType::LOAD] = &asmc::Parser::parseLOAD;
@@ -19,35 +20,35 @@ Parser::Parser(asmc::Lexer& lexer)
 
 	//STACK
 	m_parserFuncs[asmc::TokenType::CALL] = &asmc::Parser::parseCALL;
-	m_parserFuncs[asmc::TokenType::RET] = &asmc::Parser::parseRET;
+	m_parserFuncs[asmc::TokenType::RET]  = &asmc::Parser::parseRET;
 	m_parserFuncs[asmc::TokenType::PUSH] = &asmc::Parser::parsePUSH;
-	m_parserFuncs[asmc::TokenType::POP] = &asmc::Parser::parsePOP;
+	m_parserFuncs[asmc::TokenType::POP]  = &asmc::Parser::parsePOP;
 	m_parserFuncs[asmc::TokenType::FUNC] = &asmc::Parser::parseFUNC;
 
 	//ALU
-	m_parserFuncs[asmc::TokenType::ADD] = &asmc::Parser::parseADD;
-	m_parserFuncs[asmc::TokenType::SUB] = &asmc::Parser::parseSUB;
-	m_parserFuncs[asmc::TokenType::MUL] = &asmc::Parser::parseMUL;
-	m_parserFuncs[asmc::TokenType::DIV] = &asmc::Parser::parseDIV;
-	m_parserFuncs[asmc::TokenType::SHL] = &asmc::Parser::parseSHL;
-	m_parserFuncs[asmc::TokenType::SHR] = &asmc::Parser::parseSHR;
+	m_parserFuncs[asmc::TokenType::ADD] = &asmc::Parser::parseArithmeticPart;
+	m_parserFuncs[asmc::TokenType::SUB] = &asmc::Parser::parseArithmeticPart;
+	m_parserFuncs[asmc::TokenType::MUL] = &asmc::Parser::parseArithmeticPart;
+	m_parserFuncs[asmc::TokenType::DIV] = &asmc::Parser::parseArithmeticPart;
 
-	m_parserFuncs[asmc::TokenType::AND] = &asmc::Parser::parseAND;
-	m_parserFuncs[asmc::TokenType::OR] = &asmc::Parser::parseOR;
+	m_parserFuncs[asmc::TokenType::SHL] = &asmc::Parser::parseLogicPart;
+	m_parserFuncs[asmc::TokenType::SHR] = &asmc::Parser::parseLogicPart;
+	m_parserFuncs[asmc::TokenType::AND] = &asmc::Parser::parseLogicPart;
+	m_parserFuncs[asmc::TokenType::OR]  = &asmc::Parser::parseLogicPart;
+	m_parserFuncs[asmc::TokenType::XOR] = &asmc::Parser::parseLogicPart;
+
 	m_parserFuncs[asmc::TokenType::NOT] = &asmc::Parser::parseNOT;
-	m_parserFuncs[asmc::TokenType::XOR] = &asmc::Parser::parseXOR;
-
 	m_parserFuncs[asmc::TokenType::CMP] = &asmc::Parser::parseCMP;
 
 	//JUMP
 	m_parserFuncs[asmc::TokenType::JMP] = &asmc::Parser::parseJMP;
-	m_parserFuncs[asmc::TokenType::JAZ] = &asmc::Parser::parseJAZ;
-	m_parserFuncs[asmc::TokenType::JLZ] = &asmc::Parser::parseJLZ;
-	m_parserFuncs[asmc::TokenType::JGZ] = &asmc::Parser::parseJGZ;
-	m_parserFuncs[asmc::TokenType::JSC] = &asmc::Parser::parseJSC;
-	m_parserFuncs[asmc::TokenType::JUC] = &asmc::Parser::parseJUC;
-	m_parserFuncs[asmc::TokenType::JCT] = &asmc::Parser::parseJCT;
-	m_parserFuncs[asmc::TokenType::JCF] = &asmc::Parser::parseJCF;
+	m_parserFuncs[asmc::TokenType::JAZ] = &asmc::Parser::parseJMP;
+	m_parserFuncs[asmc::TokenType::JLZ] = &asmc::Parser::parseJMP;
+	m_parserFuncs[asmc::TokenType::JGZ] = &asmc::Parser::parseJMP;
+	m_parserFuncs[asmc::TokenType::JSC] = &asmc::Parser::parseJMP;
+	m_parserFuncs[asmc::TokenType::JUC] = &asmc::Parser::parseJMP;
+	m_parserFuncs[asmc::TokenType::JCT] = &asmc::Parser::parseJMP;
+	m_parserFuncs[asmc::TokenType::JCF] = &asmc::Parser::parseJMP;
 
 	m_parserFuncs[asmc::TokenType::LABEL] = &asmc::Parser::parseLabel;
 
@@ -62,22 +63,18 @@ Parser::~Parser()
 //-------------------------------------------------//
 
 void Parser::run()
-{
-	
+{	
+	//--------------------------------------------------------------//
+	//parser
+	//--------------------------------------------------------------//
 
 	while (m_currentToken.m_type != asmc::TokenType::ENDOFLINE)
 	{
 		if (m_currentToken.m_type != asmc::TokenType::NEWLINE)
-		{	
-			//std::cout << "-------\n";
-			//std::cout << m_currentToken.m_text <<" " << magic_enum::enum_name(m_currentToken.m_type) << "\n";
-			program();
-
-			
-		}
-		
+		{				
+			program();			
+		}		
 		moveCurrentToken();
-
 	}
 
 	std::cout << rang::fg::blue
@@ -90,6 +87,20 @@ void Parser::run()
 		std::cout << '[' << key << "] status [" << magic_enum::enum_name(value.m_status) << "]" << " address[" << value.m_ramIndex << "]\n";
 	}
 
+	//check for parser or lexer error
+	if (f_error)
+	{
+		std::cout << rang::fg::red
+			<< "Parser or lexer error detected"
+			<< rang::style::reset
+			<< "\n";		
+		return;
+	}
+
+	//--------------------------------------------------------------//
+	//check tables
+	//--------------------------------------------------------------//
+
 
 	checkTables();
 
@@ -98,6 +109,38 @@ void Parser::run()
 		std::cout << '[' << key << "] status [" << magic_enum::enum_name(value.m_status) << "]" << " address[" << value.m_ramIndex << "]\n";
 	}
 
+	//if symbol info UNDEFINED
+	if (f_error)
+	{
+		std::cout << rang::fg::red
+			<< "Undefined symbol detected"
+			<< rang::style::reset
+			<< "\n";		
+		return;
+	}
+
+	for (size_t i = 0; i < m_output.size(); i++)
+	{
+		printBinHex(m_output[i].m_opcode, m_output[i].m_secondPart);
+	}
+
+	//--------------------------------------------------------------//
+	//output file
+	//--------------------------------------------------------------//
+
+	std::ofstream file("out.txt");
+
+	if (file.is_open())
+	{
+		
+		for (size_t i = 0; i < m_output.size(); i++)
+		{
+			file << rdx::decToHex(m_output[i].m_opcode) << " " 
+				 << rdx::decToHex(m_output[i].m_secondPart) << "\n";
+		}
+
+		file.close();
+	}
 }
 
 void Parser::checkTables()
@@ -131,7 +174,7 @@ void Parser::checkTables()
 					m_jumpTable[labelName].m_secondPart = value.m_ramIndex;
 					m_symbolTable[key].m_status = asmc::LabelStatus::Used;
 
-					//m_output.push_back(m_jumpTable[labelName]);
+					m_output.push_back(m_jumpTable[labelName]);
 				}
 			}
 
@@ -157,10 +200,7 @@ void Parser::program()
 		(this->*m_parserFuncs[m_currentToken.m_type])();
 	}
 
-	for (size_t i = 0; i < m_output.size(); i++)
-	{
-		printBinHex(m_output[i].m_opcode, m_output[i].m_secondPart);
-	}
+	
 	
 }
 
@@ -236,6 +276,8 @@ void Parser::printError(std::string message)
 		<< " type	[" << magic_enum::enum_name(m_currentToken.m_type) << "]"
 		<< rang::style::reset
 		<< "\n";
+
+	f_error = true;
 }
 
 void Parser::printWarning(std::string message)
@@ -278,9 +320,12 @@ MemoryLayout Parser::parseOperand(uint32_t opcode)
 
 	case asmc::TokenType::REGISTER:
 
-			rx = rdx::hexToDec(m_currentToken.m_text);
-			
-			opcode = opcode | (rx << 18);
+			rx = opcode & 0x00ff'0000;//get rx part
+			opcode = opcode & 0xff00'0000; //clear regx part
+
+			opcode = opcode | (rx << 3);//shift rx part to left
+
+			opcode = opcode | (rdx::hexToDec(m_currentToken.m_text) << asmc_ShiftAmount_RegB);//shift ry part to left
 
 			opcode = asmc_CombineMODBits(opcode, asmc_MOD_Rx_Ry);
 
@@ -483,61 +528,60 @@ void Parser::parseLOAD()
 void Parser::parseSTR()
 {
 	if (m_peekToken.m_type != asmc::TokenType::ADDRESS && 
+		m_peekToken.m_type != asmc::TokenType::REGADR  &&
 		m_peekToken.m_type != asmc::TokenType::ADR_P_REG)
 	{
-		std::cout << "HATA\n";
+		printError("unexpected operand");
 	}
 
-
+	MemoryLayout memlay;
 	uint32_t opcode = 0x2;
 
-	opcode <<= 24;
+	opcode <<= asmc_ShiftAmount_Opcode;
 
-	moveCurrentToken();
-	uint32_t address = rdx::hexToDec(m_currentToken.m_text);
+	/*
+		STR @ff,r1
+		STR @r2,r1
+		STR @ff+r2,r1
+	*/
+	moveCurrentToken();//@ff,@r2,@ff+r2
 
-	moveCurrentToken();
-
-	MemoryLayout memlay;
-
-	uint32_t secondPart = 0;
+	uint32_t firstOperand = rdx::hexToDec(m_currentToken.m_text);
 
 	switch (m_currentToken.m_type)
 	{
-		case asmc::TokenType::REGISTER:
-				secondPart = rdx::hexToDec(m_currentToken.m_text);
+	case asmc::TokenType::ADDRESS:
+			opcode = asmc_CombineMODBits(opcode, asmc_MOD_Adr);
 
-				opcode = opcode | (secondPart << 18);
+			memlay.m_secondPart = rdx::hexToDec(m_currentToken.m_text);		
 
-				opcode = asmc_CombineMODBits(opcode, asmc_MOD_Adr);
-				
-				memlay = { opcode, address};
-		
-				m_ramLocation += 2;
-			break;
+		break;
 
-		case asmc::TokenType::REGADR:
-				secondPart = rdx::hexToDec(m_currentToken.m_text);
+	case asmc::TokenType::REGADR:
+			opcode = asmc_CombineMODBits(opcode, asmc_MOD_RegAdr);
 
-				
+			opcode = opcode | (rdx::hexToDec(m_currentToken.m_text) << asmc_ShiftAmount_RegA);
+		break;
 
-				m_ramLocation += 1;
-			break;
+	case asmc::TokenType::ADR_P_REG:
+			opcode = asmc_CombineMODBits(opcode, asmc_MOD_Adr_P_Reg);
 
-		case asmc::TokenType::ADR_P_REG:
-				secondPart = rdx::hexToDec(m_currentToken.m_text);
+			PacketAdrPReg packet = getAdr_P_RegPart(m_currentToken.m_text);
 
-				opcode = opcode | (secondPart << 18);
+			opcode = opcode | (packet.m_regPart << asmc_ShiftAmount_RegA);
 
-				opcode = asmc_CombineMODBits(opcode, asmc_MOD_Adr_P_Reg);
-
-				memlay = { opcode, address };
-				m_ramLocation += 2;
-			break;
+			memlay.m_secondPart = packet.m_adrPart;
+		break;
 	}
 
-	printBinHex(memlay.m_opcode, memlay.m_secondPart);
+	
+	moveCurrentToken();
 
+	opcode = opcode | ( rdx::hexToDec(m_currentToken.m_text) << asmc_ShiftAmount_RegB);
+	
+	memlay.m_opcode = opcode;	
+	m_output.push_back(memlay);
+	
 }
 
 void Parser::parseMOV()
@@ -583,20 +627,39 @@ void Parser::parseMOV()
 
 //-----------------ALU---------------------//
 
-void Parser::parseADD()
+void Parser::parseArithmeticPart()
 {
 	if (m_peekToken.m_type != asmc::TokenType::REGISTER)
 	{
-		std::cout << "HATA\n";
+		printError("unexpected operand");
 	}
 
-	uint32_t opcode = 0x10;
+	uint32_t opcode = 0;
 
-	opcode <<= 24;
+	switch (m_currentToken.m_type)
+	{
+	case asmc::TokenType::ADD:
+		opcode = 0x10;
+		break;
+
+	case asmc::TokenType::SUB:
+		opcode = 0x11;
+		break;
+	
+	case asmc::TokenType::MUL:
+		opcode = 0x12;
+		break;
+
+	case asmc::TokenType::DIV:
+		opcode = 0x13;
+		break;
+	}
+
+	opcode = opcode << asmc_ShiftAmount_Opcode;
 
 	moveCurrentToken();
 	uint32_t registerPart = rdx::hexToDec(m_currentToken.m_text);
-	
+
 	registerPart <<= asmc_ShiftAmount_RegB;
 	opcode |= registerPart;
 
@@ -606,61 +669,48 @@ void Parser::parseADD()
 
 	memlay = parseOperand(opcode);
 
-	/*switch (m_currentToken.m_type)
+	m_output.push_back(memlay);
+}
+
+
+void Parser::parseLogicPart()
+{
+	if (m_peekToken.m_type != asmc::TokenType::REGISTER)
 	{
-		case asmc::TokenType::REGISTER:
-
-			registerPart = rdx::hexToDec(m_currentToken.m_text);
-			opcode = opcode | (registerPart << 18);
-			
-			opcode = asmc_CombineMODBits(opcode, asmc_MOD_Rx_Ry);
-
-			memlay = { opcode, 0};
-			
-			m_ramLocation += 1;
-		break;
-	}*/
+		printError("Expected register as first operand");
+	}
 	
-	m_output.push_back(memlay);	
+	uint32_t opcode = 0;
 
-}
-
-void Parser::parseSUB()
-{
-
-
-}
-
-void Parser::parseDIV()
-{
-}
-
-void Parser::parseMUL()
-{
-}
-
-void Parser::parseSHL()
-{
-}
-
-void Parser::parseSHR()
-{
-}
-
-void Parser::parseAND()
-{
-	if (m_peekToken.m_type != asmc::TokenType::REGISTER)
+	switch (m_currentToken.m_type)
 	{
-		printError("Expected register as first operand");
+	case asmc::TokenType::AND:
+		opcode = 0x14;
+		break;
+
+	case asmc::TokenType::OR:
+		opcode = 0x15;
+		break;
+
+	case asmc::TokenType::XOR:
+		opcode = 0x16;
+		break;
+
+	case asmc::TokenType::SHL:
+		opcode = 0x19;
+		break;
+
+	case asmc::TokenType::SHR:
+		opcode = 0x1a;
+		break;
 	}
 
-
-	uint32_t opcode = 0x01 << asmc_ShiftAmount_Opcode;
+	opcode = opcode << asmc_ShiftAmount_Opcode;
 
 	moveCurrentToken();
 	uint32_t registerPart = rdx::hexToDec(m_currentToken.m_text);
 
-	registerPart <<= asmc_ShiftAmount_RegB;
+	registerPart <<= asmc_ShiftAmount_RegA;
 	opcode |= registerPart;
 
 	moveCurrentToken();
@@ -677,39 +727,6 @@ void Parser::parseAND()
 	}
 }
 
-void Parser::parseOR()
-{
-	if (m_peekToken.m_type != asmc::TokenType::REGISTER)
-	{
-		printError("Expected register as first operand");
-	}
-
-	uint32_t opcode = 0x01 << asmc_ShiftAmount_Opcode;
-
-	moveCurrentToken();
-	uint32_t registerPart = rdx::hexToDec(m_currentToken.m_text);
-
-	registerPart <<= asmc_ShiftAmount_RegB;
-	opcode |= registerPart;
-
-	moveCurrentToken();
-
-	MemoryLayout memlay;
-	if (m_currentToken.m_type != asmc::TokenType::REGISTER)
-	{
-		printError("unexpected operand type");
-	}
-	else
-	{
-		memlay = parseOperand(opcode);
-		m_output.push_back(memlay);
-
-	}
-}
-
-void Parser::parseXOR()
-{
-}
 
 void Parser::parseNOT()
 {
@@ -717,13 +734,58 @@ void Parser::parseNOT()
 
 void Parser::parseCMP()
 {
+	if (m_peekToken.m_type != asmc::TokenType::REGISTER)
+	{
+		printError("unexpected operand");
+	}
+
+	uint32_t opcode = 0x18;
+
+	opcode = opcode << asmc_ShiftAmount_Opcode;
+
+	MemoryLayout memlay;
+
+	moveCurrentToken();
+
+	if (m_currentToken.m_type != asmc::REGISTER &&
+		m_currentToken.m_type != asmc::REGADR   &&
+		m_currentToken.m_type != asmc::ADDRESS)
+	{
+		printError("unexpected operand");
+	}
+
+	switch (m_peekToken.m_type)
+	{
+	case asmc::TokenType::REGADR:
+	case asmc::TokenType::REGISTER:
+			opcode = opcode | (rdx::hexToDec(m_currentToken.m_text) << asmc_ShiftAmount_RegA);
+
+			moveCurrentToken();
+			
+			opcode = opcode | (rdx::hexToDec(m_currentToken.m_text) << asmc_ShiftAmount_RegB);
+		break;
+
+	case asmc::TokenType::ADDRESS:
+			opcode = opcode | (rdx::hexToDec(m_currentToken.m_text) << asmc_ShiftAmount_RegB);
+
+			moveCurrentToken();
+
+			memlay.m_secondPart = rdx::hexToDec(m_currentToken.m_text);
+
+		break;
+	}
+
+	memlay.m_opcode = opcode;
+	
+	m_output.push_back(memlay);
+	
 }
 
 //-----------------------------------//
 
 void Parser::parsePUSH()
 {
-	uint32_t opcode = 0x01 << asmc_ShiftAmount_Opcode;
+	uint32_t opcode = 0x05 << asmc_ShiftAmount_Opcode;
 
 	moveCurrentToken();
 	
@@ -742,7 +804,6 @@ void Parser::parsePUSH()
 
 			memlay.m_opcode = opcode;
 
-			m_output.push_back(memlay);
 			m_ramLocation += 1;			
 		break;
 
@@ -755,7 +816,6 @@ void Parser::parsePUSH()
 
 			memlay.m_opcode = opcode;
 
-			m_output.push_back(memlay);
 			m_ramLocation += 1;
 		break;
 
@@ -767,8 +827,21 @@ void Parser::parsePUSH()
 
 			memlay.m_opcode = opcode;
 			memlay.m_secondPart = rx;
-			
-			m_output.push_back(memlay);
+
+			m_ramLocation += 2;
+		break;
+
+	case asmc::TokenType::ADR_P_REG:
+				
+			PacketAdrPReg packet = getAdr_P_RegPart(m_currentToken.m_text);
+						
+			opcode = opcode | (packet.m_regPart << asmc_ShiftAmount_RegB);//shift rx part									
+
+			opcode = asmc_CombineMODBits(opcode, asmc_MOD_Adr_P_Reg);
+
+			memlay.m_opcode = opcode;
+			memlay.m_secondPart = packet.m_adrPart;
+		
 			m_ramLocation += 2;
 		break;
 
@@ -777,12 +850,14 @@ void Parser::parsePUSH()
 		break;
 	}
 
+	m_output.push_back(memlay);
+
 
 }
 
 void Parser::parsePOP()
 {
-	uint32_t opcode = 0x01 << asmc_ShiftAmount_Opcode;
+	uint32_t opcode = 0x06 << asmc_ShiftAmount_Opcode;
 
 	MemoryLayout memlay{ opcode, 0};
 
@@ -890,7 +965,7 @@ void Parser::parseJMP()
 		std::cout << "hata\n";
 	}
 
-	uint32_t opcode;
+	uint32_t opcode = 0;
 	switch (m_currentToken.m_type)
 	{
 	case asmc::TokenType::JMP:
@@ -951,40 +1026,13 @@ void Parser::parseJMP()
 		memlay.m_opcode = opcode;
 		memlay.m_secondPart = m_symbolTable[m_currentToken.m_text].m_ramIndex;
 
-		printBinHex(memlay.m_opcode, 0);
+		//printBinHex(memlay.m_opcode, 0);
 
+		m_output.push_back(memlay);
 
 	}
 
 	m_ramLocation += 2;
-}
-
-void Parser::parseJAZ()
-{
-}
-
-void Parser::parseJLZ()
-{
-}
-
-void Parser::parseJGZ()
-{
-}
-
-void Parser::parseJSC()
-{
-}
-
-void Parser::parseJUC()
-{
-}
-
-void Parser::parseJCT()
-{
-}
-
-void Parser::parseJCF()
-{
 }
 
 //------------------------------------//

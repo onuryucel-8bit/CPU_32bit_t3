@@ -3,7 +3,7 @@
 	AssemblerV4
 */
 
-;---------tamamlandi---------
+;---------tamamlandi---------LOAD
 ;LOAD r0,0xf
 ;LOAD r1,@ff
 ;LOAD r1,@r2
@@ -11,48 +11,54 @@
 
 ;---------tamamlandi---------
 ;STR @ff,r1
-
-;hata var
 ;STR @r2,r1
 ;STR @ff+r2,r1
 
-;---------tamamlandi---------
+;---------tamamlandi---------MOV
 ;MOV r4,r4
-
-
-;hata var
-;add r1,r2
 
 ;---------tamamlandi---------
 ;add r1,0x5
-
-;add r2,@ff
-
-;hata var
+;add r2,@ff+r2
+;add r1,r2
 ;add r2,@r1
-
-;hata var
 ;add r1,@ff+r1
+;sub,mul,div
 
-;hata var
+;---------tamamlandi--------- AND
 ;and r1,r2
-
-;hata var
 ;or r1,r2
+;xor r1,r2
+;shl r1,r2
+;shr r1,r2
+;cmp r1,r2
+;cmp r1,@r2
+;cmp r1,@ff
 
-;calisiyor
+
+
+;---------tamamlandi--------- PUSH
 ;push r1
 ;push @r1
 ;push @ff
+;push @ff+r2
 
-;hata var
-;push @ff+4
-
-;calisiyor
+;---------tamamlandi---------POP
 ;pop
+
+;---------tamamlandi---------JMP
+/*
+load r0,0xff
 
 loop:
 	load r0,0xff
-	
-	jmp loop
 
+	jmp loop
+	jaz loop
+	jlz loop
+	jgz loop
+	jsc loop
+	juc loop
+	jct loop
+	jcf loop
+*/

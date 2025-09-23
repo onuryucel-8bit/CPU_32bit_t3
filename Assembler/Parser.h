@@ -6,6 +6,7 @@
 
 //TEST DEBUG
 #include <bitset>
+#include <fstream>
 
 #include "../libsLocal/rang.hpp"
 #include "utils/Radix.h"
@@ -60,9 +61,10 @@ struct symbolInfo
 };
 
 struct MemoryLayout
-{
+{	
 	uint32_t m_opcode = 0;
 	uint32_t m_secondPart = 0;
+	int ramIndex = -1;
 };
 
 struct PacketAdrPReg
@@ -120,7 +122,7 @@ private:
 	
 	std::string m_lastFuncName;
 
-
+	bool f_error;
 	
 
 	/*
@@ -138,40 +140,33 @@ private:
 	
 	void parseLOAD();
 	void parseMOV();
+	void parseSTR();
 
 
-	void parseADD();
-	void parseSUB();
-	void parseDIV();
-	void parseMUL();
-	void parseSHL();
-	void parseSHR();
-	void parseAND();
-	void parseOR();
-	void parseXOR();
+	//------------------ALU-------------//
+	void parseArithmeticPart();
+
+	//----parse and,or,xor,shl,shr-------//
+	void parseLogicPart();
+	//----------------------------------//
+
 	void parseNOT();
+
 	void parseCMP();
+	//-----------------------------------//
 
 	void parsePUSH();
 	void parsePOP();
 
-
-
-	void parseSTR();
+	
 	void parseLabel();
-	void parseJMP();
+
 	void parseCALL();
 	void parseFUNC();
 	void parseRET();
 
-
-	void parseJAZ();
-	void parseJLZ();
-	void parseJGZ();
-	void parseJSC();
-	void parseJUC();
-	void parseJCT();
-	void parseJCF();
+	//----parse jmp,jlz,jgz,jcf....-------//
+	void parseJMP();
 
 };
 
