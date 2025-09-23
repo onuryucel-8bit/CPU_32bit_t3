@@ -96,6 +96,7 @@ private:
 	PacketAdrPReg getAdr_P_RegPart(std::string& operand);
 
 #ifdef PARSER_TEST_FUNCS
+	asmc::TokenType toToken(size_t opcode);
 	void printBinHex(std::bitset<32> opcode, std::bitset<32> operand);
 	void printCurrentPeekToken();
 #endif // PARSER_TEST_FUNCS
@@ -123,6 +124,7 @@ private:
 	std::string m_lastFuncName;
 
 	bool f_error;
+	bool fd_PrintHexOutput;//flag debug fd
 	
 
 	/*

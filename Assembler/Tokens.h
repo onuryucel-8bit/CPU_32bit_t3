@@ -59,9 +59,9 @@ namespace asmc
 
 		JCT,
 		JCF,
-
-		EMPTY,
+		
 		LABEL,
+		EMPTY,
 
 		ORIGIN,
 		DB,	//define byte

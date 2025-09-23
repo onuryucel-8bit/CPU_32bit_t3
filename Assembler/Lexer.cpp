@@ -127,10 +127,12 @@ asmc::Token Lexer::lexRegPart()
 
 	nextChar();
 	if (isxdigit(static_cast<uint8_t>(peek())))
-	{
-		std::cout << "ERROR invalid reg operand it should be r[0-7]\n";
-
+	{		
+		printError("invalid reg operand it should be r[0-7]\n");
 		//empty token
+
+		token = { std::string(1,m_currentChar), asmc::TokenType::EMPTY};
+
 		return token;
 	}
 
@@ -493,13 +495,15 @@ void Lexer::nextChar()
 
 void Lexer::printError(std::string message)
 {
-	std::cout 
-		<< rang::fg::red
-		<< "ERROR::" << message
+	std::cout << rang::fg::cyan
+		<< "*****************************\n"
+		<< "ERROR::Lexer::" << message
+		<< "lastToken [" << m_lastToken.m_text <<"] "
 		<< "current char[" << std::string(1, m_currentChar) <<"] "
 		<< "current pos [" << std::to_string(m_position) << "] "
-		<< "line number [" << m_lineNumber <<"]"
-	<< rang::style::reset << "\n";
+		<< "line number [" << m_lineNumber <<"]\n"
+		<< "*****************************\n"
+	<< rang::style::reset;
 
 	f_error = true;
 }
