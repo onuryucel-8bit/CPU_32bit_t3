@@ -11,6 +11,7 @@ loop:
 	sub r0,0x1
 	jgz loop
 
+push r2
 
 ;---------
 ;LOAD r7,0xff

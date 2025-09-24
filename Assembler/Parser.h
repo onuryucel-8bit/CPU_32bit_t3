@@ -13,6 +13,15 @@
 
 #include "Lexer.h"
 
+//TODO ramIndex bazi komutlarda yok
+//FIXME label ramIndex hesaplamasinda hata var
+/*
+0 1008000 5
+2 1048000 0
+6 10048000 1  //adres 4 olmali
+8 11008000 1  //6
+8 1E000000	  //8
+*/
 
 #define PARSER_TEST_FUNCS
 
@@ -64,7 +73,8 @@ struct MemoryLayout
 {	
 	uint32_t m_opcode = 0;
 	uint32_t m_secondPart = 0;
-	int ramIndex = -1;
+	int m_ramIndex = -1;
+	char m_packetSize = 0;
 };
 
 struct PacketAdrPReg

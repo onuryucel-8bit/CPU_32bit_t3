@@ -112,10 +112,12 @@ void Parser::run()
 
 	if (fd_PrintHexOutput)
 	{
+		std::cout << rang::bg::green << "printBinHex() BEGIN"<< rang::style::reset << "\n";
 		for (size_t i = 0; i < m_output.size(); i++)
 		{
 			printBinHex(m_output[i].m_opcode, m_output[i].m_secondPart);
 		}
+		std::cout << rang::bg::green << "printBinHex() END" << rang::style::reset << "\n";
 	}
 
 	//if symbol info UNDEFINED
@@ -141,8 +143,15 @@ void Parser::run()
 		
 		for (size_t i = 0; i < m_output.size(); i++)
 		{
-			file << rdx::decToHex(m_output[i].m_opcode) << " " 
-				 << rdx::decToHex(m_output[i].m_secondPart) << "\n";
+			file << rdx::decToHex(m_output[i].m_ramIndex) << " "
+				 << rdx::decToHex(m_output[i].m_opcode);
+
+			if (m_output[i].m_packetSize == 2)
+			{
+				file << " " << rdx::decToHex(m_output[i].m_secondPart);
+			}
+
+			file << "\n";
 		}
 
 		file.close();
@@ -267,12 +276,7 @@ void Parser::printBinHex(std::bitset<32> opcode, std::bitset<32> operand)
 
 	auto commandStr = magic_enum::enum_name(toToken(command));
 
-	std::cout
-		<< rang::bg::green
-		<< "printBinHex()"
-		<< rang::style::reset
-		<< "\n"
-
+	std::cout		
 			<< commandStr << "\n"
 			<<"oooooooo rrr rrr mmm\n"
 			
@@ -370,6 +374,8 @@ MemoryLayout Parser::parseOperand(uint32_t opcode)
 
 			memlay.m_secondPart = rdx::hexToDec(m_currentToken.m_text);
 
+			memlay.m_ramIndex = m_ramLocation;
+			memlay.m_packetSize = 2;
 			m_ramLocation += 2;
 		break;
 
@@ -384,7 +390,8 @@ MemoryLayout Parser::parseOperand(uint32_t opcode)
 
 			opcode = asmc_CombineMODBits(opcode, asmc_MOD_Rx_Ry);
 
-			memlay.ramIndex = m_ramLocation;
+			memlay.m_ramIndex = m_ramLocation;
+			memlay.m_packetSize = 1;
 			m_ramLocation += 1;
 		break;
 
@@ -393,8 +400,10 @@ MemoryLayout Parser::parseOperand(uint32_t opcode)
 			opcode = asmc_CombineMODBits(opcode, asmc_MOD_Adr);
 
 			memlay.m_secondPart = rdx::hexToDec(m_currentToken.m_text);
-			memlay.ramIndex = m_ramLocation;
+			memlay.m_ramIndex = m_ramLocation;
 
+			memlay.m_ramIndex = m_ramLocation;
+			memlay.m_packetSize = 2;
 			m_ramLocation += 2;
 		break;
 
@@ -409,7 +418,8 @@ MemoryLayout Parser::parseOperand(uint32_t opcode)
 			
 			opcode = asmc_CombineMODBits(opcode, asmc_MOD_RegAdr);
 
-			memlay.ramIndex = m_ramLocation;
+			memlay.m_ramIndex = m_ramLocation;
+			memlay.m_packetSize = 1;
 			m_ramLocation += 1;
 		break;
 
@@ -428,8 +438,8 @@ MemoryLayout Parser::parseOperand(uint32_t opcode)
 			opcode = asmc_CombineMODBits(opcode, asmc_MOD_Adr_P_Reg);
 
 			memlay.m_secondPart = packet.m_adrPart;
-			memlay.ramIndex = m_ramLocation;
-
+			memlay.m_ramIndex = m_ramLocation;
+			memlay.m_packetSize = 2;
 			m_ramLocation += 2;
 		break;
 	}	
@@ -668,7 +678,7 @@ void Parser::parseArithmeticPart()
 	MemoryLayout memlay;
 
 	memlay = parseOperand(opcode);
-	memlay.ramIndex = m_ramLocation;
+	memlay.m_ramIndex = m_ramLocation;
 
 	m_output.push_back(memlay);
 }
@@ -721,7 +731,7 @@ void Parser::parseLogicPart()
 		printError("unexpected operand type");
 	}
 	else
-	{
+	{		
 		memlay = parseOperand(opcode);
 		m_output.push_back(memlay);
 	}
@@ -729,7 +739,21 @@ void Parser::parseLogicPart()
 
 void Parser::parseNOT()
 {
-	//TODO parseNOT()
+	if (m_peekToken.m_type != asmc::TokenType::REGISTER)
+	{
+		printError("unexpected operand");
+	}
+
+	uint32_t opcode = 0x17 << asmc_ShiftAmount_Opcode;
+
+	MemoryLayout memlay;
+	moveCurrentToken();
+
+	opcode = opcode | (rdx::hexToDec(m_currentToken.m_text) << asmc_ShiftAmount_RegB);	
+
+	memlay.m_opcode = opcode;
+
+	m_output.push_back(memlay);
 }
 
 void Parser::parseCMP()
@@ -800,10 +824,10 @@ void Parser::parsePUSH()
 
 			opcode = opcode | (rx << asmc_ShiftAmount_RegB);
 			
-			opcode = asmc_CombineMODBits(opcode, asmc_MOD_Rx_Ry);
+			//opcode = asmc_CombineMODBits(opcode, asmc_MOD_Rx_Ry);
 
 			memlay.m_opcode = opcode;
-
+			memlay.m_ramIndex = m_ramLocation;
 			m_ramLocation += 1;			
 		break;
 
@@ -815,7 +839,7 @@ void Parser::parsePUSH()
 			opcode = asmc_CombineMODBits(opcode, asmc_MOD_RegAdr);
 
 			memlay.m_opcode = opcode;
-
+			memlay.m_ramIndex = m_ramLocation;
 			m_ramLocation += 1;
 		break;
 
@@ -827,7 +851,7 @@ void Parser::parsePUSH()
 
 			memlay.m_opcode = opcode;
 			memlay.m_secondPart = rx;
-
+			memlay.m_ramIndex = m_ramLocation;
 			m_ramLocation += 2;
 		break;
 
@@ -841,7 +865,7 @@ void Parser::parsePUSH()
 
 			memlay.m_opcode = opcode;
 			memlay.m_secondPart = packet.m_adrPart;
-		
+			memlay.m_ramIndex = m_ramLocation;
 			m_ramLocation += 2;
 		break;
 
@@ -1010,8 +1034,8 @@ void Parser::parseJMP()
 		m_jumpTable[m_currentToken.m_text] =
 		{
 			.m_opcode = opcode,
-			.m_secondPart = 0
-
+			.m_secondPart = 0,
+			.m_ramIndex = m_ramLocation
 		};
 
 
@@ -1024,8 +1048,8 @@ void Parser::parseJMP()
 
 		memlay.m_opcode = opcode;
 		memlay.m_secondPart = m_symbolTable[m_currentToken.m_text].m_ramIndex;
-
-		//printBinHex(memlay.m_opcode, 0);
+		memlay.m_ramIndex = m_ramLocation;
+		
 
 		m_output.push_back(memlay);
 

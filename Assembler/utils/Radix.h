@@ -10,7 +10,7 @@
 #include<algorithm>
 #include<cmath>
 
-
+//FIXME stoul ve turevlerinin guvenli versiyonunu ekle 13.06.25
 namespace rdx {
 
 	/*
@@ -42,4 +42,10 @@ namespace rdx {
 	std::string binToStr(std::vector<bool> arr, size_t begin, size_t end);
 	std::string binToStr(bool arr[], size_t size);
 	std::string binToStr(bool arr[], size_t begin, size_t size);
+
+    //----------------------------------------------------------------//
+    //----------------------------------------------------------------//
+    //----------------------------------------------------------------//
+
+   
 }
