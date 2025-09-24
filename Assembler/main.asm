@@ -1,17 +1,11 @@
 /*
 	32BitCpu_t3::2025
 	AssemblerV4
+
 */
 
-LOAD r0,0x5
-load r1,0x0
+load r1,@ff + r2
 
-loop:
-	add r1,0x1
-	sub r0,0x1
-	jgz loop
-
-push r2
 
 ;---------
 ;LOAD r7,0xff

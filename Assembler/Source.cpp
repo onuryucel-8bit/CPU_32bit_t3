@@ -7,9 +7,9 @@
 #include "Parser.h"
 
 
-std::string readFile()
+std::string readFile(std::string path)
 {
-	std::fstream file("main.asm");
+	std::fstream file(path);
 
 	if (!file.is_open())
 	{
@@ -33,9 +33,16 @@ std::string readFile()
 //	int hashcode;
 //};
 
-int main()
+int main(int argc, char* argv[])
 {
-	asmc::Lexer lexer(readFile());
+	/*if (argc < 2)
+	{
+		std::cout << "Expected file path...\n";
+		
+		return -1;
+	}*/
+
+	asmc::Lexer lexer(readFile("main.asm"));
 
 	asmc::Parser parser(lexer);
 

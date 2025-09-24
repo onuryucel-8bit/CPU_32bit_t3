@@ -22,8 +22,7 @@ namespace rdx {
 	std::string toBinaryString(size_t dec);
 
 	char printDec_inhexType(int dec);
-
-	//TODO 
+	
 	//BIN => X
 	size_t binToDec(std::string bin);
 	std::string binToHex(size_t bin);

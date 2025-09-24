@@ -184,18 +184,21 @@ asmc::Token Lexer::lexSingleChar()
 			
 			tokenStr = getSubStr(m_position, 1, std::isxdigit);
 			
-			//TODO + - arasi bosluklari kabul eden kod yaz
+			nextChar();//move cursor to '+' or ' '
+			
+			skipWhiteSpace();
 
 			//peek() == '+' || '-'
-			if (peek() == '+' || peek() == '-')
-			{
-				nextChar();//+
+			if (m_currentChar == '+' || m_currentChar == '-')
+			{				
 				tokenStr += m_currentChar;
 				
-				nextChar();//r
+				nextChar();//move cursor to 'r' or ' '
+				skipWhiteSpace();
+				
 				if (isOperand())
 				{
-					nextChar();//3
+					nextChar();//get register hex value
 					tokenStr += m_currentChar;
 
 					token = { tokenStr, asmc::TokenType::ADR_P_REG};
@@ -408,7 +411,7 @@ void Lexer::skipComments()
 		{
 			nextChar();//*
 			nextChar();// \n
-			while (m_currentChar != asmc::TokenType::ENDOFLINE && m_currentChar != '/')
+			while (m_currentChar != asmc::TokenType::ENDOFLINE && m_currentChar != '*' && peek() != '/')
 			{
 				nextChar();
 			}

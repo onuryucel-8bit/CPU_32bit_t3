@@ -143,8 +143,19 @@ void Parser::run()
 		
 		for (size_t i = 0; i < m_output.size(); i++)
 		{
-			file << rdx::decToHex(m_output[i].m_ramIndex) << " "
-				 << rdx::decToHex(m_output[i].m_opcode);
+			file << rdx::decToHex(m_output[i].m_ramIndex) << " ";
+
+			uint32_t opcode = m_output[i].m_opcode / 0x8000'0000;
+
+			if (opcode <= 0)
+			{
+				file << "0" + rdx::decToHex(m_output[i].m_opcode);
+			}
+			else
+			{
+				file << rdx::decToHex(m_output[i].m_opcode);
+			}
+			
 
 			if (m_output[i].m_packetSize == 2)
 			{
@@ -167,13 +178,13 @@ void Parser::checkTables()
 		if (value.m_status == asmc::LabelStatus::Undefined)
 		{
 			//printError("Undefined label [" + key + "] line number [test]");
-			//return;
+			//return;			
 
-			std::cout << "undefined label/func\n";
+			printError("Undefined label/func");
 		}
 		else if (value.m_status == asmc::LabelStatus::Called_Noc)
 		{
-			std::cout << "hata RET yok\n";
+			printError("Couldnt find RET");
 		}
 		else if (value.m_status == asmc::LabelStatus::NotUsed)
 		{
@@ -192,8 +203,6 @@ void Parser::checkTables()
 					m_output.push_back(m_jumpTable[labelName]);
 				}
 			}
-
-
 
 			//for warning
 			if (value.m_status == asmc::LabelStatus::NotUsed)
@@ -222,7 +231,7 @@ void Parser::program()
 
 #ifdef PARSER_TEST_FUNCS
 
-asmc::TokenType Parser::toToken(size_t opcode)
+	asmc::TokenType Parser::toToken(size_t opcode)
 {
 		switch (opcode)
 		{
@@ -267,8 +276,7 @@ asmc::TokenType Parser::toToken(size_t opcode)
 		}
 }
 
-
-void Parser::printBinHex(std::bitset<32> opcode, std::bitset<32> operand)
+	void Parser::printBinHex(std::bitset<32> opcode, std::bitset<32> operand)
 {
 	std::string str = opcode.to_string();
 	
@@ -308,18 +316,18 @@ void Parser::printBinHex(std::bitset<32> opcode, std::bitset<32> operand)
 	std::cout << std::dec;
 }
 
-void Parser::printCurrentPeekToken()
-{
-	std::cout		
-		<< "printCurrentPeekToken()\n"		
-		<< "m_currentToken.text[" << m_currentToken.m_text << "]"
-		<< "m_currentToken.type[" << magic_enum::enum_name(m_currentToken.m_type) << "]"
-		<< "\n"
-		<< "m_peekToken.text[" << m_peekToken.m_text << "]"
-		<< "m_peekToken.type[" << magic_enum::enum_name(m_peekToken.m_type) << "]"		
-		<< "\n";
+	void Parser::printCurrentPeekToken()
+	{
+		std::cout		
+			<< "printCurrentPeekToken()\n"		
+			<< "m_currentToken.text[" << m_currentToken.m_text << "]"
+			<< "m_currentToken.type[" << magic_enum::enum_name(m_currentToken.m_type) << "]"
+			<< "\n"
+			<< "m_peekToken.text[" << m_peekToken.m_text << "]"
+			<< "m_peekToken.type[" << magic_enum::enum_name(m_peekToken.m_type) << "]"		
+			<< "\n";
 
-}
+	}
 
 #endif // PARSER_TEST_FUNCS
 
@@ -497,6 +505,7 @@ PacketAdrPReg Parser::getAdr_P_RegPart(std::string& operand)
 }
  
 //-------------REG/RAM---------------------//
+
 void Parser::parseLOAD()
 {
 	if (m_peekToken.m_type != asmc::TokenType::REGISTER)
@@ -545,9 +554,7 @@ void Parser::parseSTR()
 	}
 
 	MemoryLayout memlay;
-	uint32_t opcode = 0x2;
-
-	opcode <<= asmc_ShiftAmount_Opcode;
+	uint32_t opcode = 0x2 << asmc_ShiftAmount_Opcode;
 
 	/*
 		STR @ff,r1
@@ -678,7 +685,6 @@ void Parser::parseArithmeticPart()
 	MemoryLayout memlay;
 
 	memlay = parseOperand(opcode);
-	memlay.m_ramIndex = m_ramLocation;
 
 	m_output.push_back(memlay);
 }
@@ -752,6 +758,10 @@ void Parser::parseNOT()
 	opcode = opcode | (rdx::hexToDec(m_currentToken.m_text) << asmc_ShiftAmount_RegB);	
 
 	memlay.m_opcode = opcode;
+	memlay.m_ramIndex = m_ramLocation;
+	memlay.m_packetSize = 1;
+
+	m_ramLocation += 1;
 
 	m_output.push_back(memlay);
 }
@@ -763,9 +773,7 @@ void Parser::parseCMP()
 		printError("unexpected operand");
 	}
 
-	uint32_t opcode = 0x18;
-
-	opcode = opcode << asmc_ShiftAmount_Opcode;
+	uint32_t opcode = 0x18 << asmc_ShiftAmount_Opcode;	
 
 	MemoryLayout memlay;
 
@@ -800,12 +808,17 @@ void Parser::parseCMP()
 	}
 
 	memlay.m_opcode = opcode;
+	memlay.m_ramIndex = m_ramLocation;
+	memlay.m_packetSize = 2;
 	
+	
+	m_ramLocation += 2;
+
 	m_output.push_back(memlay);
 	
 }
 
-//-----------------------------------//
+//------------STACK--------------------//
 
 void Parser::parsePUSH()
 {
@@ -814,7 +827,7 @@ void Parser::parsePUSH()
 	moveCurrentToken();
 	
 	uint32_t rx;
-	MemoryLayout memlay{ opcode, 0 };
+	MemoryLayout memlay;
 
 	switch (m_currentToken.m_type)
 	{
@@ -883,38 +896,27 @@ void Parser::parsePOP()
 {
 	uint32_t opcode = 0x06 << asmc_ShiftAmount_Opcode;
 
-	MemoryLayout memlay{ opcode, 0};
+	MemoryLayout memlay 
+	{
+		.m_opcode = opcode,
+		.m_ramIndex = m_ramLocation,
+		.m_packetSize = 1
+	};	
+
+	m_ramLocation += 1;
 
 	m_output.push_back(memlay);
 	
-}
-
-void Parser::parseLabel()
-{
-	if (m_symbolTable.contains(m_currentToken.m_text) && 
-		(m_symbolTable[m_currentToken.m_text].m_status == LabelStatus::NotUsed || 
-			m_symbolTable[m_currentToken.m_text].m_status == LabelStatus::Used))
-	{
-		//m_lineNumber++;
-		//printError("statement():: Label [" + m_currentToken.m_text + "] defined twice or more \n");
-		
-	}
-	else
-	{
-		m_symbolTable[m_currentToken.m_text] = { m_ramLocation, LabelStatus::NotUsed };
-	}
 }
 
 void Parser::parseCALL()
 {
 	if (m_peekToken.m_type != asmc::TokenType::ID)
 	{
-		std::cout << "parse CALL hata\n";
+		printError("CALL must be followed by a function name");
 	}
 
-	uint32_t opcode = 0xff;
-
-	opcode <<= 24;
+	uint32_t opcode = 0x03 << asmc_ShiftAmount_Opcode;	
 
 	moveCurrentToken();
 
@@ -925,11 +927,11 @@ void Parser::parseCALL()
 		m_jumpTable[m_currentToken.m_text] =
 		{
 			.m_opcode = opcode,
-			.m_secondPart = 0
-
+			.m_secondPart = 0,
+			.m_ramIndex = m_ramLocation,
+			.m_packetSize = 2
+			
 		};
-
-		
 	}
 
 	m_ramLocation += 2;
@@ -942,7 +944,7 @@ void Parser::parseFUNC()
 
 	if (m_peekToken.m_type != asmc::TokenType::FUNC_NAME)
 	{
-		std::cout << "parse FUNC hata\n";
+		printError("FUNC must be followed by a function name");
 	}
 
 	moveCurrentToken();
@@ -952,27 +954,50 @@ void Parser::parseFUNC()
 		m_symbolTable[m_currentToken.m_text].m_ramIndex = m_ramLocation;
 		m_symbolTable[m_currentToken.m_text].m_status = asmc::LabelStatus::Called_Noc;
 		
+		MemoryLayout memlay;
+
+		//get CALL hex value
+		memlay.m_opcode = m_jumpTable[m_currentToken.m_text].m_opcode;		
+		//get CALL func_adr
+		memlay.m_secondPart = m_ramLocation;
+		//get ram index 
+		memlay.m_ramIndex = m_jumpTable[m_currentToken.m_text].m_ramIndex;
+
+		memlay.m_packetSize = 2;
+
+		m_output.push_back(memlay);
+
 	}
 
 	m_lastFuncName = m_currentToken.m_text;
-
-	//TODO FUNC mult donus RET komutu yok ise hata versin
-
+	
 }
 
 void Parser::parseRET()
 {
 
 	if (m_lastFuncName == "")
-	{
-		std::cout << "RET qwrqwrqw hata\n";
+	{		
+		printError("FUNC definition required before using RET");
 	}
+
+	uint32_t opcode = 0x04 << asmc_ShiftAmount_Opcode;
+
+	MemoryLayout memlay;
 
 	if (m_symbolTable.contains(m_lastFuncName))
 	{
 		m_symbolTable[m_lastFuncName].m_status = asmc::LabelStatus::Called;
 
 		m_lastFuncName = "";
+
+		memlay.m_opcode = opcode;
+		memlay.m_packetSize = 1;
+		memlay.m_ramIndex = m_ramLocation;
+
+		m_ramLocation += 1;
+
+		m_output.push_back(memlay);
 	}
 
 	
@@ -981,11 +1006,27 @@ void Parser::parseRET()
 
 //----------------JUMP----------------//
 
+void Parser::parseLabel()
+{
+	if (m_symbolTable.contains(m_currentToken.m_text) &&
+		(m_symbolTable[m_currentToken.m_text].m_status == LabelStatus::NotUsed ||
+			m_symbolTable[m_currentToken.m_text].m_status == LabelStatus::Used))
+	{
+		//m_lineNumber++;
+		//printError("statement():: Label [" + m_currentToken.m_text + "] defined twice or more \n");
+
+	}
+	else
+	{
+		m_symbolTable[m_currentToken.m_text] = { m_ramLocation, LabelStatus::NotUsed };
+	}
+}
+
 void Parser::parseJMP()
 {
 	if (m_peekToken.m_type != asmc::TokenType::LABEL)
 	{
-		std::cout << "hata\n";
+		printError("Expected label after jump instruction");
 	}
 
 	uint32_t opcode = 0;
@@ -1035,7 +1076,8 @@ void Parser::parseJMP()
 		{
 			.m_opcode = opcode,
 			.m_secondPart = 0,
-			.m_ramIndex = m_ramLocation
+			.m_ramIndex = m_ramLocation,
+			.m_packetSize = 2
 		};
 
 
@@ -1049,7 +1091,7 @@ void Parser::parseJMP()
 		memlay.m_opcode = opcode;
 		memlay.m_secondPart = m_symbolTable[m_currentToken.m_text].m_ramIndex;
 		memlay.m_ramIndex = m_ramLocation;
-		
+		memlay.m_packetSize = 2;
 
 		m_output.push_back(memlay);
 
