@@ -59,11 +59,13 @@ namespace asmc
 
 		JCT,
 		JCF,
-		
-		LABEL,
-		EMPTY,
 
 		ORIGIN,
+		LABEL,
+
+		EMPTY,
+
+		
 		DB,	//define byte
 		NEWLINE,
 

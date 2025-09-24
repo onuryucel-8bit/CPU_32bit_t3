@@ -14,6 +14,10 @@ Parser::Parser(asmc::Lexer& lexer)
 	f_error = false;
 	fd_PrintHexOutput = true;
 
+	//29 used
+
+	m_parserFuncs[asmc::TokenType::ORIGIN] = &asmc::Parser::parseORIGIN;
+
 	//REG - RAM
 	m_parserFuncs[asmc::TokenType::LOAD] = &asmc::Parser::parseLOAD;
 	m_parserFuncs[asmc::TokenType::STR] = &asmc::Parser::parseSTR;
@@ -85,7 +89,7 @@ void Parser::run()
 
 	for (const auto& [key, value] : m_symbolTable)
 	{
-		std::cout << '[' << key << "] status [" << magic_enum::enum_name(value.m_status) << "]" << " address[" << value.m_ramIndex << "]\n";
+		std::cout << '[' << key.m_text << "] status [" << magic_enum::enum_name(value.m_status) << "]" << " address[" << value.m_ramIndex << "]\n";
 	}
 
 	//check for parser or lexer error
@@ -107,7 +111,7 @@ void Parser::run()
 
 	for (const auto& [key, value] : m_symbolTable)
 	{
-		std::cout << '[' << key << "] status [" << magic_enum::enum_name(value.m_status) << "]" << " address[" << value.m_ramIndex << "]\n";
+		std::cout << '[' << key.m_text << "] status [" << magic_enum::enum_name(value.m_status) << "]" << " address[" << value.m_ramIndex << "]\n";
 	}
 
 	if (fd_PrintHexOutput)
@@ -129,9 +133,14 @@ void Parser::run()
 			<< "\n";		
 		return;
 	}
-	
-	
 
+
+	writeOutput();
+}
+
+
+void Parser::writeOutput()
+{
 	//--------------------------------------------------------------//
 	//output file
 	//--------------------------------------------------------------//
@@ -140,12 +149,20 @@ void Parser::run()
 
 	if (file.is_open())
 	{
-		
+		size_t usedBytes = 0;
+		//TODO hold total bytes in member variable
+		for (size_t i = 0; i < m_output.size(); i++)
+		{
+			usedBytes += m_output[i].m_packetSize;
+		}
+
+		file << usedBytes << "\n";
+
 		for (size_t i = 0; i < m_output.size(); i++)
 		{
 			file << rdx::decToHex(m_output[i].m_ramIndex) << " ";
 
-			uint32_t opcode = m_output[i].m_opcode / 0x8000'0000;
+			uint32_t opcode = m_output[i].m_opcode / 200'000'000;
 
 			if (opcode <= 0)
 			{
@@ -155,7 +172,7 @@ void Parser::run()
 			{
 				file << rdx::decToHex(m_output[i].m_opcode);
 			}
-			
+
 
 			if (m_output[i].m_packetSize == 2)
 			{
@@ -193,7 +210,7 @@ void Parser::checkTables()
 			//check jump table if label used
 			for (const auto& [labelName, memLayout] : m_jumpTable)
 			{
-				if (labelName == key)
+				if (labelName.m_text == key.m_text)
 				{
 					//combine label address with jmp instructions
 					//std::cout << "ramIndex " << value.m_ramIndex << "\n";
@@ -224,6 +241,8 @@ void Parser::program()
 		(this->*m_parserFuncs[m_currentToken.m_type])();
 	}
 }
+
+
 
 //-------------------------------------------------//
 //------------------PRINT_X()----------------------//
@@ -357,6 +376,7 @@ void Parser::printWarning(std::string message)
 		<< rang::style::reset
 		<< "\n";
 }
+
 
 //-------------------------------------------------//
 //-------------------------------------------------//
@@ -506,6 +526,18 @@ PacketAdrPReg Parser::getAdr_P_RegPart(std::string& operand)
  
 //-------------REG/RAM---------------------//
 
+void Parser::parseORIGIN()
+{
+	if (m_peekToken.m_type != asmc::TokenType::HEXNUMBER)
+	{
+		printError("Expected hex number after .origin");
+	}
+
+	moveCurrentToken();
+
+	m_ramLocation = rdx::hexToDec(m_currentToken.m_text);
+}
+
 void Parser::parseLOAD()
 {
 	if (m_peekToken.m_type != asmc::TokenType::REGISTER)
@@ -571,13 +603,20 @@ void Parser::parseSTR()
 			opcode = asmc_CombineMODBits(opcode, asmc_MOD_Adr);
 
 			memlay.m_secondPart = rdx::hexToDec(m_currentToken.m_text);		
+			memlay.m_ramIndex = m_ramLocation;
+			memlay.m_packetSize = 2;
 
+			m_ramLocation += 2;
 		break;
 
 	case asmc::TokenType::REGADR:
 			opcode = asmc_CombineMODBits(opcode, asmc_MOD_RegAdr);
 
 			opcode = opcode | (rdx::hexToDec(m_currentToken.m_text) << asmc_ShiftAmount_RegA);
+			memlay.m_ramIndex = m_ramLocation;
+			memlay.m_packetSize = 1;
+
+			m_ramLocation += 1;
 		break;
 
 	case asmc::TokenType::ADR_P_REG:
@@ -588,6 +627,10 @@ void Parser::parseSTR()
 			opcode = opcode | (packet.m_regPart << asmc_ShiftAmount_RegA);
 
 			memlay.m_secondPart = packet.m_adrPart;
+			memlay.m_ramIndex = m_ramLocation;
+			memlay.m_packetSize = 2;
+
+			m_ramLocation += 2;
 		break;
 	}
 
@@ -597,6 +640,8 @@ void Parser::parseSTR()
 	opcode = opcode | ( rdx::hexToDec(m_currentToken.m_text) << asmc_ShiftAmount_RegB);
 	
 	memlay.m_opcode = opcode;	
+	
+
 	m_output.push_back(memlay);
 	
 }
@@ -920,11 +965,11 @@ void Parser::parseCALL()
 
 	moveCurrentToken();
 
-	if (!m_symbolTable.contains(m_currentToken.m_text))
+	if (!m_symbolTable.contains(m_currentToken))
 	{
-		m_symbolTable[m_currentToken.m_text] = { -1, LabelStatus::Undefined };
+		m_symbolTable[m_currentToken] = { -1, LabelStatus::Undefined };
 
-		m_jumpTable[m_currentToken.m_text] =
+		m_jumpTable[m_currentToken] =
 		{
 			.m_opcode = opcode,
 			.m_secondPart = 0,
@@ -949,19 +994,19 @@ void Parser::parseFUNC()
 
 	moveCurrentToken();
 
-	if (m_symbolTable.contains(m_currentToken.m_text))
+	if (m_symbolTable.contains(m_currentToken))
 	{
-		m_symbolTable[m_currentToken.m_text].m_ramIndex = m_ramLocation;
-		m_symbolTable[m_currentToken.m_text].m_status = asmc::LabelStatus::Called_Noc;
+		m_symbolTable[m_currentToken].m_ramIndex = m_ramLocation;
+		m_symbolTable[m_currentToken].m_status = asmc::LabelStatus::Called_Noc;
 		
 		MemoryLayout memlay;
 
 		//get CALL hex value
-		memlay.m_opcode = m_jumpTable[m_currentToken.m_text].m_opcode;		
+		memlay.m_opcode = m_jumpTable[m_currentToken].m_opcode;		
 		//get CALL func_adr
 		memlay.m_secondPart = m_ramLocation;
 		//get ram index 
-		memlay.m_ramIndex = m_jumpTable[m_currentToken.m_text].m_ramIndex;
+		memlay.m_ramIndex = m_jumpTable[m_currentToken].m_ramIndex;
 
 		memlay.m_packetSize = 2;
 
@@ -969,14 +1014,14 @@ void Parser::parseFUNC()
 
 	}
 
-	m_lastFuncName = m_currentToken.m_text;
+	m_lastFuncName = { m_currentToken.m_text, m_currentToken.m_type};
 	
 }
 
 void Parser::parseRET()
 {
 
-	if (m_lastFuncName == "")
+	if (m_lastFuncName.m_text == "")
 	{		
 		printError("FUNC definition required before using RET");
 	}
@@ -989,7 +1034,7 @@ void Parser::parseRET()
 	{
 		m_symbolTable[m_lastFuncName].m_status = asmc::LabelStatus::Called;
 
-		m_lastFuncName = "";
+		m_lastFuncName.m_text = "";
 
 		memlay.m_opcode = opcode;
 		memlay.m_packetSize = 1;
@@ -1008,9 +1053,9 @@ void Parser::parseRET()
 
 void Parser::parseLabel()
 {
-	if (m_symbolTable.contains(m_currentToken.m_text) &&
-		(m_symbolTable[m_currentToken.m_text].m_status == LabelStatus::NotUsed ||
-			m_symbolTable[m_currentToken.m_text].m_status == LabelStatus::Used))
+	if (m_symbolTable.contains(m_currentToken) &&
+		(m_symbolTable[m_currentToken].m_status == LabelStatus::NotUsed ||
+			m_symbolTable[m_currentToken].m_status == LabelStatus::Used))
 	{
 		//m_lineNumber++;
 		//printError("statement():: Label [" + m_currentToken.m_text + "] defined twice or more \n");
@@ -1018,7 +1063,7 @@ void Parser::parseLabel()
 	}
 	else
 	{
-		m_symbolTable[m_currentToken.m_text] = { m_ramLocation, LabelStatus::NotUsed };
+		m_symbolTable[m_currentToken] = { m_ramLocation, LabelStatus::NotUsed };
 	}
 }
 
@@ -1067,12 +1112,12 @@ void Parser::parseJMP()
 
 	moveCurrentToken();
 
-	if (!m_symbolTable.contains(m_currentToken.m_text))
+	if (!m_symbolTable.contains(m_currentToken))
 	{
-		m_symbolTable[m_currentToken.m_text] = { -1, LabelStatus::Undefined };
+		m_symbolTable[m_currentToken] = { -1, LabelStatus::Undefined };
 
 
-		m_jumpTable[m_currentToken.m_text] =
+		m_jumpTable[m_currentToken] =
 		{
 			.m_opcode = opcode,
 			.m_secondPart = 0,
@@ -1084,12 +1129,12 @@ void Parser::parseJMP()
 	}
 	else
 	{
-		m_symbolTable[m_currentToken.m_text].m_status = asmc::LabelStatus::Used;
+		m_symbolTable[m_currentToken].m_status = asmc::LabelStatus::Used;
 
 		MemoryLayout memlay;
 
 		memlay.m_opcode = opcode;
-		memlay.m_secondPart = m_symbolTable[m_currentToken.m_text].m_ramIndex;
+		memlay.m_secondPart = m_symbolTable[m_currentToken].m_ramIndex;
 		memlay.m_ramIndex = m_ramLocation;
 		memlay.m_packetSize = 2;
 

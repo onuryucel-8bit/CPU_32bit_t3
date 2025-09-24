@@ -4,8 +4,17 @@
 
 */
 
-load r1,@ff + r2
 
+
+load r1,0x5
+load r2,0x3
+add r1,r2
+
+
+loop:
+add r1,r2
+str @ff,r1
+jgz loop
 
 ;---------
 ;LOAD r7,0xff

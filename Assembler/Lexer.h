@@ -14,13 +14,37 @@
 namespace asmc
 {
 
-
-
 struct Token
 {
 	std::string m_text = "";
 	TokenType m_type = TokenType::EMPTY;
+
+	bool operator==(const Token& other) const 
+	{
+		return m_text == other.m_text && m_type == other.m_type;
+	}
 };
+
+}
+
+namespace std
+{
+	template<>
+	struct hash<asmc::Token>
+	{
+		size_t operator() (const asmc::Token& key) const
+		{
+			return std::hash<std::string>()(key.m_text);
+		}
+	};
+}
+
+namespace asmc
+{
+
+
+
+
 
 //gereksiz ?
 #define EMPTY_TOKEN { "", asmc::TokenType::EMPTY }

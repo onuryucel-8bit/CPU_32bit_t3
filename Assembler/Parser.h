@@ -85,6 +85,8 @@ private:
 	void printError(std::string message);
 	void printWarning(std::string message);
 
+	void writeOutput();
+
 	MemoryLayout parseOperand(uint32_t opcode);
 
 	PacketAdrPReg getAdr_P_RegPart(std::string& operand);
@@ -103,9 +105,9 @@ private:
 	asmc::Token m_currentToken;
 	asmc::Token m_peekToken;
 
-	std::unordered_map<std::string, asmc::symbolInfo> m_symbolTable;
+	std::unordered_map<asmc::Token, asmc::symbolInfo> m_symbolTable;
 
-	std::unordered_map<std::string, asmc::MemoryLayout> m_jumpTable;
+	std::unordered_map<asmc::Token, asmc::MemoryLayout> m_jumpTable;
 
 
 	std::vector<asmc::MemoryLayout> m_output;
@@ -115,7 +117,7 @@ private:
 
 	funcPtr m_parserFuncs[32];
 	
-	std::string m_lastFuncName;
+	asmc::Token m_lastFuncName;
 
 	bool f_error;
 	bool fd_PrintHexOutput;//flag debug fd
@@ -132,6 +134,9 @@ private:
 	* 
 	*	output.push_back(opcode_val);
 	*/
+
+	void parseORIGIN();
+
 	//-----------parseX()--------------//
 	
 	void parseLOAD();
