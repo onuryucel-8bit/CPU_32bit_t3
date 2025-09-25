@@ -115,12 +115,12 @@ private:
 	//8byte
 	using funcPtr = void (asmc::Parser::*)();
 
-	funcPtr m_parserFuncs[32];
+	funcPtr m_parserFuncs[64];
 	
 	asmc::Token m_lastFuncName;
 
 	bool f_error;
-	bool fd_PrintHexOutput;//flag debug fd
+	bool fd_printHexOutput;//flag debug fd
 	
 
 	/*
@@ -136,6 +136,9 @@ private:
 	*/
 
 	void parseORIGIN();
+	void parseDB();
+	void parseDEFINE();
+	void parseINCLUDE();
 
 	//-----------parseX()--------------//
 	
@@ -149,6 +152,7 @@ private:
 
 	//----parse and,or,xor,shl,shr-------//
 	void parseLogicPart();
+
 	//----------------------------------//
 
 	void parseNOT();

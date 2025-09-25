@@ -12,11 +12,14 @@ Parser::Parser(asmc::Lexer& lexer)
 	m_lineNumber = 0;
 
 	f_error = false;
-	fd_PrintHexOutput = true;
+	fd_printHexOutput = true;
 
 	//29 used
 
+	m_parserFuncs[asmc::TokenType::INCLUDE] = &asmc::Parser::parseINCLUDE;
 	m_parserFuncs[asmc::TokenType::ORIGIN] = &asmc::Parser::parseORIGIN;
+	m_parserFuncs[asmc::TokenType::DB] = &asmc::Parser::parseDB;
+	m_parserFuncs[asmc::TokenType::DEFINE] = &asmc::Parser::parseDEFINE;
 
 	//REG - RAM
 	m_parserFuncs[asmc::TokenType::LOAD] = &asmc::Parser::parseLOAD;
@@ -74,11 +77,24 @@ void Parser::run()
 	//--------------------------------------------------------------//
 
 	while (m_currentToken.m_type != asmc::TokenType::ENDOFLINE)
-	{
+	{		
 		if (m_currentToken.m_type != asmc::TokenType::NEWLINE)
 		{				
-			program();			
-		}		
+			program();
+		}
+
+		if (m_peekToken.m_type == asmc::TokenType::ENDOFLINE)
+		{
+			if (m_lexer.popFile())
+			{
+				break;
+			}
+			else
+			{
+				moveCurrentToken();
+			}						
+		}
+		
 		moveCurrentToken();
 	}
 
@@ -114,7 +130,7 @@ void Parser::run()
 		std::cout << '[' << key.m_text << "] status [" << magic_enum::enum_name(value.m_status) << "]" << " address[" << value.m_ramIndex << "]\n";
 	}
 
-	if (fd_PrintHexOutput)
+	if (fd_printHexOutput)
 	{
 		std::cout << rang::bg::green << "printBinHex() BEGIN"<< rang::style::reset << "\n";
 		for (size_t i = 0; i < m_output.size(); i++)
@@ -134,7 +150,7 @@ void Parser::run()
 		return;
 	}
 
-
+	
 	writeOutput();
 }
 
@@ -357,6 +373,7 @@ void Parser::printError(std::string message)
 	std::cout << rang::fg::red
 		<< "##############################\n"
 		<< "ERROR::Parser:: " << message
+		<< " file name [" << m_lexer.getCurrentFileName() <<"]"
 		<< " line number [" << m_lexer.m_lineNumber << "]"
 		<< " currentToken.text[" << m_currentToken.m_text << "]"
 		<< " type	[" << magic_enum::enum_name(m_currentToken.m_type) << "]"
@@ -536,6 +553,50 @@ void Parser::parseORIGIN()
 	moveCurrentToken();
 
 	m_ramLocation = rdx::hexToDec(m_currentToken.m_text);
+}
+
+void Parser::parseDB()
+{
+	if (m_peekToken.m_type != asmc::TokenType::HEXNUMBER)
+	{
+		printError("Expected hex number after .db");
+	}
+
+	moveCurrentToken();
+
+	while (m_currentToken.m_type == asmc::TokenType::HEXNUMBER)
+	{
+		//TODO process hex values
+		moveCurrentToken();
+	}
+}
+
+void Parser::parseDEFINE()
+{
+	if (m_peekToken.m_type != asmc::TokenType::ID)
+	{
+		printError("Expected identifier after #define");
+	}
+	//TODO process define
+	moveCurrentToken();
+	moveCurrentToken();
+}
+
+void Parser::parseINCLUDE()
+{
+	if (m_peekToken.m_type != asmc::TokenType::DIRECTORY)
+	{
+		printError("Expected directory");
+		return;
+	}	
+
+	
+	m_lexer.pushFile(m_peekToken.m_text);
+	moveCurrentToken(); //currentToken is directory now
+
+	//currentToken points the token in newfile
+	//called in run()
+	//moveCurrentToken();  
 }
 
 void Parser::parseLOAD()

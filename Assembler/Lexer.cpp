@@ -2,17 +2,44 @@
 namespace asmc 
 {
 
-Lexer::Lexer(std::string program)
+Lexer::Lexer(std::string path)
 {
-	m_program = program;
+
+	FileData filedData;
+
+	filedData.m_path = path;
+
+	m_inputStream.push_back(filedData);
+
+	m_program = readFile(path);
+
+
 	m_position = -1;
 	m_currentChar = 0;
 	m_lineNumber = 0;
+	
 
 	f_error = false;
 	f_newline = true;
 
 	nextChar();
+}
+
+std::string Lexer::readFile(std::string path)
+{
+	std::fstream file(path);
+
+	if (!file.is_open())
+	{
+		std::cout << "ERROR:: couldnt open the file\n";
+		return "";
+	}
+
+	std::stringstream ss;
+
+	ss << file.rdbuf();
+
+	return ss.str();
 }
 
 Token Lexer::getToken()
@@ -232,11 +259,29 @@ asmc::Token Lexer::lexSingleChar()
 	case '"':
 		nextChar();
 		
-		tokenStr = getSubStr(m_position, 1, std::isalnum);
+		tokenStr = getSubStr(m_position, 1, std::isalnum, false);
 
 		nextChar(); 
 
-		token = { tokenStr, asmc::TokenType::STRING};
+		//is it "abcd.asm" path?
+		if (m_currentChar == '.')
+		{
+			tokenStr += m_currentChar;
+
+			nextChar();
+			while (m_currentChar != '"')
+			{
+				tokenStr += m_currentChar;
+				nextChar();
+			}
+			nextChar();//skip "
+
+			token = { tokenStr, asmc::TokenType::DIRECTORY};
+		}
+		else
+		{
+			token = { tokenStr, asmc::TokenType::STRING };
+		}		
 		
 		break;
 
@@ -449,7 +494,64 @@ void Lexer::skipNonEssential()
 	}
 }
 
-std::string Lexer::getSubStr(int startPos, int length, int (*cmpFunc)(int))
+void Lexer::pushFile(std::string path)
+{	
+	for (size_t i = 0; i < m_inputStream.size(); i++)
+	{
+		if (m_inputStream[i].m_path == path)
+		{
+			std::cout << "error path == path\n";
+			return;
+		}
+	}
+
+	asmc::FileData& filed = m_inputStream.back();
+
+	filed.m_currentChar = m_currentChar;
+	filed.m_lastPosition = m_position;
+	filed.m_lineNumber = m_lineNumber;
+
+	m_inputStream.push_back({ path });
+	m_streamIndex++;
+
+	m_program = readFile(path);
+	m_currentChar = 0;
+	m_lineNumber = 0;
+	m_position = -1;
+
+	nextChar();
+
+}
+
+bool Lexer::popFile()
+{		
+	m_inputStream.pop_back();
+
+	if (m_inputStream.empty())
+	{
+		return true;
+	}
+
+	asmc::FileData filed;
+	filed = m_inputStream.back();
+	
+	//TODO delete
+	//m_streamIndex--;
+
+	m_program = readFile(filed.m_path);
+	m_currentChar = filed.m_currentChar;
+	m_position = filed.m_lastPosition;
+	m_lineNumber = filed.m_lineNumber;	
+
+	return false;
+}
+
+std::string Lexer::getCurrentFileName()
+{
+	return m_inputStream.back().m_path;
+}
+
+std::string Lexer::getSubStr(int startPos, int length, int (*cmpFunc)(int), bool upper)
 {
 	while (cmpFunc(peek()))
 	{
@@ -459,7 +561,11 @@ std::string Lexer::getSubStr(int startPos, int length, int (*cmpFunc)(int))
 
 	std::string tokenStr = m_program.substr(startPos, length);
 
-	toUpper(tokenStr);
+	if (upper)
+	{
+		toUpper(tokenStr);
+	}
+	
 
 	return tokenStr;
 }
@@ -514,6 +620,11 @@ void Lexer::printError(std::string message)
 bool Lexer::getErrorFlag()
 {
 	return f_error;
+}
+
+bool Lexer::isInputStreamEmpty()
+{
+	return m_inputStream.empty();
 }
 
 }

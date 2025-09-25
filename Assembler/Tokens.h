@@ -11,11 +11,13 @@ namespace asmc
 //decimal  = $255
 //ascii = 'a'
 //string = "abcde"
+//directory = "abcdef.asm" | "abc.cpp" | "abc.c" ... "abc.*"
+
 	enum TokenType
 	{
 
 		ENDOFLINE = -1,
-
+		
 		//Opcodes
 
 		//REG - RAM
@@ -60,17 +62,15 @@ namespace asmc
 		JCT,
 		JCF,
 
+		DEFINE,
 		ORIGIN,
+		INCLUDE,
+		DB,	//define byte
+
 		LABEL,
 
 		EMPTY,
-
-		
-		DB,	//define byte
-		NEWLINE,
-
-		INCLUDE,
-		DEFINE,
+		NEWLINE,				
 		ID,
 		
 		//Operands
@@ -78,6 +78,7 @@ namespace asmc
 		DECNUMBER,
 		ASCII,
 		STRING,
+		DIRECTORY,
 
 		REGISTER,
 		HEXNUMBER,

@@ -7,32 +7,6 @@
 #include "Parser.h"
 
 
-std::string readFile(std::string path)
-{
-	std::fstream file(path);
-
-	if (!file.is_open())
-	{
-		std::cout << "ERROR:: couldnt open the file\n";
-		return "";
-	}
-
-	std::stringstream ss;
-
-	ss << file.rdbuf();
-
-	return ss.str();
-}
-
-//std::vector<FileData> inputStream;
-//
-//struct FileData
-//{
-//	int id;
-//	std::string path;
-//	int hashcode;
-//};
-
 int main(int argc, char* argv[])
 {
 	/*if (argc < 2)
@@ -42,7 +16,16 @@ int main(int argc, char* argv[])
 		return -1;
 	}*/
 
-	asmc::Lexer lexer(readFile("main.asm"));
+	/*
+	switch(flags)
+	{
+		case fd:
+		parser.fd_Print
+		break;
+	}
+	*/
+
+	asmc::Lexer lexer("main.asm");
 
 	asmc::Parser parser(lexer);
 

@@ -5,6 +5,8 @@
 #include <string>
 #include <cctype>
 #include <cstdint>
+#include <fstream>
+#include <sstream>
 
 #include "../LibsLocal/magic_enum/magic_enum.hpp"
 #include "../libsLocal/rang.hpp"
@@ -19,10 +21,18 @@ struct Token
 	std::string m_text = "";
 	TokenType m_type = TokenType::EMPTY;
 
-	bool operator==(const Token& other) const 
+	bool operator==(const Token& other) const
 	{
 		return m_text == other.m_text && m_type == other.m_type;
 	}
+};
+
+struct FileData
+{
+	std::string m_path;
+	int m_lastPosition = 0;
+	char m_currentChar = 0;
+	size_t m_lineNumber = 0;
 };
 
 }
@@ -42,24 +52,24 @@ namespace std
 namespace asmc
 {
 
-
-
-
-
-//gereksiz ?
-#define EMPTY_TOKEN { "", asmc::TokenType::EMPTY }
-
 class Lexer
 {
 public:
 	
-	Lexer(std::string program);
+	Lexer(std::string path);
 	
 	[[nodiscard]] Token getToken();
 
 	bool getErrorFlag();
 
 	size_t m_lineNumber;
+
+	bool isInputStreamEmpty();
+
+	void pushFile(std::string path);
+	bool popFile();
+
+	std::string getCurrentFileName();
 
 private:
 
@@ -83,9 +93,11 @@ private:
 	//skip ',' '\n'
 	void skipNonEssential();
 
+	
+	std::string readFile(std::string path);
 
 	//returns sub part of m_program
-	std::string getSubStr(int startPos, int length ,int (*cmpFunc)(int));
+	std::string getSubStr(int startPos, int length ,int (*cmpFunc)(int), bool upper = true);
 
 	//str token enum icerisinde tanimlimi
 	bool checkIfKeyword(std::string token);
@@ -110,9 +122,16 @@ private:
 	bool f_error;
 	bool f_newline;
 
+	//points to m_inputStream last element
+	//[a,b] points to b
+	//[a,b,c] points to c
+	int m_streamIndex;
+	
+
 	std::string m_program;
 	asmc::Token m_lastToken;
 
+	std::vector<FileData> m_inputStream;
 
 	//label check
 };

@@ -109,7 +109,11 @@ Keyboard::~Keyboard()
 }
 
 
-
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <vector>
 
 #include "Cpu.h"
 
@@ -151,19 +155,38 @@ void print()
 #define TEST_ADDRESS 0xff
 
 
+std::string readFile(std::string path)
+{
+	std::fstream file(path);
+
+	if (!file.is_open())
+	{
+		std::cout << "ERROR:: couldnt open the file\n";
+		return "";
+	}
+
+	std::stringstream ss;
+
+	ss << file.rdbuf();
+
+	return ss.str();
+}
+
 int main()
 {
-	Cpu cpu;
+	std::cout << readFile("D:\\ProgrammingProjects\\Logisim\\32bitCPU_t3\\Assembler\\out.txt") <<"\n";
 
-	cpu.m_registerFile[2] = TEST_ADDRESS;
+	//Cpu cpu;
 
-	cpu.ram[0] = scpu_LOAD_ry;
-	//cpu.ram[1] = TEST_ADDRESS;
-	cpu.ram[TEST_ADDRESS] = TEST_NUMBER;
+	//cpu.m_registerFile[2] = TEST_ADDRESS;
 
-	cpu.run();
+	//cpu.ram[0] = scpu_LOAD_ry;
+	////cpu.ram[1] = TEST_ADDRESS;
+	//cpu.ram[TEST_ADDRESS] = TEST_NUMBER;
 
-	std::cout << std::hex << "r1[" << cpu.m_registerFile[1] << "]\n";
+	//cpu.run();
+
+	//std::cout << std::hex << "r1[" << cpu.m_registerFile[1] << "]\n";
 
 	//using FuncPtr = void (*)();
 	//
