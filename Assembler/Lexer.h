@@ -122,12 +122,6 @@ private:
 	bool f_error;
 	bool f_newline;
 
-	//points to m_inputStream last element
-	//[a,b] points to b
-	//[a,b,c] points to c
-	int m_streamIndex;
-	
-
 	std::string m_program;
 	asmc::Token m_lastToken;
 

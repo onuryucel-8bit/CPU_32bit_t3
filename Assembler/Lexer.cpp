@@ -122,7 +122,7 @@ char Lexer::peek()
 }
 
 //--------------------------------------------//
-//--------------------------------------------//
+//-------------lexPartX()---------------------//
 //--------------------------------------------//
 
 asmc::Token Lexer::lexDotPart()
@@ -500,7 +500,10 @@ void Lexer::pushFile(std::string path)
 	{
 		if (m_inputStream[i].m_path == path)
 		{
-			std::cout << "error path == path\n";
+			std::cout << rang::fg::red 
+					  << "ERROR::Same file name detected in inputStream"
+					  << rang::style::reset
+					  <<"\n";
 			return;
 		}
 	}
@@ -512,7 +515,7 @@ void Lexer::pushFile(std::string path)
 	filed.m_lineNumber = m_lineNumber;
 
 	m_inputStream.push_back({ path });
-	m_streamIndex++;
+	
 
 	m_program = readFile(path);
 	m_currentChar = 0;
@@ -534,10 +537,8 @@ bool Lexer::popFile()
 
 	asmc::FileData filed;
 	filed = m_inputStream.back();
-	
-	//TODO delete
-	//m_streamIndex--;
 
+	//open file
 	m_program = readFile(filed.m_path);
 	m_currentChar = filed.m_currentChar;
 	m_position = filed.m_lastPosition;

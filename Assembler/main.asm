@@ -1,2 +1,1 @@
-#include "stdmath.asm"
-load r1,0x5
+load r1,@ff+r3

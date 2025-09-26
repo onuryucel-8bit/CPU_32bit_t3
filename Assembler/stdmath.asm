@@ -1,1 +1,3 @@
-load r1,0x1
+load r1,0xff
+mult:
+	load r0,0x5f
