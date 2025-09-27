@@ -40,10 +40,50 @@ namespace asmc
 
 enum class LabelStatus
 {
+	/* STATUS examples 	
+	* 
+	* -----------VALID-WritingStyle---
+	*
+	* CALL mult
+	*	...
+	* FUNC mult <= Called
+	*  ...
+	* RET
+	*
+	* -----------ERROR---------------
+	* 
+	* CALL mult
+	*   ...
+	* FUNC mult <= Called_NoRet
+	*  ...
+	*  ...
+	* 
+	* ------------WARNING---------------
+	* 
+	* FUNC mult <= No_Call
+	*  ...
+	* RET
+	* 
+	* ------------ERROR------------------
+	* ...
+	* RET
+	* ...
+	* 
+	* ------------ERROR------------------
+	* ...
+	* FUNC mult <= No_Ret
+	* ...
+	* 
+	*/
+
+
 	Used,
-	NotUsed,
-	Undefined,
-	Called_Noc,
+	NotUsed,		//warning
+	Undefined,		//error     !!
+
+	Called_NoRet,	//error		!!
+	No_Ret,			//error		!!
+	No_Call,		//warning	
 	Called
 };
 
@@ -121,6 +161,7 @@ private:
 
 	bool f_error;
 	bool fd_printHexOutput;//flag debug fd
+	bool fd_scanTables;
 	
 
 	/*

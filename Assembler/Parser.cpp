@@ -13,6 +13,7 @@ Parser::Parser(asmc::Lexer& lexer)
 
 	f_error = false;
 	fd_printHexOutput = true;
+	fd_scanTables = false;
 
 	//29 used
 
@@ -98,14 +99,18 @@ void Parser::run()
 		moveCurrentToken();
 	}
 
-	std::cout << rang::fg::blue
-		<< "printing m_symbolTable"
-		<< rang::style::reset
-		<< "\n";
-
-	for (const auto& [key, value] : m_symbolTable)
+	if (m_output.size() > 0)
 	{
-		std::cout << '[' << key.m_text << "] status [" << magic_enum::enum_name(value.m_status) << "]" << " address[" << value.m_ramIndex << "]\n";
+
+		std::cout << rang::fg::blue
+			<< "printing m_symbolTable"
+			<< rang::style::reset
+			<< "\n";
+
+		for (const auto& [key, value] : m_symbolTable)
+		{
+			std::cout << '[' << key.m_text << "] status [" << magic_enum::enum_name(value.m_status) << "]" << " address[" << value.m_ramIndex << "]\n";
+		}
 	}
 
 	//check for parser or lexer error
@@ -150,8 +155,10 @@ void Parser::run()
 		return;
 	}
 
-	
-	writeOutput();
+	if (m_ramLocation != 0)
+	{
+		writeOutput();
+	}	
 }
 
 
@@ -204,46 +211,57 @@ void Parser::writeOutput()
 
 void Parser::checkTables()
 {
-	std::cout << rang::bg::blue << "Starting second pass..." << rang::style::reset << "\n";
+	std::cout << rang::bg::blue << "checkTables()...." << rang::style::reset << "\n";
 
 	for (const auto& [key, value] : m_symbolTable)
 	{
-		if (value.m_status == asmc::LabelStatus::Undefined)
+		switch (value.m_status)
 		{
-			//printError("Undefined label [" + key + "] line number [test]");
-			//return;			
 
-			printError("Undefined label/func");
-		}
-		else if (value.m_status == asmc::LabelStatus::Called_Noc)
-		{
-			printError("Couldnt find RET");
-		}
-		else if (value.m_status == asmc::LabelStatus::NotUsed)
-		{
-			//printWarning("Not used label[" + key + "]");
+			case asmc::LabelStatus::Undefined:
+				printError("Undefined label/func");
+			break;
 
-			//check jump table if label used
-			for (const auto& [labelName, memLayout] : m_jumpTable)
-			{
-				if (labelName.m_text == key.m_text)
+			case asmc::LabelStatus::Called_NoRet:
+				printError("Couldnt find RET");
+			break;
+
+			case asmc::LabelStatus::No_Call:
+				printWarning("Func [" + key.m_text + "] was not called");
+			break;
+			
+			case asmc::LabelStatus::No_Ret:
+				printError("func(s) dont have RET");
+			break;
+
+			case asmc::LabelStatus::Called:
+			case asmc::LabelStatus::NotUsed:
+				if (f_error == false || fd_scanTables == true)
 				{
-					//combine label address with jmp instructions
-					//std::cout << "ramIndex " << value.m_ramIndex << "\n";
-					m_jumpTable[labelName].m_secondPart = value.m_ramIndex;
-					m_symbolTable[key].m_status = asmc::LabelStatus::Used;
+					//check jump table if label used
+					for (const auto& [labelName, memLayout] : m_jumpTable)
+					{
+						if (labelName.m_text == key.m_text)
+						{
+							//combine label address with jmp instructions
+							//std::cout << "ramIndex " << value.m_ramIndex << "\n";
+							m_jumpTable[labelName].m_secondPart = value.m_ramIndex;
+							m_symbolTable[key].m_status = asmc::LabelStatus::Used;
 
-					m_output.push_back(m_jumpTable[labelName]);
-				}
-			}
+							m_output.push_back(m_jumpTable[labelName]);
+						}
+					}
 
-			//for warning
-			if (value.m_status == asmc::LabelStatus::NotUsed)
-			{
-				//printWarning("Label not used[" + key + "]");
-			}
-		}
-	}
+					//for warning
+					if (value.m_status == asmc::LabelStatus::NotUsed)
+					{
+						//printWarning("Label not used[" + key + "]");
+					}
+				}								
+			break;
+
+		}//switch end
+	}//FOR end
 }
 
 void Parser::program()
@@ -370,13 +388,13 @@ void Parser::printError(std::string message)
 {
 	//TODO hold previous token for better error printing..
 
-	std::cout << rang::fg::red
-		<< "##############################\n"
+	std::cout << rang::fg::red		
 		<< "ERROR::Parser:: " << message
-		<< " file name [" << m_lexer.getCurrentFileName() <<"]"
+		<< " |file name [" << m_lexer.getCurrentFileName() <<"]"
 		<< " line number [" << m_lexer.m_lineNumber << "]"
 		<< " currentToken.text[" << m_currentToken.m_text << "]"
 		<< " type	[" << magic_enum::enum_name(m_currentToken.m_type) << "]"
+		<< "\n##############################\n"
 		<< rang::style::reset
 		<< "\n";
 
@@ -387,9 +405,9 @@ void Parser::printWarning(std::string message)
 {
 	std::cout << rang::fg::yellow
 		<< "WARNING::Parser:: " << message
-		<< " line number [" << m_lexer.m_lineNumber << "]"
+		/*<< " line number [" << m_lexer.m_lineNumber << "]"
 		<< " currentToken[" << m_currentToken.m_text << "]"
-		<< " type	[" << magic_enum::enum_name(m_currentToken.m_type) << "]"
+		<< " type	[" << magic_enum::enum_name(m_currentToken.m_type) << "]"*/
 		<< rang::style::reset
 		<< "\n";
 }
@@ -543,6 +561,7 @@ PacketAdrPReg Parser::getAdr_P_RegPart(std::string& operand)
  
 //-------------REG/RAM---------------------//
 
+
 void Parser::parseORIGIN()
 {
 	if (m_peekToken.m_type != asmc::TokenType::HEXNUMBER)
@@ -598,6 +617,8 @@ void Parser::parseINCLUDE()
 	//called in run()
 	//moveCurrentToken();  
 }
+
+#pragma region REG_RAM
 
 void Parser::parseLOAD()
 {
@@ -714,7 +735,7 @@ void Parser::parseMOV()
 		printError("expected register for first operand");
 	}
 
-	uint32_t opcode = 0xaa << asmc_ShiftAmount_Opcode;
+	uint32_t opcode = 0x08 << asmc_ShiftAmount_Opcode;
 	
 	moveCurrentToken();
 	MemoryLayout memlay;
@@ -742,13 +763,23 @@ void Parser::parseMOV()
 		opcode = (opcode | rx) | ry;
 		
 	}
-	memlay = { opcode, 0 };
+	memlay.m_opcode = opcode;
+	memlay.m_secondPart = 0;
+	memlay.m_packetSize = 1;
+	memlay.m_ramIndex = m_ramLocation;
+	
+
+	m_ramLocation += 1;
 
 	m_output.push_back(memlay);
 	
 }
 
+#pragma endregion
+
 //-----------------ALU---------------------//
+
+#pragma region ALU
 
 void Parser::parseArithmeticPart()
 {
@@ -924,7 +955,11 @@ void Parser::parseCMP()
 	
 }
 
+#pragma endregion
+
 //------------STACK--------------------//
+
+#pragma region STACK
 
 void Parser::parsePUSH()
 {
@@ -1026,19 +1061,6 @@ void Parser::parseCALL()
 
 	moveCurrentToken();
 
-	if (!m_symbolTable.contains(m_currentToken))
-	{
-		m_symbolTable[m_currentToken] = { -1, LabelStatus::Undefined };
-
-		m_jumpTable[m_currentToken] =
-		{
-			.m_opcode = opcode,
-			.m_secondPart = 0,
-			.m_ramIndex = m_ramLocation,
-			.m_packetSize = 2
-			
-		};
-	}
 
 	m_ramLocation += 2;
 
@@ -1048,33 +1070,14 @@ void Parser::parseFUNC()
 {
 	//printCurrentPeekToken();
 
-	if (m_peekToken.m_type != asmc::TokenType::FUNC_NAME)
+	if (m_peekToken.m_type != asmc::TokenType::ID)
 	{
 		printError("FUNC must be followed by a function name");
 	}
 
 	moveCurrentToken();
 
-	if (m_symbolTable.contains(m_currentToken))
-	{
-		m_symbolTable[m_currentToken].m_ramIndex = m_ramLocation;
-		m_symbolTable[m_currentToken].m_status = asmc::LabelStatus::Called_Noc;
-		
-		MemoryLayout memlay;
-
-		//get CALL hex value
-		memlay.m_opcode = m_jumpTable[m_currentToken].m_opcode;		
-		//get CALL func_adr
-		memlay.m_secondPart = m_ramLocation;
-		//get ram index 
-		memlay.m_ramIndex = m_jumpTable[m_currentToken].m_ramIndex;
-
-		memlay.m_packetSize = 2;
-
-		m_output.push_back(memlay);
-
-	}
-
+	
 	m_lastFuncName = { m_currentToken.m_text, m_currentToken.m_type};
 	
 }
@@ -1091,24 +1094,9 @@ void Parser::parseRET()
 
 	MemoryLayout memlay;
 
-	if (m_symbolTable.contains(m_lastFuncName))
-	{
-		m_symbolTable[m_lastFuncName].m_status = asmc::LabelStatus::Called;
-
-		m_lastFuncName.m_text = "";
-
-		memlay.m_opcode = opcode;
-		memlay.m_packetSize = 1;
-		memlay.m_ramIndex = m_ramLocation;
-
-		m_ramLocation += 1;
-
-		m_output.push_back(memlay);
-	}
-
-	
-
 }
+
+#pragma endregion
 
 //----------------JUMP----------------//
 

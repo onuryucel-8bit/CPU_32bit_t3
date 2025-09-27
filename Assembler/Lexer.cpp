@@ -9,6 +9,8 @@ Lexer::Lexer(std::string path)
 
 	filedData.m_path = path;
 
+	m_currentFileName = path;
+
 	m_inputStream.push_back(filedData);
 
 	m_program = readFile(path);
@@ -339,10 +341,6 @@ asmc::Token Lexer::lexWord()
 			{
 				token = { tokenStr, TokenType::LABEL};
 			}
-			else if (m_lastToken.m_type == asmc::TokenType::FUNC)
-			{
-				token = { tokenStr, asmc::TokenType::FUNC_NAME };
-			}
 			else
 			{
 				token = { tokenStr, TokenType::ID};
@@ -524,11 +522,15 @@ void Lexer::pushFile(std::string path)
 
 	nextChar();
 
+	m_currentFileName = m_inputStream.back().m_path;
+
 }
 
 bool Lexer::popFile()
-{		
-	m_inputStream.pop_back();
+{	
+	m_currentFileName = m_inputStream.back().m_path;
+
+	m_inputStream.pop_back();	
 
 	if (m_inputStream.empty())
 	{
@@ -549,7 +551,7 @@ bool Lexer::popFile()
 
 std::string Lexer::getCurrentFileName()
 {
-	return m_inputStream.back().m_path;
+	return m_currentFileName;
 }
 
 std::string Lexer::getSubStr(int startPos, int length, int (*cmpFunc)(int), bool upper)

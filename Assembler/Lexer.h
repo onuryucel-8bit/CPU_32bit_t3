@@ -123,7 +123,9 @@ private:
 	bool f_newline;
 
 	std::string m_program;
+	std::string m_currentFileName;
 	asmc::Token m_lastToken;
+	
 
 	std::vector<FileData> m_inputStream;
 
