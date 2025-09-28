@@ -81,16 +81,34 @@ enum class LabelStatus
 	NotUsed,		//warning
 	Undefined,		//error     !!
 
+	No_FuncDef,		//error		!!
 	Called_NoRet,	//error		!!
 	No_Ret,			//error		!!
 	No_Call,		//warning	
 	Called
 };
 
-struct symbolInfo
+
+//struct InstructionBits
+//{
+//	uint8_t m_opcode;
+//	uint8_t m_RxRy;
+//	uint8_t m_mod;
+//};
+
+struct UnresolvedEntry
 {
+	uint32_t m_opcode = 0;
+	uint32_t m_secondPart = 0;
 	int m_ramIndex = -1;
-	asmc::LabelStatus m_status = asmc::LabelStatus::NotUsed;
+	//???
+	char m_packetSize = 0;
+
+	//for printing error or warning
+	std::string m_fileName;
+	int m_lineNumber = -1;
+
+	asmc::LabelStatus m_status;
 };
 
 struct MemoryLayout
@@ -99,6 +117,21 @@ struct MemoryLayout
 	uint32_t m_secondPart = 0;
 	int m_ramIndex = -1;
 	char m_packetSize = 0;
+};
+
+struct Symbol
+{
+	//label,func => jump address
+	//define => number
+	int m_ramIndex = -1;
+
+	//for printing error or warning
+	std::string m_fileName;
+	int m_lineNumber = -1;
+
+	asmc::LabelStatus m_status;
+	
+	
 };
 
 struct PacketAdrPReg
@@ -145,10 +178,8 @@ private:
 	asmc::Token m_currentToken;
 	asmc::Token m_peekToken;
 
-	std::unordered_map<asmc::Token, asmc::symbolInfo> m_symbolTable;
-
-	std::unordered_map<asmc::Token, asmc::MemoryLayout> m_jumpTable;
-
+	std::unordered_map<asmc::Token, asmc::Symbol> m_symbolTable;
+	std::unordered_map<asmc::Token, std::vector<asmc::UnresolvedEntry>> m_unresolvedTable;
 
 	std::vector<asmc::MemoryLayout> m_output;
 
