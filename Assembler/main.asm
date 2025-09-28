@@ -1,7 +1,13 @@
-#include "stdmath.asm"
-CALL lda
+#define test 0x7
 
-load r0,0xfff
+not test
+
+/*
+#define
+	add,sub,mul,div
+	load
+*/
+
 
 
 

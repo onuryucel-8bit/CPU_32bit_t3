@@ -476,6 +476,23 @@ MemoryLayout Parser::parseOperand(uint32_t opcode)
 
 	switch (m_currentToken.m_type)
 	{
+	case asmc::TokenType::ID:
+
+		if (m_symbolTable.contains(m_currentToken))
+		{
+			opcode = asmc_CombineMODBits(opcode, asmc_MOD_Number);
+			memlay.m_secondPart = m_symbolTable[m_currentToken].m_ramIndex;
+
+			memlay.m_ramIndex = m_ramLocation;
+			memlay.m_packetSize = 2; 
+			m_ramLocation += 2;
+		}
+		else
+		{
+			printError("undefined macro used");
+		}
+			
+		break;
 	case asmc::TokenType::HEXNUMBER:
 			
 			opcode = asmc_CombineMODBits(opcode, asmc_MOD_Number);
@@ -643,7 +660,26 @@ void Parser::parseDEFINE()
 	}
 	//TODO process define
 	moveCurrentToken();
+
+	asmc::Token tempToken = m_currentToken;	
 	moveCurrentToken();
+
+	if (m_currentToken.m_type != asmc::TokenType::HEXNUMBER)
+	{
+		printError("macro value MUST be a hexnumber");
+		return;
+	}
+
+	asmc::Symbol sym;
+
+	// #define abc 0x54
+	sym.m_fileName = m_lexer.getCurrentFileName();
+	sym.m_lineNumber = m_lineNumber;
+	//holds 0x54
+	sym.m_ramIndex = rdx::hexToDec(m_currentToken.m_text);
+
+	m_symbolTable[tempToken] = sym;
+	
 }
 
 void Parser::parseINCLUDE()
@@ -725,7 +761,7 @@ void Parser::parseSTR()
 	uint32_t firstOperand = rdx::hexToDec(m_currentToken.m_text);
 
 	switch (m_currentToken.m_type)
-	{
+	{		
 	case asmc::TokenType::ADDRESS:
 			opcode = asmc_CombineMODBits(opcode, asmc_MOD_Adr);
 
@@ -927,7 +963,8 @@ void Parser::parseLogicPart()
 
 void Parser::parseNOT()
 {
-	if (m_peekToken.m_type != asmc::TokenType::REGISTER)
+	if (m_peekToken.m_type != asmc::TokenType::REGISTER &&
+		m_peekToken.m_type != asmc::TokenType::ID)
 	{
 		printError("unexpected operand");
 	}
@@ -937,7 +974,31 @@ void Parser::parseNOT()
 	MemoryLayout memlay;
 	moveCurrentToken();
 
-	opcode = opcode | (rdx::hexToDec(m_currentToken.m_text) << asmc_ShiftAmount_RegB);	
+	uint32_t registerPart = 0;
+	if (m_currentToken.m_type == asmc::TokenType::REGISTER)
+	{
+		registerPart = rdx::hexToDec(m_currentToken.m_text);
+	}
+	//ID
+	else
+	{
+		if (m_symbolTable.contains(m_currentToken))
+		{
+			registerPart = m_symbolTable[m_currentToken].m_ramIndex;
+		}
+		else
+		{
+			printError("undefined macro used at");
+		}
+		
+	}
+
+	if (registerPart > 7)
+	{
+		printError("register part MUST be in [0-7] range");
+	}
+
+	opcode = opcode | (registerPart << asmc_ShiftAmount_RegB);	
 
 	memlay.m_opcode = opcode;
 	memlay.m_ramIndex = m_ramLocation;
