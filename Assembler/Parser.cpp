@@ -647,7 +647,18 @@ void Parser::parseDB()
 
 	while (m_currentToken.m_type == asmc::TokenType::HEXNUMBER)
 	{
-		//TODO process hex values
+		
+		//TODO need optimization
+		asmc::MemoryLayout memlay;
+
+		memlay.m_opcode = rdx::hexToDec(m_currentToken.m_text);
+		memlay.m_packetSize = 1;
+		memlay.m_ramIndex = m_ramLocation;
+		memlay.m_secondPart = 1;
+
+		m_ramLocation += 1;
+		m_output.push_back(memlay);
+
 		moveCurrentToken();
 	}
 }

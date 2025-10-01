@@ -1,13 +1,12 @@
-#define test 0x7
+.origin 0xfe
 
-not test
+.db 0x2, 0x5
 
-/*
-#define
-	add,sub,mul,div
-	load
-*/
+.origin 0x0
 
+LOAD r0, @fe
+LOAD r1, @ff
 
+ADD r0,r1
 
-
+STR @5,r0

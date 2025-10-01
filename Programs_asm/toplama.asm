@@ -9,4 +9,4 @@ LOAD r1, @ff
 
 ADD r0,r1
 
-STR @5,r0
+STR @a0,r0

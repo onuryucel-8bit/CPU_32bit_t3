@@ -1,78 +1,69 @@
 #include "Cpu.h"
 
-Cpu::Cpu()
+Cpu::Cpu(std::vector<uint32_t>& ram)
 {
+
+	m_ram = ram;
+
 	m_currentOpcode = 0;
-	m_pc = 0;
+	m_programCounter = 0;
 	m_stackPointer = 0;
 	m_interrupt = 0;
-	m_flagRegister = 0;
+	m_flagRegister = 0;	
 
-	ram = new int[scpu_RAM_SIZE];
+	m_accReg = 0;
 
-	m_opcodeList[0] = &Cpu::op_LOADi;
-	m_opcodeList[1] = &Cpu::op_LOADadr;
-	m_opcodeList[2] = &Cpu::op_LOADry;
-	m_opcodeList[3] = &Cpu::op_LOADadrRy;
+ 
+
+	m_opcodeList[0x01].push_back({asmc_MOD_Number ,&Cpu::op_LOADi });
+	m_opcodeList[0x01].push_back({asmc_MOD_Adr ,&Cpu::op_LOADadr });
+
+
+	m_opcodeList[0x10].push_back({ asmc_MOD_Rx_Ry ,&Cpu::op_ADDrxry });
+
+	m_opcodeList[0x02].push_back({ asmc_MOD_Adr ,&Cpu::op_STRadr });
+
+	
 	//....
 }
 
 Cpu::~Cpu()
 {
-	delete[] ram;
+	
 }
 
 void Cpu::run()
 {
-	m_currentOpcode = ram[0];
+	getNextInstruction();
+	while (m_currentCommand.opcode != 0)
+	{
+		std::vector<Command> variantList = m_opcodeList[m_currentCommand.opcode];
 
-	uint32_t modBits = scpu_GET_ModBits(m_currentOpcode);
-	uint32_t opcodeBits = m_currentOpcode >> 24;
+		for (const Command& c : variantList)
+		{
+			if (c.mod == m_currentCommand.mod)
+			{
+				
+				(this->*c.func)();
 
-	std::cout << std::hex << "opcodeBits[" << opcodeBits << "]\n";
-	std::cout << std::hex << "modBits[" << opcodeBits << "]\n";
-	std::cout << std::dec;
+				break;
+			}
+		}
 
-	
-	op_LOADry();
+		m_programCounter++;
+		getNextInstruction();
+	}
 }
 
-
-/*
-	Returns rx,ry given current opcode modbits
-*/
-uint32_t Cpu::getRegisterBits()
+void Cpu::getNextInstruction()
 {
-	uint32_t retVal = 0;
+	//m_currentOpcode <= ram[ProgramCounter];
+	m_currentCommand.opcode = (m_ram[m_programCounter] >> 24);
+	m_currentCommand.regA = (m_ram[m_programCounter] & 0x00e0'0000) >> 21;
+	m_currentCommand.regB = (m_ram[m_programCounter] & 0x001c'0000) >> 18;
+	m_currentCommand.mod = (m_ram[m_programCounter] & 0x0003'8000) >> 15;
 
 
-	uint32_t mod = (scpu_GET_ModBits(m_currentOpcode)) >> 15;
-
-	switch (mod)
-	{
-
-	case 0:
-		std::cout << "TEST\n";
-		break;
-
-		//sayi
-	case 1: [[fallthrough]];
-		//@adr	
-	case 2:
-		retVal = scpu_SHIFT_RightRegister((m_currentOpcode & scpu_MASK_Rx));
-		break;
-		//@ry
-	case 3: [[fallthrough]];
-		//@adr + ry
-	case 4:
-		retVal = scpu_SHIFT_RightRegister((m_currentOpcode & scpu_MASK_RxRy));
-		break;
-
-	default:
-		throw std::runtime_error("Invalid addressing mode");
-	}
-
-	return retVal;
 }
 
 

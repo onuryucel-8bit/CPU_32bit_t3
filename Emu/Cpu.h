@@ -2,18 +2,34 @@
 
 #include <iostream>
 #include <cstdint>
+#include <vector>
+#include <unordered_map>
 
-#define scpu_RAM_SIZE 1024
 
-//getRegisterBits()
-	#define scpu_MASK_Rx 0x001c0000
-	#define scpu_MASK_RxRy 0x00fc0000
+//TEST
+#include <bitset>
 
-	#define scpu_SHIFT_RightRegister(bits) bits >> 18
-	#define scpu_GET_ModBits(bits) bits & 0x00038000
+#define asmc_RAM_SIZE (uint32_t)0xffff
 
-	#define scpu_GET_rxPart(bits) bits >> 21;
-//END
+#define asmc_MOD_Empty 0
+#define asmc_MOD_Number 1
+//@adr
+#define asmc_MOD_Adr 2 //010
+//@ry
+#define asmc_MOD_RegAdr 3 //011
+//@adr + ry
+#define asmc_MOD_Adr_P_Reg 4 //100
+//rx, ry
+#define asmc_MOD_Rx_Ry 5 //101
+
+
+struct Instruction
+{
+	uint8_t opcode;
+	uint8_t regA;
+	uint8_t regB;
+	uint8_t mod;
+};
 
 struct RegPart
 {
@@ -21,34 +37,47 @@ struct RegPart
 	uint32_t ry = 0;
 };
 
+extern struct Command;
+
 class Cpu
 {
 public:
-	Cpu();
+	Cpu(std::vector<uint32_t>& ram);
 	~Cpu();
 
 	void run();
 
-	int* ram;
+	
 	uint32_t m_registerFile[8] = { 0 };
 
 	int m_stack[256];
 
 private:
 
+	std::vector<uint32_t> m_ram;
+
+	Instruction m_currentCommand;
+
 	uint32_t m_currentOpcode;
-	uint32_t m_pc;
+	uint32_t m_programCounter;
 	uint8_t m_stackPointer;
 	uint8_t m_interrupt;
 	uint8_t m_flagRegister;
 
-	using funcPtr = void (Cpu::*)();
+	uint32_t m_accReg;
 
-	funcPtr m_opcodeList[36];
 
-	uint32_t getRegisterBits();
+	
+	
+	std::unordered_map<uint32_t, std::vector<Command>> m_opcodeList;
+
+	void getNextInstruction();
+
+	//----------------------------------------------------/
 
 	///-----------------SECTOR_0-------------------------//
+
+	//----------------------------------------------------/
 	void op_LOADi();
 	void op_LOADadr();
 	void op_LOADry();
@@ -66,7 +95,10 @@ private:
 
 	///-----------------SECTOR_1-------------------------//
 
-	
+	//----------------------------------------------------/
+
+
+
 	void op_ADDrxry();
 	void op_ADDrxi();
 	void op_ADDrxAdr();	
@@ -93,7 +125,10 @@ private:
 	void op_OR();
 	void op_NOT();
 	void op_XOR();
-	void op_CMP();
+
+	void op_CMPrx();
+	void op_CMPrxAdrRy();
+	void op_CMPrxAdr();
 	
 
 	//----------------------------------------------------/
@@ -116,7 +151,12 @@ private:
 	//void op_MOV_flag();
 	//void op_MOV_();
 	//void op_
+		
+	//----------------------------------------------------/
 
+	///-----------------SECTOR_3-------------------------//
+
+	//----------------------------------------------------/
 	
 	void op_JMP();
 	void op_JAZ();
@@ -125,5 +165,14 @@ private:
 	void op_JSC();
 	void op_JUC();
 	void op_JCT();
-	void op_JMT();
+	void op_JMT(); 
+
+};
+
+using funcPtr = void (Cpu::*)();
+
+struct Command
+{
+	uint8_t mod;
+	funcPtr func;
 };

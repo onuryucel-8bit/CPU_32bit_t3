@@ -19,19 +19,19 @@ utils/CharsetROMPrinter
 
 ----AssemblerV4----
 
-	-Tekrar eden kisimlari fonksiyon veya macro haline getir
+	+Tekrar eden kisimlari fonksiyon veya macro haline getir
 	+Ziplama komutlarini parser`a ekle
 
 	+Tokens.h adli dosya olustur enum tokentype i oraya tasi
 	-.ascii ve .text ekle
 	-Hata algilama kismini iyilestir
-	-Cikti dizisini tanimla
+	+Cikti dizisini tanimla
 
 	-TODO kisimlarini yaz	
-	-"Fonksiyon" komutlarini parser`a ekle
-	-#define makrolarini ekle
+	+"Fonksiyon" komutlarini parser`a ekle
+	~#define makrolarini ekle
 
-	-#include "stdmath.asm" dosya okuma sistemini ekle		
+	+#include "stdmath.asm" dosya okuma sistemini ekle		
 	
 -----------------
 

@@ -116,6 +116,7 @@ Keyboard::~Keyboard()
 #include <vector>
 
 #include "Cpu.h"
+#include "utils/Radix.h"
 
 
 void print()
@@ -172,9 +173,129 @@ std::string readFile(std::string path)
 	return ss.str();
 }
 
+class AsmFileReader
+{
+
+public:
+	AsmFileReader(std::string& source);
+	std::vector<uint32_t> read();
+
+private:
+	void nextChar();
+	std::string getNextLine();
+	void skipNewline();
+
+	std::string& m_source;
+	size_t m_position;
+	char m_currentChar;
+
+};
+
+void AsmFileReader::nextChar()
+{
+	m_position++;
+	if (m_position > m_source.length())
+	{
+		m_currentChar = EOF;
+	}
+	else
+	{
+		m_currentChar = m_source[m_position];
+	}
+
+}
+
+std::string AsmFileReader::getNextLine()
+{
+	std::string str;
+	while (m_currentChar != ' ' && m_currentChar != '\n' && m_currentChar != EOF)
+	{
+		if (std::isxdigit(m_currentChar))
+		{
+			str += m_currentChar;
+		}
+		nextChar();
+	}	
+
+	nextChar();
+
+	return str;
+}
+
+void AsmFileReader::skipNewline()
+{
+	while (m_currentChar == '\n')
+	{
+		nextChar();
+	}
+}
+
+std::vector<uint32_t> AsmFileReader::read()
+{
+	//ignore first number
+	nextChar();
+	nextChar();
+	nextChar();
+
+
+	std::vector<uint32_t> output;
+	output.resize(asmc_RAM_SIZE);
+	
+	while (m_currentChar != EOF)
+	{
+	
+		skipNewline();
+
+		//get index
+		std::string str = getNextLine();
+
+		if (m_currentChar == EOF)
+		{
+			break;
+		}
+
+		uint32_t index = rdx::hexToDec(str);
+
+		//get hex value of the command
+		str = getNextLine();
+
+		output[index] = rdx::hexToDec(str);
+	}
+
+	//TEST
+	for (int i = 0; i < 20; i++)
+	{
+		std::cout <<std::hex << output[i] << "\n";
+	}
+	
+	std::cout << output[0xfe] << "\n";
+	std::cout << output[0xff] << "\n";
+	//TEST
+
+	return output;
+}
+
+
+AsmFileReader::AsmFileReader(std::string& source)
+	:m_source(source)
+{
+	m_currentChar = 0;
+	m_position = -1;
+}
+
+
 int main()
 {
-	std::cout << readFile("D:\\ProgrammingProjects\\Logisim\\32bitCPU_t3\\Assembler\\out.txt") <<"\n";
+	std::string source = readFile("D:\\ProgrammingProjects\\Logisim\\32bitCPU_t3\\Assembler\\out.txt");
+
+	AsmFileReader fr(source);
+
+	std::vector<uint32_t> ram = fr.read();
+
+	Cpu cpu(ram);
+
+	cpu.run();
+
 
 	//Cpu cpu;
 
@@ -197,4 +318,4 @@ int main()
 //HATALAR
 
 //define parantez onceligini unuttun 
-//scpu_SHIFT_RightRegister((m_currentOpcode & scpu_MASK_RxRy))
+//asmc_SHIFT_RightRegister((m_currentOpcode & asmc_MASK_RxRy))

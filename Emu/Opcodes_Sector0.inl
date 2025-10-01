@@ -3,95 +3,67 @@
 //LOAD rx,sayi
 void Cpu::op_LOADi()
 {
-	uint32_t regBits = getRegisterBits();
+	m_programCounter++;
 
-	m_pc++;
-	m_registerFile[regBits] = ram[m_pc];
-
-	
+	m_registerFile[m_currentCommand.regB] = m_ram[m_programCounter];
 }
-
+//WORKING
 //LOAD rx,@adr
 void Cpu::op_LOADadr()
-{
-	uint32_t regBits = getRegisterBits();
+{	
+	uint8_t regx = m_currentCommand.regB;
 
-	m_pc++;
+	m_programCounter++;
 
-	uint32_t ramAdr = ram[m_pc];
+	uint32_t address = m_ram[m_programCounter];
 
-	m_registerFile[regBits] = ram[ramAdr];
-
+	m_registerFile[regx] = m_ram[address];
 }
 
 //LOAD rx,@ry
 void Cpu::op_LOADry()
 {
-	uint32_t regBits = getRegisterBits();
-
-	uint32_t regx = scpu_GET_rxPart(regBits);
-	m_pc++;
-
-	//ry & 0x07
-	regBits = regBits & 0x07;
-
-	uint32_t address = m_registerFile[regBits];
-
-	m_registerFile[regx] = ram[address];
+	m_registerFile[m_currentCommand.regA] = m_ram[m_currentCommand.regB];
 }
 
 //LOAD rx,@adr + ry
 void Cpu::op_LOADadrRy()
 {
-	uint32_t regBits = getRegisterBits();
+	m_programCounter++;
+	uint32_t address = m_ram[m_programCounter];
 
-	uint32_t regx = scpu_GET_rxPart(regBits);
-	m_pc++;
-
-	regBits = regBits & 0x07;
-
-	uint32_t address = ram[m_pc] + m_registerFile[regBits];
-
-	m_registerFile[regx] = ram[address];
+	m_registerFile[m_currentCommand.regA] = m_ram[address + m_currentCommand.regB];
 }
 
+//WORKING
 //STR @adr, rx
 void Cpu::op_STRadr()
 {
-	uint32_t regBits = getRegisterBits();
+	m_programCounter++;
+	uint32_t address = m_ram[m_programCounter];
 
-	m_pc++;
-
-	uint32_t address = ram[m_pc];
-
-	ram[address] = m_registerFile[regBits];
+	m_ram[address] = m_registerFile[m_currentCommand.regB];
 }
 
 //STR @rx, ry
 void Cpu::op_STRrx()
 {
-	uint32_t regBits = getRegisterBits();
-
-	uint32_t regx = scpu_GET_rxPart(regBits);
-	uint32_t regy = regBits & 0x7;
+	m_ram[m_currentCommand.regA] = m_registerFile[m_currentCommand.regB];
 }
 
 //STR @adr + rx, ry
 void Cpu::op_STRadrRx()
 {
+	m_programCounter++;
+	uint32_t address = m_ram[m_programCounter];
 
+	m_ram[address + m_currentCommand.regA] = m_ram[m_currentCommand.regB];
 }
 
 //rx = ry
 void Cpu::op_MOV()
 {
-	uint32_t regBits = getRegisterBits();
-
-	uint8_t regy = regBits & 0x7;
-
-	uint8_t regx = regBits >> 3;
-
-	m_registerFile[regx] = m_registerFile[regy];
+	m_registerFile[m_currentCommand.regA] = m_registerFile[m_currentCommand.regB];
 }
 
 

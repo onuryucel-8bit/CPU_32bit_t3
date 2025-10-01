@@ -1,0 +1,12 @@
+/*
+
+#define test 0x7
+	
+	add r0,test
+	sub " "
+	mul " "
+	div " "
+
+	load r0,test
+	not test
+*/
