@@ -1,12 +1,19 @@
 .origin 0xfe
 
-.db 0x2, 0x5
+.db 0x2,0x5
 
 .origin 0x0
 
-LOAD r0, @fe
-LOAD r1, @ff
+LOAD r0,0x5
+LOAD r1,0x3
+CALL carpma
 
-ADD r0,r1
+.origin 0xa0
 
-STR @5,r0
+FUNC carpma
+	Loop:
+		ADD r2,r0
+		SUB r1,0x1
+	
+		JGZ Loop
+	RET

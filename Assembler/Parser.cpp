@@ -8,6 +8,8 @@ Parser::Parser(asmc::Lexer& lexer)
 	m_peekToken = m_lexer.getToken();
 	moveCurrentToken();
 
+	//asmc::TokenElement* elem = m_lexer.getTokenList();
+
 	m_ramLocation = 0;
 	m_lineNumber = 0;
 
@@ -165,7 +167,6 @@ void Parser::run()
 void Parser::writeOutput()
 {
 	//sort std::vector
-
 	std::sort(m_output.begin(), m_output.end(),
 			  [](MemoryLayout& a, MemoryLayout& b)
 			  {
@@ -193,10 +194,12 @@ void Parser::writeOutput()
 
 		for (size_t i = 0; i < m_output.size(); i++)
 		{
+			//write opcode's ram location
 			file << rdx::decToHex(m_output[i].m_ramIndex) << " ";
 
 			uint32_t number = m_output[i].m_opcode / 200'000'000;
 
+			//format opcode part as 32bit hex format
 			if (number <= 0)
 			{
 				file << "0" + rdx::decToHex(m_output[i].m_opcode);
@@ -209,6 +212,7 @@ void Parser::writeOutput()
 
 			if (m_output[i].m_packetSize == 2)
 			{
+				file << "\n" << rdx::decToHex(m_output[i].m_ramIndex + 1);
 				//format second part as 32bit hex format
 				std::string str = rdx::decToHex(m_output[i].m_secondPart);
 				for (size_t j = str.length(); j < 8; j++)
@@ -320,7 +324,6 @@ void Parser::program()
 		(this->*m_parserFuncs[m_currentToken.m_type])();
 	}
 }
-
 
 
 //-------------------------------------------------//
@@ -904,6 +907,12 @@ void Parser::parseArithmeticPart()
 	opcode = opcode << asmc_ShiftAmount_Opcode;
 
 	moveCurrentToken();
+
+	if (m_peekToken.m_type == asmc::TokenType::EMPTY)
+	{
+		printError("detected empty token in arithmetic opcode");
+	}
+
 	uint32_t registerPart = rdx::hexToDec(m_currentToken.m_text);
 
 	registerPart <<= asmc_ShiftAmount_RegB;

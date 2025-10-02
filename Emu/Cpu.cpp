@@ -14,17 +14,30 @@ Cpu::Cpu(std::vector<uint32_t>& ram)
 	m_accReg = 0;
 
  
-
-	m_opcodeList[0x01].push_back({asmc_MOD_Number ,&Cpu::op_LOADi });
-	m_opcodeList[0x01].push_back({asmc_MOD_Adr ,&Cpu::op_LOADadr });
-
-
-	m_opcodeList[0x10].push_back({ asmc_MOD_Rx_Ry ,&Cpu::op_ADDrxry });
-
-	m_opcodeList[0x02].push_back({ asmc_MOD_Adr ,&Cpu::op_STRadr });
-
+	//REG - RAM
 	
-	//....
+	//LOAD
+	m_opcodeList[0x01].push_back({ asmc_MOD_Number ,&Cpu::op_LOADi });
+	m_opcodeList[0x01].push_back({ asmc_MOD_Adr ,&Cpu::op_LOADadr });
+	m_opcodeList[0x01].push_back({ asmc_MOD_RegAdr ,&Cpu::op_LOADry });
+	m_opcodeList[0x01].push_back({ asmc_MOD_Adr_P_Reg ,&Cpu::op_LOADadrRy });
+	//STR
+	m_opcodeList[0x02].push_back({ asmc_MOD_Adr ,&Cpu::op_STRadr });
+	m_opcodeList[0x02].push_back({ asmc_MOD_RegAdr ,&Cpu::op_STRrx });
+	m_opcodeList[0x02].push_back({ asmc_MOD_Adr_P_Reg ,&Cpu::op_STRadrRx });
+
+	//ALU
+	m_opcodeList[0x10].push_back({ asmc_MOD_Rx_Ry ,&Cpu::op_ADDrxry });
+	m_opcodeList[0x10].push_back({ asmc_MOD_Number ,&Cpu::op_ADDrxi });
+	m_opcodeList[0x11].push_back({ asmc_MOD_Number ,&Cpu::op_SUBrxi });
+	
+	//STACK
+	m_opcodeList[0x03].push_back({ asmc_MOD_Empty ,&Cpu::op_CALL});
+	m_opcodeList[0x04].push_back({ asmc_MOD_Empty ,&Cpu::op_RET });
+
+	//JUMP
+	m_opcodeList[0x1E].push_back({ asmc_MOD_Empty ,&Cpu::op_JGZ });
+
 }
 
 Cpu::~Cpu()
@@ -39,8 +52,9 @@ void Cpu::run()
 	{
 		std::vector<Command> variantList = m_opcodeList[m_currentCommand.opcode];
 
+		//check variant list
 		for (const Command& c : variantList)
-		{
+		{	
 			if (c.mod == m_currentCommand.mod)
 			{
 				

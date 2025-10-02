@@ -49,13 +49,13 @@ void Cpu::op_SUBrxry()
 
 	m_registerFile[m_currentCommand.regA] = m_accReg;
 }
-//sub rx,0xff
+//sub rx,hexnumber
 void Cpu::op_SUBrxi()
 {
 	m_programCounter++;
 	uint32_t number = m_ram[m_programCounter];
 	 
-	m_accReg = m_registerFile[m_currentCommand.regA] + number;
+	m_accReg = m_registerFile[m_currentCommand.regA] - number;
 
 	m_registerFile[m_currentCommand.regA] = m_accReg;
 }

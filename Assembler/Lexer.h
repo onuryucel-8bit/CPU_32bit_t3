@@ -35,6 +35,13 @@ struct FileData
 	size_t m_lineNumber = 0;
 };
 
+struct TokenElement
+{
+	static const size_t m_arrLength = 20;
+	asmc::Token m_list[m_arrLength];
+	size_t m_size = 0;
+};
+
 }
 
 namespace std
@@ -49,6 +56,7 @@ namespace std
 	};
 }
 
+
 namespace asmc
 {
 
@@ -59,6 +67,8 @@ public:
 	Lexer(std::string path);
 	
 	[[nodiscard]] Token getToken();
+	[[nodiscard]] TokenElement* getTokenList();
+
 
 	bool getErrorFlag();
 
@@ -121,6 +131,8 @@ private:
 	char m_currentChar;
 	bool f_error;
 	bool f_newline;
+
+	TokenElement m_tokenList;
 
 	std::string m_program;
 	std::string m_currentFileName;

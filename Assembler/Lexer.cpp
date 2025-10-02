@@ -114,6 +114,23 @@ Token Lexer::getToken()
 	return token;
 }
 
+asmc::TokenElement* Lexer::getTokenList()
+{
+
+	for (size_t i = 0; i < m_tokenList.m_arrLength; i++)
+	{
+		asmc::Token token = getToken();
+		m_tokenList.m_list[i] = token;
+
+		if (token.m_type == asmc::TokenType::EMPTY || token.m_type == asmc::TokenType::ENDOFLINE)
+		{			
+			break;
+		}		
+	}
+
+	return &m_tokenList;
+}
+
 char Lexer::peek()
 {
 	if (m_position + 1 >= m_program.length())

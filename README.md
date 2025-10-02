@@ -61,9 +61,9 @@ utils/CharsetROMPrinter
 - Ekran kartini bagla
 - Bresenham cizgi algoritma devresini ekran kartina ekle
 - Ekran kartina piksel degerlerini gondererek basit cizim yap
-- Ekran kartina Ascii karakter yolla
-- RLE fonksiyonu yaz
-- Bad Apple dosyasini proje icin hazirla(fps dusur, RLE den gecir)
++ Ekran kartina Ascii karakter yolla
++ RLE fonksiyonu yaz
++ Bad Apple dosyasini proje icin hazirla(fps dusur, RLE den gecir)
 - Bad Apple denemesi
 - Buzzer devresini tasarla
 - Buzzer devresini bagla

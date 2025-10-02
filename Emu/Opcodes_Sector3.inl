@@ -16,7 +16,7 @@ void Cpu::op_JAZ()
 	}
 	else
 	{
-		m_programCounter+= 2;
+		m_programCounter++;
 	}
 }
 //acc < 0
@@ -30,7 +30,7 @@ void Cpu::op_JLZ()
 	}
 	else
 	{
-		m_programCounter += 2;
+		m_programCounter++;
 	}
 }
 //acc > 0
@@ -43,7 +43,7 @@ void Cpu::op_JGZ()
 	}
 	else
 	{
-		m_programCounter += 2;
+		m_programCounter++;
 	}
 }
 

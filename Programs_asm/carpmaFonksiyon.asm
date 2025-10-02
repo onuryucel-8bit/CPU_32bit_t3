@@ -4,16 +4,16 @@
 
 .origin 0x0
 
-LOAD r0, 5
-LOAD r1, 3
+LOAD r0,0x5
+LOAD r1,0x3
 CALL carpma
 
 .origin 0x5
 
-SUB carpma:
+FUNC carpma
 	Loop:
 		ADD r2,r0
-		SUB r1, 1
+		SUB r1,0x1
 	
 		JGZ Loop
 	RET
