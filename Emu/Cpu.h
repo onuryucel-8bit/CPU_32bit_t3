@@ -19,13 +19,16 @@ F	1111
 11	10001	SUB
 12	10010	MUL
 13	10011	DIV
+
 14	10100	AND
 15	10101	OR
 16	10110	XOR
 17	10111	NOT
 18	11000	CMP
+
 19	11001	SHL
 1A	11010	SHR
+
 1B	11011	JMP
 1C	11100	JAZ
 1D	11101	JLZ
@@ -39,6 +42,7 @@ F	1111
 #include <iostream>
 #include <cstdint>
 #include <vector>
+#include <array>
 #include <unordered_map>
 
 
@@ -93,8 +97,7 @@ private:
 	std::vector<uint32_t> m_ram;
 
 	Instruction m_currentCommand;
-
-	uint32_t m_currentOpcode;
+	
 	uint32_t m_programCounter;
 	uint8_t m_stackPointer;
 	uint8_t m_interrupt;
@@ -102,10 +105,14 @@ private:
 
 	uint32_t m_accReg;
 
-
+	bool f_running;
 	
 	
 	std::unordered_map<uint32_t, std::vector<Command>> m_opcodeList;
+
+	//TODO optimize RAM
+	//std::unordered_map<int, std::array<uint32_t, 1204>> m_ramDir;
+
 
 	void getNextInstruction();
 
@@ -114,19 +121,23 @@ private:
 	///-----------------SECTOR_0-------------------------//
 
 	//----------------------------------------------------/
-	void op_LOADi();
-	void op_LOADadr();
-	void op_LOADry();
-	void op_LOADadrRy();
+	void op_LOAD_i();
+	void op_LOAD_Adr();
+	void op_LOAD_AdrRy();
+	void op_LOAD_Adr_p_ry();
 
 	//STR @adr, rx
-	void op_STRadr();
+	void op_STR_Adr();
 	//STR @rx, ry
-	void op_STRrx();	
+	void op_STR_rx();	
 	//STR @adr + rx, ry
 	void op_STRadrRx();
 
 	void op_MOV();
+	void op_MOV_flagStack();
+	void op_MOV_stackFlag();
+	void op_MOV_flagNumber();
+
 	//----------------------------------------------------//
 
 	///-----------------SECTOR_1-------------------------//
@@ -135,25 +146,29 @@ private:
 
 
 
-	void op_ADDrxry();
-	void op_ADDrxi();
-	void op_ADDrxAdr();	
-	void op_ADDrxAdrRy();
+	void op_ADD_rxry();
+	void op_ADD_rxi();
+	void op_ADD_Adr();	
+	void op_ADD_AdrRy();
+	void op_ADD_Adr_p_ry();
 
-	void op_SUBrxry();
-	void op_SUBrxi();
-	void op_SUBrxAdr();	
-	void op_SUBrxAdrRy();
+	void op_SUB_rxry();
+	void op_SUB_rxi();
+	void op_SUB_Adr();
+	void op_SUB_AdrRy();
+	void op_SUB_Adr_p_ry();
 
-	void op_MULTrxry();
-	void op_MULTrxi();
-	void op_MULTrxAdr();	
-	void op_MULTrxAdrRy();
+	void op_MULT_rxry();
+	void op_MULT_rxi();
+	void op_MULT_Adr();	
+	void op_MULT_AdrRy();
+	void op_MULT_Adr_p_ry();
 
-	void op_DIVrxry();
-	void op_DIVrxri();
-	void op_DIVrxAdr();	
-	void op_DIVrxAdrRy();
+	void op_DIV_rxry();
+	void op_DIV_rxri();
+	void op_DIV_Adr();	
+	void op_DIV_AdrRy();
+	void op_DIV_Adr_p_ry();
 
 	void op_SHL();
 	void op_SHR();
@@ -162,9 +177,9 @@ private:
 	void op_NOT();
 	void op_XOR();
 
-	void op_CMPrx();
-	void op_CMPrxAdrRy();
-	void op_CMPrxAdr();
+	void op_CMP_rx();
+	void op_CMP_AdrRy();
+	void op_CMP_Adr();
 	
 
 	//----------------------------------------------------/
@@ -183,10 +198,10 @@ private:
 	PUSH @adr + rx
 	*/
 	void op_PUSH_rx();
+	void op_PUSH_AdrRx();
+	void op_PUSH_Adr();
+	void op_PUSH_Adr_p_rx();
 	void op_POP();
-	//void op_MOV_flag();
-	//void op_MOV_();
-	//void op_
 		
 	//----------------------------------------------------/
 

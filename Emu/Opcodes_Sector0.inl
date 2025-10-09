@@ -1,7 +1,7 @@
 #include "Cpu.h"
 
 //LOAD rx,sayi
-void Cpu::op_LOADi()
+void Cpu::op_LOAD_i()
 {
 	m_programCounter++;
 
@@ -9,7 +9,7 @@ void Cpu::op_LOADi()
 }
 //WORKING
 //LOAD rx,@adr
-void Cpu::op_LOADadr()
+void Cpu::op_LOAD_Adr()
 {	
 	uint8_t regx = m_currentCommand.regB;
 
@@ -21,13 +21,13 @@ void Cpu::op_LOADadr()
 }
 
 //LOAD rx,@ry
-void Cpu::op_LOADry()
+void Cpu::op_LOAD_AdrRy()
 {
 	m_registerFile[m_currentCommand.regA] = m_ram[m_currentCommand.regB];
 }
 
 //LOAD rx,@adr + ry
-void Cpu::op_LOADadrRy()
+void Cpu::op_LOAD_Adr_p_ry()
 {
 	m_programCounter++;
 	uint32_t address = m_ram[m_programCounter];
@@ -37,7 +37,7 @@ void Cpu::op_LOADadrRy()
 
 //WORKING
 //STR @adr, rx
-void Cpu::op_STRadr()
+void Cpu::op_STR_Adr()
 {
 	m_programCounter++;
 	uint32_t address = m_ram[m_programCounter];
@@ -46,7 +46,7 @@ void Cpu::op_STRadr()
 }
 
 //STR @rx, ry
-void Cpu::op_STRrx()
+void Cpu::op_STR_rx()
 {
 	m_ram[m_currentCommand.regA] = m_registerFile[m_currentCommand.regB];
 }
@@ -64,6 +64,18 @@ void Cpu::op_STRadrRx()
 void Cpu::op_MOV()
 {
 	m_registerFile[m_currentCommand.regA] = m_registerFile[m_currentCommand.regB];
+}
+
+void Cpu::op_MOV_flagStack()
+{
+}
+
+void Cpu::op_MOV_stackFlag()
+{
+}
+
+void Cpu::op_MOV_flagNumber()
+{
 }
 
 

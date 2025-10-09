@@ -2,7 +2,7 @@
 //ALU
 //WORKING
 //add rx,ry
-void Cpu::op_ADDrxry()	
+void Cpu::op_ADD_rxry()	
 {
 	m_accReg = m_registerFile[m_currentCommand.regA] + m_registerFile[m_currentCommand.regB];
 
@@ -10,7 +10,7 @@ void Cpu::op_ADDrxry()
 
 }
 //add rx,0x*
-void Cpu::op_ADDrxi()	
+void Cpu::op_ADD_rxi()	
 {
 	m_programCounter++;
 	uint32_t number = m_ram[m_programCounter];
@@ -20,7 +20,7 @@ void Cpu::op_ADDrxi()
 	m_registerFile[m_currentCommand.regA] = m_accReg;
 }
 //add rx,@ff
-void Cpu::op_ADDrxAdr()	
+void Cpu::op_ADD_Adr()	
 {
 	m_programCounter++;
 	uint32_t address = m_ram[m_programCounter];
@@ -30,7 +30,7 @@ void Cpu::op_ADDrxAdr()
 	m_registerFile[m_currentCommand.regA] = m_accReg;
 }
 //add rx,@adr+0xff
-void Cpu::op_ADDrxAdrRy()
+void Cpu::op_ADD_AdrRy()
 {
 	m_programCounter++;
 	uint32_t address = m_ram[m_programCounter];
@@ -40,17 +40,21 @@ void Cpu::op_ADDrxAdrRy()
 	m_registerFile[m_currentCommand.regA] = m_accReg;
 }
 
+void Cpu::op_ADD_Adr_p_ry()
+{
+}
+
 //------------------------------------------------//
 
 //sub rx,ry					
-void Cpu::op_SUBrxry()	
+void Cpu::op_SUB_rxry()	
 {
 	m_accReg = m_registerFile[m_currentCommand.regA] - m_registerFile[m_currentCommand.regB];
 
 	m_registerFile[m_currentCommand.regA] = m_accReg;
 }
 //sub rx,hexnumber
-void Cpu::op_SUBrxi()
+void Cpu::op_SUB_rxi()
 {
 	m_programCounter++;
 	uint32_t number = m_ram[m_programCounter];
@@ -60,7 +64,7 @@ void Cpu::op_SUBrxi()
 	m_registerFile[m_currentCommand.regA] = m_accReg;
 }
 //sub rx,@ff
-void Cpu::op_SUBrxAdr()	
+void Cpu::op_SUB_Adr()	
 {
 	m_programCounter++;
 	uint32_t address = m_ram[m_programCounter];
@@ -70,7 +74,7 @@ void Cpu::op_SUBrxAdr()
 	m_registerFile[m_currentCommand.regA] = m_accReg;
 }
 //sub rx,@adr+ry
-void Cpu::op_SUBrxAdrRy()
+void Cpu::op_SUB_AdrRy()
 {
 	m_programCounter++;
 	uint32_t address = m_ram[m_programCounter];
@@ -79,17 +83,22 @@ void Cpu::op_SUBrxAdrRy()
 
 	m_registerFile[m_currentCommand.regA] = m_accReg;
 }
+
+void Cpu::op_SUB_Adr_p_ry()
+{
+
+}
 		
 //------------------------------------------------//
 
-void Cpu::op_MULTrxry()	
+void Cpu::op_MULT_rxry()	
 {
 	m_accReg = m_registerFile[m_currentCommand.regA] * m_registerFile[m_currentCommand.regB];
 
 	m_registerFile[m_currentCommand.regA] = m_accReg;
 }
 
-void Cpu::op_MULTrxi()	
+void Cpu::op_MULT_rxi()	
 {
 	m_programCounter++;
 	uint32_t number = m_ram[m_programCounter];
@@ -99,7 +108,7 @@ void Cpu::op_MULTrxi()
 	m_registerFile[m_currentCommand.regA] = m_accReg;
 }
 
-void Cpu::op_MULTrxAdr()	
+void Cpu::op_MULT_Adr()	
 {
 	m_programCounter++;
 	uint32_t address = m_ram[m_programCounter];
@@ -109,7 +118,7 @@ void Cpu::op_MULTrxAdr()
 	m_registerFile[m_currentCommand.regA] = m_accReg;
 }
 
-void Cpu::op_MULTrxAdrRy()
+void Cpu::op_MULT_AdrRy()
 {
 	m_programCounter++;
 	uint32_t address = m_ram[m_programCounter];
@@ -118,17 +127,22 @@ void Cpu::op_MULTrxAdrRy()
 
 	m_registerFile[m_currentCommand.regA] = m_accReg;
 }
+
+void Cpu::op_MULT_Adr_p_ry()
+{
+
+}
 		
 //------------------------------------------------//
 
-void Cpu::op_DIVrxry()	
+void Cpu::op_DIV_rxry()	
 {
 	m_accReg = m_registerFile[m_currentCommand.regA] / m_registerFile[m_currentCommand.regB];
 
 	m_registerFile[m_currentCommand.regA] = m_accReg;
 }
 
-void Cpu::op_DIVrxri()	
+void Cpu::op_DIV_rxri()	
 {
 	m_programCounter++;
 	uint32_t number = m_ram[m_programCounter];
@@ -138,7 +152,7 @@ void Cpu::op_DIVrxri()
 	m_registerFile[m_currentCommand.regA] = m_accReg;
 }
 
-void Cpu::op_DIVrxAdr()	
+void Cpu::op_DIV_Adr()	
 {
 	m_programCounter++;
 	uint32_t address = m_ram[m_programCounter];
@@ -148,7 +162,7 @@ void Cpu::op_DIVrxAdr()
 	m_registerFile[m_currentCommand.regA] = m_accReg;
 }
 
-void Cpu::op_DIVrxAdrRy()
+void Cpu::op_DIV_AdrRy()
 {
 	m_programCounter++;
 	uint32_t address = m_ram[m_programCounter];
@@ -156,6 +170,11 @@ void Cpu::op_DIVrxAdrRy()
 	m_accReg = m_registerFile[m_currentCommand.regA] / m_ram[address + m_currentCommand.regB];
 
 	m_registerFile[m_currentCommand.regA] = m_accReg;
+}
+
+void Cpu::op_DIV_Adr_p_ry()
+{
+
 }
 
 //------------------------------------------------//
@@ -206,7 +225,7 @@ void Cpu::op_XOR()
 
 //TODO CMP
 //CMP rx, @ry
-void Cpu::op_CMPrxAdrRy()
+void Cpu::op_CMP_AdrRy()
 {
 	if (m_registerFile[m_currentCommand.regA] == m_ram[m_currentCommand.regB])
 	{
@@ -223,7 +242,7 @@ void Cpu::op_CMPrxAdrRy()
 }
 
 //CMP rx, @adr
-void Cpu::op_CMPrxAdr()
+void Cpu::op_CMP_Adr()
 {
 	m_programCounter++;
 	uint32_t address = m_ram[m_programCounter];
@@ -243,7 +262,7 @@ void Cpu::op_CMPrxAdr()
 }
 
 //CMP rx, ry
-void Cpu::op_CMPrx()
+void Cpu::op_CMP_rx()
 {	
 
 	if (m_registerFile[m_currentCommand.regA] == m_registerFile[m_currentCommand.regB])
