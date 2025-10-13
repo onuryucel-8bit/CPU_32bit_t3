@@ -63,6 +63,47 @@ Parser::Parser(asmc::Lexer& lexer)
 
 	m_parserFuncs[asmc::TokenType::LABEL] = &asmc::Parser::parseLabel;
 
+	//-------------------------------------------------//
+	//-------------------------------------------------//
+	//-------------------------------------------------//
+	
+	//REG-RAM
+	m_opcodeHexTable[asmc::TokenType::LOAD] = 0x01;
+	m_opcodeHexTable[asmc::TokenType::STR] = 0x02;
+	m_opcodeHexTable[asmc::TokenType::MOV] = 0x08;
+
+	//STACK 
+	m_opcodeHexTable[asmc::TokenType::CALL] = 0x03;
+	m_opcodeHexTable[asmc::TokenType::RET] = 0x04;
+	m_opcodeHexTable[asmc::TokenType::PUSH] = 0x5;
+	m_opcodeHexTable[asmc::TokenType::POP] = 0x06;
+
+	//ALU
+	m_opcodeHexTable[asmc::TokenType::ADD] = 0x10;
+	m_opcodeHexTable[asmc::TokenType::SUB] = 0x11;
+	m_opcodeHexTable[asmc::TokenType::MUL] = 0x12;
+	m_opcodeHexTable[asmc::TokenType::DIV] = 0x13;
+
+	m_opcodeHexTable[asmc::TokenType::AND] = 0x14;
+	m_opcodeHexTable[asmc::TokenType::OR] = 0x15;
+	m_opcodeHexTable[asmc::TokenType::XOR] = 0x16;
+	m_opcodeHexTable[asmc::TokenType::NOT] = 0x17;
+
+	m_opcodeHexTable[asmc::TokenType::SHL] = 0x19;
+	m_opcodeHexTable[asmc::TokenType::SHR] = 0x1A;
+			
+	m_opcodeHexTable[asmc::TokenType::CMP] = 0x18;
+
+	//JUMP
+	m_opcodeHexTable[asmc::TokenType::JMP] = 0x1B;
+	m_opcodeHexTable[asmc::TokenType::JAZ] = 0x1C;
+	m_opcodeHexTable[asmc::TokenType::JLZ] = 0x1D;
+	m_opcodeHexTable[asmc::TokenType::JGZ] = 0x1E;
+	m_opcodeHexTable[asmc::TokenType::JSC] = 0x1F;
+	m_opcodeHexTable[asmc::TokenType::JUC] = 0x20;
+	m_opcodeHexTable[asmc::TokenType::JCT] = 0x21;
+	m_opcodeHexTable[asmc::TokenType::JCF] = 0x22;
+
 }
 
 Parser::~Parser()
@@ -723,7 +764,7 @@ void Parser::parseLOAD()
 		return;
 	}
 
-	uint32_t opcode = 0x01 << asmc_ShiftAmount_Opcode;
+	uint32_t opcode = m_opcodeHexTable[asmc::TokenType::LOAD] << asmc_ShiftAmount_Opcode;
 
 	moveCurrentToken();
 	uint32_t registerPart = rdx::hexToDec(m_currentToken.m_text);
@@ -763,7 +804,7 @@ void Parser::parseSTR()
 	}
 
 	MemoryLayout memlay;
-	uint32_t opcode = 0x2 << asmc_ShiftAmount_Opcode;
+	uint32_t opcode = m_opcodeHexTable[asmc::TokenType::STR] << asmc_ShiftAmount_Opcode;
 
 	/*
 		STR @ff,r1
@@ -830,7 +871,7 @@ void Parser::parseMOV()
 		printError("expected register for first operand");
 	}
 
-	uint32_t opcode = 0x08 << asmc_ShiftAmount_Opcode;
+	uint32_t opcode = m_opcodeHexTable[asmc::TokenType::MOV] << asmc_ShiftAmount_Opcode;
 	
 	moveCurrentToken();
 	MemoryLayout memlay;
@@ -888,19 +929,19 @@ void Parser::parseArithmeticPart()
 	switch (m_currentToken.m_type)
 	{
 	case asmc::TokenType::ADD:
-		opcode = 0x10;
+		opcode = m_opcodeHexTable[asmc::TokenType::ADD];
 		break;
 
 	case asmc::TokenType::SUB:
-		opcode = 0x11;
+		opcode = m_opcodeHexTable[asmc::TokenType::SUB];
 		break;
 	
 	case asmc::TokenType::MUL:
-		opcode = 0x12;
+		opcode = m_opcodeHexTable[asmc::TokenType::MUL];
 		break;
 
 	case asmc::TokenType::DIV:
-		opcode = 0x13;
+		opcode = m_opcodeHexTable[asmc::TokenType::DIV];
 		break;
 	}
 
@@ -939,23 +980,23 @@ void Parser::parseLogicPart()
 	switch (m_currentToken.m_type)
 	{
 	case asmc::TokenType::AND:
-		opcode = 0x14;
+		opcode = m_opcodeHexTable[asmc::TokenType::AND];
 		break;
 
 	case asmc::TokenType::OR:
-		opcode = 0x15;
+		opcode = m_opcodeHexTable[asmc::TokenType::OR];
 		break;
 
 	case asmc::TokenType::XOR:
-		opcode = 0x16;
+		opcode = m_opcodeHexTable[asmc::TokenType::XOR];
 		break;
 
 	case asmc::TokenType::SHL:
-		opcode = 0x19;
+		opcode = m_opcodeHexTable[asmc::TokenType::SHL];
 		break;
 
 	case asmc::TokenType::SHR:
-		opcode = 0x1a;
+		opcode = m_opcodeHexTable[asmc::TokenType::SHR];
 		break;
 	}
 
@@ -989,7 +1030,7 @@ void Parser::parseNOT()
 		printError("unexpected operand");
 	}
 
-	uint32_t opcode = 0x17 << asmc_ShiftAmount_Opcode;
+	uint32_t opcode = m_opcodeHexTable[asmc::TokenType::NOT] << asmc_ShiftAmount_Opcode;
 
 	MemoryLayout memlay;
 	moveCurrentToken();
@@ -1036,7 +1077,7 @@ void Parser::parseCMP()
 		printError("unexpected operand");
 	}
 
-	uint32_t opcode = 0x18 << asmc_ShiftAmount_Opcode;	
+	uint32_t opcode = m_opcodeHexTable[asmc::TokenType::CMP] << asmc_ShiftAmount_Opcode;
 
 	MemoryLayout memlay;
 
@@ -1089,7 +1130,7 @@ void Parser::parseCMP()
 
 void Parser::parsePUSH()
 {
-	uint32_t opcode = 0x05 << asmc_ShiftAmount_Opcode;
+	uint32_t opcode = m_opcodeHexTable[asmc::TokenType::PUSH] << asmc_ShiftAmount_Opcode;
 
 	moveCurrentToken();
 	
@@ -1161,7 +1202,7 @@ void Parser::parsePUSH()
 
 void Parser::parsePOP()
 {
-	uint32_t opcode = 0x06 << asmc_ShiftAmount_Opcode;
+	uint32_t opcode = m_opcodeHexTable[asmc::TokenType::POP] << asmc_ShiftAmount_Opcode;
 
 	MemoryLayout memlay 
 	{
@@ -1183,7 +1224,7 @@ void Parser::parseCALL()
 		printError("CALL must be followed by a function name");
 	}
 
-	uint32_t opcode = 0x03 << asmc_ShiftAmount_Opcode;	
+	uint32_t opcode = m_opcodeHexTable[asmc::TokenType::CALL] << asmc_ShiftAmount_Opcode;	
 
 	moveCurrentToken();
 
@@ -1286,7 +1327,7 @@ void Parser::parseRET()
 		printError("FUNC definition required before using RET");
 	}
 
-	uint32_t opcode = 0x04 << asmc_ShiftAmount_Opcode;
+	uint32_t opcode = m_opcodeHexTable[asmc::TokenType::RET] << asmc_ShiftAmount_Opcode;
 
 	MemoryLayout memlay;
 
@@ -1336,35 +1377,35 @@ void Parser::parseJMP()
 	switch (m_currentToken.m_type)
 	{
 	case asmc::TokenType::JMP:
-		opcode = 0x1b << asmc_ShiftAmount_Opcode;
+		opcode = m_opcodeHexTable[asmc::TokenType::JMP] << asmc_ShiftAmount_Opcode;
 		break;
 
 	case asmc::TokenType::JAZ:
-		opcode = 0x1c << asmc_ShiftAmount_Opcode;
+		opcode = m_opcodeHexTable[asmc::TokenType::JAZ] << asmc_ShiftAmount_Opcode;
 		break;
 
 	case asmc::TokenType::JLZ:
-		opcode = 0x1d << asmc_ShiftAmount_Opcode;
+		opcode = m_opcodeHexTable[asmc::TokenType::JLZ] << asmc_ShiftAmount_Opcode;
 		break;
 
 	case asmc::TokenType::JGZ:
-		opcode = 0x1e << asmc_ShiftAmount_Opcode;
+		opcode = m_opcodeHexTable[asmc::TokenType::JGZ] << asmc_ShiftAmount_Opcode;
 		break;
 
 	case asmc::TokenType::JSC:
-		opcode = 0x1f << asmc_ShiftAmount_Opcode;
+		opcode = m_opcodeHexTable[asmc::TokenType::JSC] << asmc_ShiftAmount_Opcode;
 		break;
 
 	case asmc::TokenType::JUC:
-		opcode = 0x20 << asmc_ShiftAmount_Opcode;
+		opcode = m_opcodeHexTable[asmc::TokenType::JUC] << asmc_ShiftAmount_Opcode;
 		break;
 
 	case asmc::TokenType::JCT:
-		opcode = 0x21 << asmc_ShiftAmount_Opcode;
+		opcode = m_opcodeHexTable[asmc::TokenType::JCT] << asmc_ShiftAmount_Opcode;
 		break;
 
 	case asmc::TokenType::JCF:
-		opcode = 0x22 << asmc_ShiftAmount_Opcode;
+		opcode = m_opcodeHexTable[asmc::TokenType::JCF] << asmc_ShiftAmount_Opcode;
 		break;
 	}
 

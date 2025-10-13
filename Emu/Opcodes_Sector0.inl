@@ -66,16 +66,25 @@ void Cpu::op_MOV()
 	m_registerFile[m_currentCommand.regA] = m_registerFile[m_currentCommand.regB];
 }
 
+//mov flag = stack[sp]
 void Cpu::op_MOV_flagStack()
 {
+	m_flagRegister = m_stack[m_stackPointer];
 }
 
+//stack[sp] = flag
+//sp++
 void Cpu::op_MOV_stackFlag()
 {
+	m_stack[m_stackPointer] = m_flagRegister;
+	m_stackPointer++;
 }
 
+//flag = 0xff
 void Cpu::op_MOV_flagNumber()
 {
+	m_programCounter++;
+	m_flagRegister = m_ram[m_programCounter];
 }
 
 

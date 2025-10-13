@@ -5,6 +5,7 @@
 #include <iostream>
 #include <cstdint>
 
+#include "utils/Radix.h"
 #include "../Cpu.h" //define asmc_ram_max
 
 class AsmFileReader

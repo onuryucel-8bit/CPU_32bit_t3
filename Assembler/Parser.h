@@ -181,6 +181,8 @@ private:
 	std::unordered_map<asmc::Token, asmc::Symbol> m_symbolTable;
 	std::unordered_map<asmc::Token, std::vector<asmc::UnresolvedEntry>> m_unresolvedTable;
 
+	std::unordered_map<asmc::TokenType, uint32_t> m_opcodeHexTable;
+
 	std::vector<asmc::MemoryLayout> m_output;
 
 	//8byte

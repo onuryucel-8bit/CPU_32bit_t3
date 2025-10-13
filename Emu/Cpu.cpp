@@ -28,10 +28,10 @@ Cpu::Cpu(std::vector<uint32_t>& ram)
 
 	//MOV
 	//TODO mov mod bits
-	//m_opcodeList[0x08].push_back({ asmc_MOD_Adr_P_Reg ,&Cpu::op_MOV });
-	//m_opcodeList[0x08].push_back({ asmc_MOD_Adr_P_Reg ,&Cpu::op_MOV_flagNumber });
-	//m_opcodeList[0x08].push_back({ asmc_MOD_Adr_P_Reg ,&Cpu::op_MOV_flagStack });
-	//m_opcodeList[0x08].push_back({ asmc_MOD_Adr_P_Reg ,&Cpu::op_MOV_stackFlag });
+	m_opcodeList[0x08].push_back({ asmc_MOD_Empty ,&Cpu::op_MOV });
+	m_opcodeList[0x08].push_back({ asmc_MOD_Number ,&Cpu::op_MOV_flagNumber });
+	m_opcodeList[0x08].push_back({ asmc_MOD_Adr ,&Cpu::op_MOV_flagStack });
+	m_opcodeList[0x08].push_back({ asmc_MOD_RegAdr ,&Cpu::op_MOV_stackFlag });
 	// 
 	//ALU
 		//ADD
@@ -71,9 +71,12 @@ Cpu::Cpu(std::vector<uint32_t>& ram)
 	//STACK
 	m_opcodeList[0x03].push_back({ asmc_MOD_Empty ,&Cpu::op_CALL});
 	m_opcodeList[0x04].push_back({ asmc_MOD_Empty ,&Cpu::op_RET });
-	//TODO PUSH
-	//m_opcodeList[0x05].push_back({ asmc_MOD_Number ,&Cpu::op_PUSH_rx });
-	
+		//PUSH
+	m_opcodeList[0x05].push_back({ asmc_MOD_Number ,&Cpu::op_PUSH_rx });
+	m_opcodeList[0x05].push_back({ asmc_MOD_Adr ,&Cpu::op_PUSH_Adr });
+	m_opcodeList[0x05].push_back({ asmc_MOD_RegAdr ,&Cpu::op_PUSH_AdrRx });
+	m_opcodeList[0x05].push_back({ asmc_MOD_Adr_P_Reg ,&Cpu::op_PUSH_Adr_p_rx });
+		//POP
 	m_opcodeList[0x06].push_back({ asmc_MOD_Empty ,&Cpu::op_POP });
 
 	//JUMP
@@ -97,6 +100,7 @@ Cpu::~Cpu()
 void Cpu::run()
 {
 	getNextInstruction();
+	//while (m_currentCommand.opcode != 0xffff'ffff)
 	while (m_currentCommand.opcode != 0)
 	{
 		std::vector<Command> variantList = m_opcodeList[m_currentCommand.opcode];
