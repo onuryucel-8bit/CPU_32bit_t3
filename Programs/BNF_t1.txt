@@ -1,0 +1,20 @@
+
+<d0> ::= LET <id> =? (hex | dec | char | string | float)? ;
+<d1> ::= <id> = <id> <operator> <id> ;
+<d2> ::= <id> <boolOperator> <id>
+<d3> ::= IF <d2> THEN <program> (END | ELSE) <program> END
+<d4> ::= WHILE <d2> THEN <program> END
+<d5> ::= FUNC <string>() <program> END
+<d6> ::= LET <id> [(<dec> | <hex>)] =? {? (<decGroup>|<hexGroup) }?;
+<d7> ::= PRINT ("(<dec> | <hex> | ...)");
+
+
+//-----Terminals------//
+<id> = string
+<boolOperator> ::= != | == | <= | >= | < | > | !
+<operator> ::= + | - | * | / | % | ^
+<string> ::= "char+"
+<char> ::= '[a-zA-Z]'
+<hex> ::= [0-f]
+<dec> ::= [0-9]
+<float> ::= [0-9].[0-9]+
