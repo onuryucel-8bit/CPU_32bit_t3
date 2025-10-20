@@ -61,9 +61,10 @@
 #include <fstream>
 #include <vector>
 #include <cmath>
+#include <sstream>
 
 #include "Lexer.h"
-
+#include "Parser.h"
 
 std::vector<int> controlBits;
 
@@ -79,39 +80,6 @@ void calcControlBits()
 	std::cout << "control bits hex : " << std::hex << res << "\n";
 	std::cout << std::dec;
 	result.push_back(res);
-}
-
-void parser(std::string input)
-{
-	reflex::Input file(input);
-
-	Lexer lx(file);
-
-	cb::Token currentToken = lx.lex();
-
-	
-	while (currentToken.m_type != cb::TokenType::ENDOFFILE && 
-		currentToken.m_type != cb::TokenType::UNKNOWN)
-	{
-		std::cout << currentToken.m_text << "\n";
-
-		if (currentToken.m_type != cb::TokenType::LPAREN && 
-			currentToken.m_type != cb::TokenType::RPAREN &&
-			currentToken.m_type != cb::TokenType::HASH)
-		{
-			controlBits.push_back(currentToken.m_type);
-		}
-
-		if (currentToken.m_type == cb::TokenType::HASH)
-		{
-			calcControlBits();
-			controlBits.clear();
-		}
-
-		currentToken = lx.lex();
-	}
-
-	
 }
 
 std::string readFile()
@@ -131,16 +99,13 @@ std::string readFile()
 	return ss.str();
 }
 
-#include "DyLogisimPrinter.h"
-
 int main()
 {	        
-	parser(readFile());
+	asmc::Lexer lex(readFile());
 
-	DyLogisimPrinter dlp;
-	dlp.printROM(20, result);
+	asmc::Parser parser(lex);
 
-	
-	
+	parser.run();
+
 	return 0;
 }

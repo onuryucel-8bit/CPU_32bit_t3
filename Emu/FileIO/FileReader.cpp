@@ -73,13 +73,13 @@ std::vector<uint32_t> AsmFileReader::read()
 	}
 
 	//TEST
-	for (int i = 0; i < 20; i++)
+	/*for (int i = 0; i < 20; i++)
 	{
 		std::cout << std::hex << output[i] << "\n";
-	}
+	}*/
 
-	std::cout << output[0xfe] << "\n";
-	std::cout << output[0xff] << "\n";
+	//std::cout << output[0xfe] << "\n";
+	//std::cout << output[0xff] << "\n";
 	//TEST
 
 	return output;

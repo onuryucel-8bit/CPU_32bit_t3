@@ -59,9 +59,9 @@ void Cpu::op_SUB_rxi()
 	m_programCounter++;
 	uint32_t number = m_ram[m_programCounter];
 	 
-	m_accReg = m_registerFile[m_currentCommand.regA] - number;
+	m_accReg = m_registerFile[m_currentCommand.regB] - number;
 
-	m_registerFile[m_currentCommand.regA] = m_accReg;
+	m_registerFile[m_currentCommand.regB] = m_accReg;
 }
 //sub rx,@ff
 void Cpu::op_SUB_Adr()	

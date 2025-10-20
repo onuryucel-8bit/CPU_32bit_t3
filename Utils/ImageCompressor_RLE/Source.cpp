@@ -124,9 +124,9 @@ int main(int argc, char* argv[])
 
 	RleCompressor rle;
 			
-	std::string path = "C:\\Users\\local1\\Videos\\frames_1fps10MB\\frame_00001.bmp";
+	std::string path = "C:\\Users\\local1\\Videos\\frames_1fps10MB\\frame_00015.bmp";
 
-	size_t frameNoStartPos = path.find("00001");
+	size_t frameNoStartPos = path.find("00014");
 
 	//std::string path = "test.bmp";
 

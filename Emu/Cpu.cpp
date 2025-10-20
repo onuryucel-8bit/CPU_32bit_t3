@@ -103,7 +103,7 @@ void Cpu::run()
 	//while (m_currentCommand.opcode != 0xffff'ffff)
 	while (m_currentCommand.opcode != 0)
 	{
-		std::vector<Command> variantList = m_opcodeList[m_currentCommand.opcode];
+		std::vector<Command>& variantList = m_opcodeList[m_currentCommand.opcode];
 
 		//check variant list
 		for (const Command& c : variantList)

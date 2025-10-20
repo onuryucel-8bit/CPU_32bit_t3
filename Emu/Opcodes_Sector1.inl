@@ -55,5 +55,5 @@ void Cpu::op_PUSH_Adr_p_rx()
 
 void Cpu::op_POP()
 {
-	m_stackPointer--;
+	m_stackPointer--; 
 }
