@@ -82,15 +82,20 @@ namespace asmc
 		REG_inSelect,
 		REG_outSelect,
 		
+		
 		//----------------------//
 		LPAREN,
 		RPAREN,
 		HASH,
 		COMMENT,
 
+		//WARNING lexer m_currentChar is char type if you get weird error, its caused by char overflow
 		ENDOFFILE,
 		UNKNOWN,
-		NEWLINE
+		NEWLINE,
+		//TODO define end bits in logisim/cpu
+		END = 0xff,
+
 	};
 }
 

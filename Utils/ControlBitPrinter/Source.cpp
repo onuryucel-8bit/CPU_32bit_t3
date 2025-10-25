@@ -66,25 +66,9 @@
 #include "Lexer.h"
 #include "Parser.h"
 
-std::vector<int> controlBits;
-
-std::vector<int> result;
-
-void calcControlBits()
-{
-	int res = 0;
-	for (size_t i = 0; i < controlBits.size(); i++)
-	{
-		res += std::pow(2, controlBits[i]);
-	}
-	std::cout << "control bits hex : " << std::hex << res << "\n";
-	std::cout << std::dec;
-	result.push_back(res);
-}
-
 std::string readFile()
 {
-	std::fstream file("controlBits.txt");
+	std::fstream file("controlBits.cbp");
 
 	if (!file.is_open())
 	{
