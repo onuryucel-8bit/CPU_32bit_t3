@@ -5,8 +5,8 @@ namespace asmc
 
 Parser::Parser(asmc::Lexer& lexer)
 	:m_lexer(lexer)
-{
-
+{	
+	m_controlBitAdr = 0;	
 }
 
 Parser::~Parser()
@@ -15,16 +15,11 @@ Parser::~Parser()
 
 void Parser::run()
 {
-	
-
-
 	asmc::Token t = m_lexer.getToken();
 	while (t.m_type != asmc::TokenType::ENDOFFILE)
 	{
 		if (t.m_type != asmc::TokenType::NEWLINE)
 		{
-			std::cout << t.m_text << "\n";
-
 			switch (t.m_type)
 			{
 				case asmc::TokenType::Read:
@@ -69,11 +64,7 @@ void Parser::run()
 					// TEMP
 				case asmc::TokenType::TEMP_we:
 					m_sector.push_back(asmc::TokenType::TEMP_we);
-					break;
-
-				case asmc::TokenType::TEMP_out:
-					m_sector.push_back(asmc::TokenType::TEMP_out);
-					break;
+					break;				
 
 					// POSTA A/B
 				case asmc::TokenType::POSTA_A_we:
@@ -139,26 +130,19 @@ void Parser::run()
 					// Register file
 				case asmc::TokenType::REG_out:
 					m_sector.push_back(asmc::TokenType::REG_out);
-					break;
+					break;				
 
-				case asmc::TokenType::REG_in:
-					m_sector.push_back(asmc::TokenType::REG_in);
+				case asmc::TokenType::REG_we:
+					m_sector.push_back(asmc::TokenType::REG_we);
 					break;
-
-				case asmc::TokenType::REG_inSelect:
-					m_sector.push_back(asmc::TokenType::REG_inSelect);
-					break;
-
-				case asmc::TokenType::REG_outSelect:
-					m_sector.push_back(asmc::TokenType::REG_outSelect);
-					break;
-																				
+																						
 				case asmc::TokenType::HASH:
 					calculateControlBits();
 					break;
 
 				case asmc::TokenType::RPAREN:
 					m_sector.push_back(asmc::TokenType::END);
+					calculateControlBits();
 					break;
 
 				case asmc::TokenType::LPAREN:
@@ -172,7 +156,7 @@ void Parser::run()
 					break;
 
 				default:
-					std::cout << "Undefined token[" << (t.m_text) << "]\n";
+					std::cout << "ERROR:: Undefined token[" << (t.m_text) << "]\n";
 					break;
 			}
 		}
@@ -184,7 +168,10 @@ void Parser::run()
 }
 
 void Parser::calculateControlBits()
-{
+{ 
+
+	m_controlBitAdr++;
+
 	int res = 0;
 	for (size_t i = 0; i < m_sector.size(); i++)
 	{
@@ -192,14 +179,20 @@ void Parser::calculateControlBits()
 		{
 			res += std::pow(2, m_sector[i]);
 		}
-		//push end control bit
+		//push END control bit
 		else
-		{
+		{			
+			//TODO find a better solution...
 			m_output.push_back(m_sector[i]);
+			m_sector.clear();
+			m_addressROM.push_back(m_controlBitAdr);
+
+			
+			return;
 		}
 	}
-	//std::cout << "control bits hex : " << std::hex << res << "\n";
-
+	//std::cout << "control bits hex : " << std::hex << res << "\n";		
+	
 	m_output.push_back(res);
 
 	m_sector.clear();
@@ -207,10 +200,10 @@ void Parser::calculateControlBits()
 
 void Parser::writeToFile()
 {
-	for (size_t i = 0; i < m_output.size(); i++)
+	/*for (size_t i = 0; i < m_output.size(); i++)
 	{
-		std::cout << m_output[i] << "\n";
-	}
+		std::cout << std::hex << m_output[i] << "\n";
+	}*/
 
 	std::ofstream file("output.txt");
 
@@ -227,6 +220,29 @@ void Parser::writeToFile()
 	}
 
 	file.close();
+
+
+
+	std::ofstream addressRom("AdrROM_output.txt");
+
+	addressRom << "v3.0 hex words plain\n";
+
+	for (int i = 0; i < 9; i++)
+	{
+		addressRom << "0 ";
+	}
+
+	for (size_t i = 0; i < m_addressROM.size(); i++)
+	{
+		addressRom << rdx::decToHex(m_addressROM[i]) << " ";
+
+		if ((i + 1) % 16 == 0)
+		{
+			addressRom << "\n";
+		}
+	}
+
+	addressRom.close();
 }
 
 }

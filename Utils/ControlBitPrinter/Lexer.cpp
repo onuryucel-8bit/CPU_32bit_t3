@@ -10,7 +10,7 @@ Lexer::Lexer(std::string file)
 
 	m_position = -1;
 	m_currentChar = 0;
-	m_lineNumber = 0;
+	m_lineNumber = 1;
 
 
 	f_error = false;
@@ -84,6 +84,7 @@ Token Lexer::getToken()
 			case '\n':
 				token.m_text = '\n';
 				token.m_type = asmc::TokenType::NEWLINE;
+				m_lineNumber++;
 			break;
 
 			case '#':
@@ -188,13 +189,7 @@ void Lexer::nextChar()
 	else
 	{
 		m_currentChar = m_program[m_position];
-	}
-
-	//for printError
-	if (m_currentChar == '\n')
-	{
-		m_lineNumber++;
-	}
+	}	
 }
 
 std::string Lexer::getSubStr(int startPos, int length, int (*cmpFunc)(int), bool upper)
@@ -235,7 +230,7 @@ void Lexer::printError(std::string message)
 {
 	std::cout << rang::fg::cyan
 			<< "*****************************\n"
-			<< "ERROR::Lexer::" << message			
+			<< "ERROR::Lexer::" << message << " line number = " << m_lineNumber
 			<< "\n*****************************\n"
 			<< rang::style::reset;
 

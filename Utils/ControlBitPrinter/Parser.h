@@ -46,10 +46,15 @@ namespace asmc
 
 		std::vector<int> m_output;
 
+		std::vector<int> m_addressROM;
+
 		asmc::Lexer& m_lexer;
 
 		void calculateControlBits();
 		void writeToFile();
+
+		//points to starting address of control bits
+		size_t m_controlBitAdr;
 	};
 
 }

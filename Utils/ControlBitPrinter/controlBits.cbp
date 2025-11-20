@@ -5,7 +5,7 @@
 	//mar = pc
 	//pc++
 	PC_enb
-	MAR_we	
+	MAR_we
 	#
 	//-------------------------
 
@@ -25,17 +25,21 @@
 	IR_we		
 	#
 	//-------------------------
+
+	//mar = pc
+	//pc++
+	PC_enb
+	MAR_we
+	#
 }
 
 //LOAD r0,32bit
-{
-	//------------------------------
+{	
 	//reg => posta
-	POSTA_A_we
+	POSTA_B_we
 	#
-	//------------------------------
 
-	//------------------------------
+
 	//mdr = ram[pc]
 	Read
 	MDR_we
@@ -43,10 +47,38 @@
 	//------------------------------
 
 	//------------------------------
-	//regFile[posta] = mdr
-	REG_inSelect
-	POSTA_A_out
+	//regFile[posta] = mdr	
+	POSTA_B_out
 	MDR_out
+	REG_we
 	#
 	//------------------------------
+}
+
+//add rx,ry
+{
+	//rx => posta_a
+	//ry => posta_b
+	POSTA_A_we
+	POSTA_B_we
+	#
+
+
+	//temp = rx
+	TEMP_we
+	POSTA_A_out
+	REG_out
+	#
+
+	//ry => alu
+	POSTA_A_out
+	REG_out
+	//I3B
+	#
+
+	//acc = rx + ry
+	ACC_we
+	#
+	
+
 }

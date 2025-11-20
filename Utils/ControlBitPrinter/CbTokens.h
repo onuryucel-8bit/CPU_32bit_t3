@@ -30,7 +30,7 @@ namespace asmc
 	};*/
 
 	enum TokenType
-	{
+	{		
 		Read,
 		Write,
 		
@@ -58,6 +58,10 @@ namespace asmc
 		POSTA_B_we,
 		POSTA_B_out,
 
+		//MAR
+		MAR_load,
+		MAR_we,
+
 		//ADR reg
 		ADR_we,
 		ADR_out,
@@ -69,20 +73,16 @@ namespace asmc
 		ALU_mux,
 		ACC_we,
 
-		//MAR
-		MAR_load,
-		MAR_we,
+		
 		
 		//Flag reg
 		FR_cls,
 
 		//Register file
-		REG_out,
-		REG_in,
-		REG_inSelect,
-		REG_outSelect,
+		REG_out,			
+		REG_we,
 		
-		
+		END = 29,
 		//----------------------//
 		LPAREN,
 		RPAREN,
@@ -94,7 +94,6 @@ namespace asmc
 		UNKNOWN,
 		NEWLINE,
 		//TODO define end bits in logisim/cpu
-		END = 0xff,
 
 	};
 }
