@@ -48,8 +48,7 @@ namespace asmc
 		IR_out,
 
 		//TEMP
-		TEMP_we,
-		TEMP_out,
+		TEMP_we,		
 
 		//POSTA a/b
 		POSTA_A_we,

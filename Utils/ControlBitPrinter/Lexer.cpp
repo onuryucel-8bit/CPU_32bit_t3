@@ -194,7 +194,8 @@ void Lexer::nextChar()
 
 std::string Lexer::getSubStr(int startPos, int length, int (*cmpFunc)(int), bool upper)
 {
-	while (cmpFunc(peek()) || peek() == '_')
+	//TODO remove cmpFunc parameter change with std::isalnum()
+	while (cmpFunc(peek()) || peek() == '_' || std::isdigit(peek()))
 	{
 		nextChar();
 		length++;

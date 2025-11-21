@@ -33,6 +33,7 @@
 	#
 }
 
+//[LOAD]
 //LOAD r0,32bit
 {	
 	//reg => posta
@@ -55,7 +56,8 @@
 	//------------------------------
 }
 
-//add rx,ry
+//[ADD] ? [SUB] ? [MULT]
+//add rx,ry ?= sub rx,ry
 {
 	//rx => posta_a
 	//ry => posta_b
@@ -71,14 +73,16 @@
 	#
 
 	//ry => alu
-	POSTA_A_out
+	POSTA_B_out
 	REG_out
-	//I3B
-	#
-
+	I3B
 	//acc = rx + ry
 	ACC_we
 	#
 	
-
+	ALU_out
+	REG_we
+	POSTA_A_out
+	#
 }
+
