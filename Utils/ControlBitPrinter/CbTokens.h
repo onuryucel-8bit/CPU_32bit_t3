@@ -64,6 +64,7 @@ namespace asmc
 		//ADR reg
 		ADR_we,
 		ADR_out,
+		ADR_mux,
 
 		//ALU
 		I3B,
@@ -80,9 +81,13 @@ namespace asmc
 		//Register file
 		REG_out,			
 		REG_we,
+		REG_data_out,
+		REG_path_in,
 		
-		END = 29,
+		END,
 		//----------------------//
+
+		CONTROL_BIT_LOCATION,
 		LPAREN,
 		RPAREN,
 		HASH,
@@ -91,8 +96,7 @@ namespace asmc
 		//WARNING lexer m_currentChar is char type if you get weird error, its caused by char overflow
 		ENDOFFILE,
 		UNKNOWN,
-		NEWLINE,
-		//TODO define end bits in logisim/cpu
+		NEWLINE,		
 
 	};
 }

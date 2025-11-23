@@ -17,32 +17,33 @@ Lexer::Lexer(std::string file)
 
 	nextChar();
 
-	m_tokenArr.m_list = new asmc::Token[MAX_TOKEN_LIST_SIZE];
-
+	
 }
 
 Lexer::~Lexer()
-{
-	delete[] m_tokenArr.m_list;
+{	
 }
 
-asmc::TokenList* Lexer::getTokenList()
+std::array<asmc::Token, MAX_TOKEN_LIST_SIZE> Lexer::getTokenList()
 {
-	for (size_t i = 0; i < MAX_TOKEN_LIST_SIZE; i++)
+	int i = 0;
+	while(i < MAX_TOKEN_LIST_SIZE)
 	{
 		asmc::Token token = getToken();
 
 		if (token.m_type == asmc::TokenType::ENDOFFILE)
 		{
-			m_tokenArr.m_list[i] = { "EOF", asmc::TokenType::ENDOFFILE };
-			m_tokenArr.m_size++;
+			m_tokenArr[i] = { "EOF", asmc::TokenType::ENDOFFILE };			
 		}
 
-		m_tokenArr.m_list[i] = token;
-		m_tokenArr.m_size++;
+		if (token.m_type != asmc::TokenType::NEWLINE)
+		{
+			m_tokenArr[i] = token;
+			i++;
+		}		
 	}
 
-	return &m_tokenArr;
+	return m_tokenArr;
 }
 
 Token Lexer::getToken()
@@ -87,6 +88,13 @@ Token Lexer::getToken()
 				m_lineNumber++;
 			break;
 
+			case '[':
+				nextChar(); //consume [
+				token.m_text = getSubStr(m_position, 1, std::isalpha, false);
+				token.m_type = asmc::TokenType::CONTROL_BIT_LOCATION;
+				nextChar(); //points to ]
+				break;
+
 			case '#':
 				token.m_text = '#';
 				token.m_type = asmc::TokenType::HASH;
@@ -102,8 +110,8 @@ Token Lexer::getToken()
 				token.m_type = asmc::TokenType::RPAREN;
 			break;
 
-			case asmc::ENDOFFILE:
-				token.m_text = 'EOF';
+			case '\0':
+				token.m_text = "EOF";
 				token.m_type = asmc::TokenType::ENDOFFILE;
 			break;
 		}
@@ -184,7 +192,7 @@ void Lexer::nextChar()
 	m_position++;
 	if (m_position >= m_program.length())
 	{
-		m_currentChar = asmc::TokenType::ENDOFFILE;
+		m_currentChar = '\0';
 	}
 	else
 	{

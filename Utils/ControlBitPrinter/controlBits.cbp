@@ -33,7 +33,7 @@
 	#
 }
 
-//[LOAD]
+[LOAD]
 //LOAD r0,32bit
 {	
 	//reg => posta
@@ -56,7 +56,242 @@
 	//------------------------------
 }
 
-//[ADD] ? [SUB] ? [MULT]
+//load rx,@adr
+{
+	//rx => posta_b
+	POSTA_B_we
+	//adr => MDR
+	Read
+	MDR_we
+	#
+
+	//adr => MAR
+	MDR_out
+	MAR_we
+	PC_mux
+	#	
+
+	//ram[adr] => MDR
+	Read
+	MDR_we
+	#
+
+	POSTA_B_out
+	MDR_out
+	REG_we
+	#
+}
+
+//load rx,@ry
+{
+	//rx,ry => posta
+	POSTA_A_we
+	POSTA_B_we
+	#
+
+	//@ry => MAR
+	POSTA_B_out
+	MAR_we
+	PC_mux
+	#
+
+	//ram[@ry] => MDR
+	Read
+	MDR_we
+	#
+
+	//MDR => reg[posta_a]
+	POSTA_A_out
+	MDR_out
+	REG_we
+	#
+}
+
+//load rx,@adr + ry
+{
+	//rx,ry => posta
+	POSTA_A_we
+	POSTA_A_we
+	#
+
+	//adr => ADR_reg
+	Read
+	ADR_we
+	#
+
+	//@adr + ry => ADR_reg
+	REG_data_out
+	ADR_mux
+	ADR_we
+	#
+
+	//adr => MAR
+	PC_mux
+	MAR_we
+	#
+
+	//ram[adr + ry] => MDR
+	Read
+	MDR_we
+	#
+
+	//MDR => reg[posta_a]
+	POSTA_A_out
+	MDR_out
+	REG_we
+	#
+
+
+}
+
+//str @adr,rx
+{
+	POSTA_B_we
+	#
+
+	Read
+	ADR_we
+	#
+
+	POSTA_B_out
+	REG_out
+	REG_data_out
+	Write
+	#
+}
+
+
+[ADD]
+//add rx,sayi
+{
+	//rx => posta_b
+	POSTA_B_we
+	#
+
+	//sayi => MDR
+	Read
+	MDR_we
+	#
+
+	//rx => temp
+	TEMP_we
+	POSTA_B_out
+	REG_out
+	#
+
+	//sayi => reg_path
+	REG_path_in
+	MDR_out
+	ALU_mux
+	//rx, sayi => ALU => ACC
+	I3B
+	ACC_we
+	#
+
+	//rx + sayi => rx
+	ALU_out
+	REG_we
+	POSTA_B_out
+	#
+}
+
+//add rx, @adr
+{
+	//rx => posta_b
+	POSTA_B_we
+	#
+
+	//adr => adr_Reg
+	Read
+	ADR_we
+	#
+
+	//adr => MAR
+	PC_mux
+	MAR_we
+	#
+
+	//ram[adr] => MDR
+	Read
+	MDR_we
+	#
+
+	//rx => temp	
+	POSTA_B_out
+	REG_out
+	TEMP_we
+	#
+
+	//rx + ram[adr] => acc
+	MDR_out
+	REG_path_in
+	ALU_mux
+	I3B
+	ACC_we	
+	#
+
+	//acc => rx
+	ALU_out
+	POSTA_B_out
+	REG_we
+	#
+
+	
+}
+
+//add rx, @ry
+{
+	//rx => posta_a
+	//ry => posta_b
+	POSTA_A_we
+	POSTA_B_we
+	#
+
+	//@ry => adr_reg
+	REG_data_out
+	POSTA_B_out
+	REG_out
+	ADR_we
+	#
+
+	//adr => MAR
+	ADR_out
+	PC_mux
+	MAR_we
+	#
+
+	//ram[ry] => MDR
+	Read
+	MDR_we
+	#
+
+	//rx => temp
+	POSTA_A_out
+	REG_out
+	TEMP_we
+	#
+
+	//rx + ram[@ry] => acc
+	MDR_out
+	REG_path_in
+	ALU_mux
+	I3B
+	ACC_we
+	#
+
+	//acc => rx
+	ALU_out
+	REG_we
+	POSTA_A_we
+	#
+
+}
+
+//add rx, @adr + ry
+{
+
+}
+
 //add rx,ry ?= sub rx,ry
 {
 	//rx => posta_a

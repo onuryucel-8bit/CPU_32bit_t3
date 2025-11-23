@@ -5,13 +5,14 @@
 #include <optional>
 #include <string>
 #include <cstdint>
+#include <array>
 
 #include "../../libsLocal/magic_enum/magic_enum.hpp"
 #include "../../libsLocal/rang.hpp"
 
 #include "CbTokens.h"
 
-
+#define MAX_TOKEN_LIST_SIZE 30
 
 namespace asmc
 {
@@ -36,12 +37,16 @@ namespace asmc
 	{
 	public:
 
+
+
 		Lexer(std::string file);
 		~Lexer();
-		[[nodiscard]] asmc::TokenList* getTokenList();
+		[[nodiscard]] std::array<asmc::Token, MAX_TOKEN_LIST_SIZE> getTokenList();
 		[[nodiscard]] Token getToken();
 
 		size_t m_lineNumber;
+
+		
 
 	private:		
 		
@@ -68,8 +73,8 @@ namespace asmc
 
 		std::string m_program;
 
-		asmc::TokenList m_tokenArr;
-		const static size_t MAX_TOKEN_LIST_SIZE = 30;
+		std::array<asmc::Token, MAX_TOKEN_LIST_SIZE> m_tokenArr;
+		
 
 	};
 }

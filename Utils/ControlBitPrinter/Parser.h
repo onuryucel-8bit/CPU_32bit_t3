@@ -10,6 +10,14 @@
 namespace asmc
 {
 
+	struct adrVec
+	{
+		size_t m_romIndex;
+		//points to control bit rom address
+		//adrROM[LOAD] => m_value[LOAD start adr] => (counter) => Control bit ROM
+		size_t m_value;
+	};
+
 	class Parser
 	{
 	public:
@@ -46,7 +54,10 @@ namespace asmc
 
 		std::vector<int> m_output;
 
-		std::vector<int> m_addressROM;
+		std::vector<asmc::adrVec> m_addressROM;
+		asmc::adrVec addressVec;
+
+		std::unordered_map<std::string, size_t> m_locationTable;
 
 		asmc::Lexer& m_lexer;
 
@@ -54,7 +65,7 @@ namespace asmc
 		void writeToFile();
 
 		//points to starting address of control bits
-		size_t m_controlBitAdr;
+		size_t m_romAdrIndex;
 	};
 
 }
