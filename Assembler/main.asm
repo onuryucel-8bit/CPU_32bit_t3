@@ -1,2 +1,7 @@
-load r1,0x5
-str @10, r1
+load r1,0x65
+str @10000000, r1
+
+;HATA
+
+.db 0x44,
+0x53
