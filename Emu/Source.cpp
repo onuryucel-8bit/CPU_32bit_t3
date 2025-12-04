@@ -156,6 +156,11 @@ Keyboard::~Keyboard()
 *  
 */
 
+#include <SDL3/SDL.h>
+#include <SDL3_ttf/SDL_ttf.h>
+
+#include "SDL_Window.h"
+
 
 std::string readFile(std::string path)
 {
@@ -174,11 +179,9 @@ std::string readFile(std::string path)
 	return ss.str();
 }
 
-
-
 int main()
 {
-	std::string source = readFile("D:\\ProgrammingProjects\\Logisim\\32bitCPU_t3\\Assembler\\out.txt");
+	/*std::string source = readFile("D:\\ProgrammingProjects\\Logisim\\32bitCPU_t3\\Assembler\\out.txt");
 
 	AsmFileReader fr(source);
 
@@ -186,7 +189,11 @@ int main()
 
 	Cpu cpu(ram);
 
-	cpu.run();
+	cpu.run();*/
+
+	Window w;
+	w.run(); 
+	
 
 
 	//Cpu cpu;

@@ -26,20 +26,22 @@
 	#
 	//-------------------------
 
-	//mar = pc
-	//pc++
-	PC_enb
-	MAR_we
-	#
+	NOP
 }
 
-[LOAD]
+//4
+[LOAD 0]
 //LOAD r0,32bit
 {	
 	//reg => posta
 	POSTA_B_we
 	#
 
+	//mar = pc
+	//pc++
+	PC_enb
+	MAR_we
+	#
 
 	//mdr = ram[pc]
 	Read
@@ -56,6 +58,8 @@
 	//------------------------------
 }
 
+//7
+[LOAD 1]
 //load rx,@adr
 {
 	//rx => posta_b
@@ -81,7 +85,8 @@
 	REG_we
 	#
 }
-
+//11-B
+[LOAD 2]
 //load rx,@ry
 {
 	//rx,ry => posta
@@ -106,7 +111,8 @@
 	REG_we
 	#
 }
-
+//15-F
+[LOAD 3]
 //load rx,@adr + ry
 {
 	//rx,ry => posta
@@ -143,25 +149,39 @@
 
 
 }
-
+//21-0x15
+[STR 0]
 //str @adr,rx
 {
 	POSTA_B_we
 	#
 
+	//mar = pc
+	//pc++
+	PC_enb
+	MAR_we
+	#
+	
+	//adr_reg = adr
 	Read
 	ADR_we
 	#
 
+	//mar = adr_reg
+	ADR_out
+	PC_mux
+	MAR_we
+	#
+
+	//ram = reg_file[adr_reg]
 	POSTA_B_out
 	REG_out
 	REG_data_out
 	Write
 	#
 }
-
-
-[ADD]
+[ADD 0]
+//24 0x18
 //add rx,sayi
 {
 	//rx => posta_b
@@ -194,7 +214,8 @@
 	POSTA_B_out
 	#
 }
-
+[ADD 1]
+//29 - 0x1d
 //add rx, @adr
 {
 	//rx => posta_b
@@ -238,7 +259,8 @@
 
 	
 }
-
+[ADD 2]
+//36 - 0x24
 //add rx, @ry
 {
 	//rx => posta_a
@@ -286,12 +308,57 @@
 	#
 
 }
-
+[ADD 3]
+//43 - 0x2b
 //add rx, @adr + ry
 {
+	POSTA_A_we
+	POSTA_B_we
+	#
 
+	//adr => adr_reg
+	Read
+	ADR_we
+	#
+
+	//adr + ry
+	POSTA_B_out
+	REG_out
+	REG_data_out
+	ADR_mux
+	ADR_we
+	#
+
+	ADR_out
+	PC_mux
+	MAR_we
+	#
+
+	//@adr + ry => MDR
+	Read
+	MDR_we
+	#
+
+	//rx => temp
+	POSTA_A_out
+	REG_out
+	TEMP_we
+	#
+
+	MDR_out
+	ALU_mux
+	REG_path_in
+	I3B
+	ACC_we
+	#
+
+	ALU_out
+	REG_we
+	POSTA_A_out
+	#
 }
-
+[ADD 4]
+//51 0x33
 //add rx,ry ?= sub rx,ry
 {
 	//rx => posta_a
@@ -320,4 +387,4 @@
 	POSTA_A_out
 	#
 }
-
+//55 0x37 ???

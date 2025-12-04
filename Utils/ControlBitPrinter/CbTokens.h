@@ -87,6 +87,7 @@ namespace asmc
 		END,
 		//----------------------//
 
+		NOP,
 		CONTROL_BIT_LOCATION,
 		LPAREN,
 		RPAREN,

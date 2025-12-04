@@ -6,18 +6,17 @@ namespace asmc
 Parser::Parser(asmc::Lexer& lexer)
 	:m_lexer(lexer)
 {	
-	m_romAdrIndex = 0;	
+	m_controlRomIndex = 0;	
 
 
-	addressVec.m_romIndex = 0;
-	addressVec.m_value = 0;
+	m_addressVec.m_selfAdr = 0;
+	m_addressVec.m_controlBitStartPos = 0;
 
 	m_locationTable["LOAD"] = 0b0000'0001'001;
 	m_locationTable["STR"] = 0b0000'0010'010;
 	m_locationTable["MOV"] = 0b0000'1000'000;
 
 	m_locationTable["ADD"] = 0b0001'0000'001;
-	//TODO rx,sayi |rx,ry|rx,@adr|rx@ry|rx,@adr+ry
 	m_locationTable["SUB"] = 0b0001'0001'001;
 	m_locationTable["MUL"] = 0b0001'0010'001;
 	m_locationTable["DIV"] = 0b0001'0011'001;
@@ -53,7 +52,9 @@ void Parser::run()
 {
 	asmc::Token t;
 	std::array<asmc::Token, MAX_TOKEN_LIST_SIZE> tokenList = m_lexer.getTokenList();
-
+	
+	std::string opcode;
+	uint32_t offset = 0;
 	int i = 0;	
 	while (tokenList[i].m_type != asmc::TokenType::ENDOFFILE)
 	{
@@ -62,6 +63,11 @@ void Parser::run()
 
 		switch (t.m_type)
 		{
+
+#pragma region CASE_T0
+
+
+
 		case asmc::TokenType::Read:
 			m_sector.push_back(asmc::TokenType::Read);
 			break;
@@ -132,6 +138,10 @@ void Parser::run()
 			m_sector.push_back(asmc::TokenType::ADR_out);
 			break;
 
+		case asmc::TokenType::ADR_mux:
+			m_sector.push_back(asmc::TokenType::ADR_mux);
+			break;
+
 			// ALU
 		case asmc::TokenType::I3B:
 			m_sector.push_back(asmc::TokenType::I3B);
@@ -176,6 +186,20 @@ void Parser::run()
 			m_sector.push_back(asmc::TokenType::REG_we);
 			break;
 
+		case asmc::TokenType::REG_path_in:
+			m_sector.push_back(asmc::TokenType::REG_path_in);
+			break;
+
+		case asmc::TokenType::REG_data_out:
+			m_sector.push_back(asmc::TokenType::REG_data_out);
+			break;
+#pragma endregion
+		
+		case asmc::TokenType::NOP:
+			m_sector.push_back(asmc::TokenType::NOP);
+			calculateControlBits();
+			break;
+
 		case asmc::TokenType::HASH:
 			calculateControlBits();
 			break;
@@ -183,6 +207,7 @@ void Parser::run()
 		case asmc::TokenType::RPAREN:
 			m_sector.push_back(asmc::TokenType::END);
 			calculateControlBits();
+			
 			break;
 
 		case asmc::TokenType::LPAREN:
@@ -193,16 +218,35 @@ void Parser::run()
 	
 		case asmc::TokenType::CONTROL_BIT_LOCATION:
 
-			if (m_locationTable.contains(t.m_text))
+			//substr [COMMAND NUMBER]
+			opcode = t.m_text.substr(0, t.m_text.find(' '));
+			offset = rdx::hexToDec(t.m_text.substr(t.m_text.find(' ') + 1, t.m_text.length() - 1));
+
+
+			if (m_locationTable.contains(opcode))
 			{				
-				addressVec.m_value = m_locationTable[t.m_text];
+				m_adrRomSelfAdr = m_locationTable[opcode];
+
+				m_adrRomSelfAdr += offset;
+
+				//std::cout<<"opcode" << opcode << "| self adr" <<std::hex<< m_adrRomSelfAdr << "\n";
+				
+				asmc::adrVec tempVec;
+				tempVec.m_controlBitStartPos = m_controlRomIndex;
+				tempVec.m_selfAdr = m_adrRomSelfAdr;
+
+				std::cout << "m_adrRomSelfAdr :: hex " << std::hex << m_adrRomSelfAdr << "|"
+						  << "m_adrRomSelfAdr :: dec " << std::dec << m_adrRomSelfAdr << "|"
+					      << "m_controlRomIndex :: hex " << std::hex << m_controlRomIndex << "\n";
+
+				m_addressROM.push_back(tempVec);
 			}
 			break;
 
 		case asmc::TokenType::UNKNOWN:
 			std::cout << "UNKNOWN token detected\n";
 			break;
-
+			 
 		default:
 			std::cout << "ERROR:: Parser() switch-case Undefined token[" << (t.m_text) << "]\n";
 			break;
@@ -223,13 +267,15 @@ void Parser::run()
 
 void Parser::calculateControlBits()
 { 
-
-	m_romAdrIndex++;
-
+	
 	int res = 0;
 	for (size_t i = 0; i < m_sector.size(); i++)
 	{
-		if (m_sector[i] != asmc::TokenType::END)
+		if (m_sector[i] == asmc::TokenType::NOP)
+		{
+			//res = 0;
+		}
+		else if (m_sector[i] != asmc::TokenType::END)
 		{
 			res += std::pow(2, m_sector[i]);
 		}
@@ -239,12 +285,9 @@ void Parser::calculateControlBits()
 			//TODO find a better solution...
 			m_output.push_back(m_sector[i]);
 			m_sector.clear();
-
-			addressVec.m_romIndex = m_romAdrIndex;			
-
-			m_addressROM.push_back(addressVec);
-
 			
+			//std::cout << "romADR: " << std::hex << m_controlRomIndex << "|" << std::dec << m_controlRomIndex << "\n";
+			m_controlRomIndex++;
 			return;
 		}
 	}
@@ -253,6 +296,8 @@ void Parser::calculateControlBits()
 	m_output.push_back(res);
 
 	m_sector.clear();
+
+	m_controlRomIndex++;
 }
 
 void Parser::writeToFile()
@@ -278,28 +323,46 @@ void Parser::writeToFile()
 
 	file.close();
 
-
-
-	std::ofstream addressRom("AdrROM_output.txt");
-
-	addressRom << "v3.0 hex words plain\n";
-
-	for (int i = 0; i < 9; i++)
+	/*std::cout << "m_addressRom[i].m_selfAdr\n";
+	for (const auto& elem : m_addressROM)
 	{
-		addressRom << "0 ";
-	}
+		std::cout << elem.m_selfAdr << "\n";
+	}*/
 
+
+	std::ofstream fileAddressRom("AdrROM_output.txt");
+
+	fileAddressRom << "v3.0 hex words plain\n";
+
+	fileAddressRom << "\n";
+
+	int romIndex = 0;
 	for (size_t i = 0; i < m_addressROM.size(); i++)
 	{
-		addressRom << rdx::decToHex(m_addressROM[i].m_value) << " ";
+		size_t target = m_addressROM[i].m_selfAdr;
 
-		if ((i + 1) % 16 == 0)
+		//Fill gap with zeros
+		while (romIndex < target)
 		{
-			addressRom << "\n";
+			fileAddressRom << "0 ";
+
+			romIndex++;
+			if (romIndex % 8 == 0)
+			{
+				fileAddressRom << "\n";
+			}
+		}
+		
+		fileAddressRom << rdx::decToHex(m_addressROM[i].m_controlBitStartPos) << " ";
+
+		romIndex++;
+		if (romIndex % 8 == 0)
+		{
+			fileAddressRom << "\n";
 		}
 	}
 
-	addressRom.close();
+	fileAddressRom.close();
 }
 
 }

@@ -59,7 +59,7 @@ Token Lexer::getToken()
 	//Register,[keyword,label,jumploc] check
 	if (std::isalpha(m_currentChar))
 	{		
-		std::string tokenStr = getSubStr(m_position, 1, std::isalpha, false);
+		std::string tokenStr = getSubStr(m_position, 1);
 
 		if (checkIfKeyword(tokenStr))
 		{
@@ -90,7 +90,7 @@ Token Lexer::getToken()
 
 			case '[':
 				nextChar(); //consume [
-				token.m_text = getSubStr(m_position, 1, std::isalpha, false);
+				token.m_text = getSubStr(m_position, 1);
 				token.m_type = asmc::TokenType::CONTROL_BIT_LOCATION;
 				nextChar(); //points to ]
 				break;
@@ -200,22 +200,16 @@ void Lexer::nextChar()
 	}	
 }
 
-std::string Lexer::getSubStr(int startPos, int length, int (*cmpFunc)(int), bool upper)
+std::string Lexer::getSubStr(int startPos, int length)
 {
-	//TODO remove cmpFunc parameter change with std::isalnum()
-	while (cmpFunc(peek()) || peek() == '_' || std::isdigit(peek()))
+	//TODO remove peek() ? calling multiple times
+	while (std::isalnum(peek()) || peek() == '_' || std::isdigit(peek()) || peek() == ' ')
 	{
 		nextChar();
 		length++;
 	}
 
 	std::string tokenStr = m_program.substr(startPos, length);
-
-	if (upper)
-	{
-		//toUpper(tokenStr);
-	}
-
 
 	return tokenStr;
 }

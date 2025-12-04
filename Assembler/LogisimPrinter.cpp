@@ -15,35 +15,34 @@ void LogisimPrinter::print(std::vector<asmc::MemoryLayout>& array)
 	file << "v3.0 hex words plain\n";
 
 
-	int lastPosition = -1;
+	int romIndex = 0;
 	for (size_t i = 0; i < array.size(); i++)
 	{	
-		//check address jumps
-		if (lastPosition + 1 != array[i].m_ramIndex)
+
+		size_t target = array[i].m_ramIndex;
+
+		//Fill gap with zeros
+		while (romIndex < target)
 		{
-			//fill [lastPosition : array[i].m_ramIndex] = 0
-			for (size_t j = 0; j < array[i].m_ramIndex - lastPosition; j++)
+			file << "0 ";
+
+			romIndex++;
+			if (romIndex % 16 == 0)
 			{
-				file << "0 ";
-
-				//TODO +1 ???
-				if ((j + i + 1) % 16 == 0)
-				{
-					file << "\n";
-				}
-			}			
+				file << "\n";
+			}
 		}
-
+		
 		//write hex values to the file
 		//----------------------------------------------//
 		file << rdx::decToHex(array[i].m_opcode) << " ";
 
-		lastPosition++;
+		romIndex++;
 
 		if (array[i].m_packetSize == 2)
 		{
 			file << rdx::decToHex(array[i].m_secondPart) << " ";
-			lastPosition++;
+			romIndex++;
 		}
 
 		if ((i + 1) % 16 == 0)

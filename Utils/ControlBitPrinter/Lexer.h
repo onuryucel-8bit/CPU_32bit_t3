@@ -65,7 +65,7 @@ namespace asmc
 		//skip ',' '\n'
 		void skipNonEssential();
 
-		std::string getSubStr(int startPos, int length, int (*cmpFunc)(int), bool upper);
+		std::string getSubStr(int startPos, int length);
 
 		int m_position;
 		char m_currentChar;
