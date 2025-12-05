@@ -1,0 +1,35 @@
+{
+  "$schema": "vscode://schemas/color-theme",
+  "name": "CBP Control Bits Theme",
+  "type": "dark",
+  "colors": {},
+  "tokenColors": 
+  [
+    {
+      "scope": 
+      [
+        "keyword.io",
+        "keyword.scom"
+      ],
+      "settings": { "foreground": "#ff0000", "fontStyle": "bold" }
+    },
+    {
+      "scope": "keyword.comment",
+      "settings": { "foreground": "#3073f1", "fontStyle": "bold" }
+    },
+    {
+        "scope" :
+        [
+          "keyword.pc",
+          "keyword.mdr",
+          "keyword.ir",
+          "keyword.posta",
+          "keyword.alu",
+          "keyword.register",
+          "keyword.ALU",
+          
+        ],
+        "settings": { "foreground": "#ffee00", "fontStyle": "bold" }
+    }
+  ]
+}

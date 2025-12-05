@@ -1,0 +1,78 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "cbp_controlBits",
+	"patterns": [
+		{"include": "#keywords"}
+	],
+	"repository": {
+		"keywords": {
+			"patterns":
+			[	
+				{
+					"comment": "Multi-line-comment",
+					"name" :"keyword.comment",
+					"begin": "/\\*",
+					"end": "\\*/"
+				}
+				,
+				{
+					"comment": "Single-line-comment",
+					"name" :"keyword.comment",
+					"match": "(//.*$)"
+				}
+				,
+				{
+					"comment": "IO",
+					"name" :"keyword.io",
+					"match": "\\b(Read|Write)\\b"
+				}
+				,				
+				{
+					"comment": "PC-MAR",
+					"name" :"keyword.pc",
+					"match": "\\b(PC_mux|PC_enb|PC_load|MAR_we|MAR_load)\\b"
+				}
+				,
+				{
+					"comment": "MDR",
+					"name" :"keyword.mdr",
+					"match": "\\b(MDR_we|MDR_out)\\b"
+				}				
+				,
+				{
+					"comment": "IR",
+					"name" :"keyword.ir",
+					"match": "\\b(IR_we|IR_out)\\b"
+				}
+				,				
+				{
+					"comment": "POSTA-ADR",
+					"name" :"keyword.posta",
+					"match": "\\b(POSTA_A_we|POSTA_A_out|POSTA_B_we|POSTA_B_out|ADR_we|ADR_out|ADR_mux)\\b"
+				}				
+				,				
+				{					
+					"comment": "ALU-TEMP-ACC-flagReg",
+					"name" :"keyword.alu",
+					"match": "\\b(TEMP_we|I3B|ALU_in|ALU_out|ALU_mux|ACC_we|FR_cls)\\b"
+				}
+				,
+				{
+					"comment": "REGISTER",
+					"name": "keyword.register",
+					"match": "\\b(REG_inSelect|REG_outSelect|REG_we|REG_out|REG_data_out|REG_path_in)\\b"
+				}				
+				,
+				{
+					"comment": "SpecialCommands",
+					"name": "keyword.scom",
+					"match": "\\b(NOP)\\b"
+				}
+			]
+		}
+		
+		
+		
+	},
+	"scopeName": "source.cbp"
+}

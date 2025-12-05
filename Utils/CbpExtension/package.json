@@ -1,0 +1,39 @@
+{
+  "name": "cbp",
+  "displayName": "cbp",
+  "description": "cbp_controlBits",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.105.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": 
+  {
+
+    "themes": 
+    [
+       {
+        "label": "cbp-theme",        
+        "uiTheme": "vs-dark",
+        "path": "./themes/cbp-theme-color.json"
+       }
+    ],
+
+    "languages": 
+    [{
+      "id": "cbp",
+      "aliases": ["cbp_controlBits", "cbp"],
+      "extensions": [".cbp"],
+      "configuration": "./language-configuration.json"
+    }],	
+
+    "grammars": 
+    [{
+      "language": "cbp",
+      "scopeName": "source.cbp",
+      "path": "./syntaxes/cbp.tmLanguage.json"
+    }]
+  }
+}
