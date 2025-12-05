@@ -114,28 +114,33 @@ Token Lexer::getToken()
 	return token;
 }
 
-asmc::TokenElement* Lexer::getTokenList()
+std::array<asmc::Token, MAX_TOKEN_LIST_SIZE> Lexer::getTokenList()
 {
-
-	for (size_t i = 0; i < m_tokenList.m_arrLength; i++)
+	int i = 0;
+	while (i < MAX_TOKEN_LIST_SIZE)
 	{
 		asmc::Token token = getToken();
-		m_tokenList.m_list[i] = token;
 
-		if (token.m_type == asmc::TokenType::EMPTY || token.m_type == asmc::TokenType::ENDOFLINE)
-		{			
-			break;
-		}		
+		if (token.m_type == asmc::TokenType::ENDOFFILE)
+		{
+			m_tokenArr[i] = { "EOF", asmc::TokenType::ENDOFFILE };
+		}
+
+		if (token.m_type != asmc::TokenType::NEWLINE)
+		{
+			m_tokenArr[i] = token;
+			i++;
+		}
 	}
 
-	return &m_tokenList;
+	return m_tokenArr;
 }
 
 char Lexer::peek()
 {
 	if (m_position + 1 >= m_program.length())
 	{
-		return ENDOFLINE;
+		return asmc::TokenType::ENDOFFILE;
 	}
 	return m_program[m_position + 1];
 }
@@ -311,8 +316,8 @@ asmc::Token Lexer::lexSingleChar()
 
 		break;
 
-	case ENDOFLINE:
-		token = { std::string(1,m_currentChar), asmc::TokenType::ENDOFLINE };
+	case ENDOFFILE:
+		token = { std::string(1,m_currentChar), asmc::TokenType::ENDOFFILE };
 		break;
 	default:
 		printError("LEXER Default CASE! ");
@@ -417,7 +422,7 @@ bool Lexer::isNumberHex()
 
 	if (m_position + 2 >= m_program.length())
 	{
-		peekoverX = ENDOFLINE;
+		peekoverX = ENDOFFILE;
 	}
 	else
 	{
@@ -457,7 +462,7 @@ void Lexer::skipComments()
 {
 	if (m_currentChar == ';')
 	{
-		while (m_currentChar != '\n' && m_currentChar != ENDOFLINE)
+		while (m_currentChar != '\n' && m_currentChar != ENDOFFILE)
 		{
 			nextChar();
 		}
@@ -471,7 +476,7 @@ void Lexer::skipComments()
 		{
 			nextChar();//*
 			nextChar();// \n
-			while (m_currentChar != asmc::TokenType::ENDOFLINE && m_currentChar != '*' && peek() != '/')
+			while (m_currentChar != asmc::TokenType::ENDOFFILE && m_currentChar != '*' && peek() != '/')
 			{
 				nextChar();
 			}
@@ -604,7 +609,7 @@ void Lexer::nextChar()
 	m_position++;
 	if (m_position >= m_program.length())
 	{
-		m_currentChar = ENDOFLINE;
+		m_currentChar = ENDOFFILE;
 	}
 	else
 	{

@@ -16,7 +16,7 @@ namespace asmc
 	enum TokenType
 	{
 
-		ENDOFLINE = -1,
+		ENDOFFILE = -1,
 		
 		//Opcodes
 

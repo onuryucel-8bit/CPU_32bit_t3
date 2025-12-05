@@ -8,11 +8,14 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <array>
 
 #include "../LibsLocal/magic_enum/magic_enum.hpp"
 #include "../libsLocal/rang.hpp"
 
 #include "Tokens.h"
+
+#define MAX_TOKEN_LIST_SIZE 30
 
 namespace asmc
 {
@@ -34,13 +37,6 @@ struct FileData
 	int m_lastPosition = 0;
 	char m_currentChar = 0;
 	size_t m_lineNumber = 0;
-};
-
-struct TokenElement
-{
-	static const size_t m_arrLength = 20;
-	asmc::Token m_list[m_arrLength];
-	size_t m_size = 0;
 };
 
 }
@@ -68,7 +64,7 @@ public:
 	Lexer(std::string path);
 	
 	[[nodiscard]] Token getToken();
-	[[nodiscard]] TokenElement* getTokenList();
+	[[nodiscard]] std::array<asmc::Token, MAX_TOKEN_LIST_SIZE> getTokenList();
 
 
 	bool getErrorFlag();
@@ -78,6 +74,8 @@ public:
 	bool isInputStreamEmpty();
 
 	void pushFile(std::string path);
+
+	//if input stream is empty returns true
 	bool popFile();
 
 	std::string getCurrentFileName();
@@ -133,7 +131,7 @@ private:
 	bool f_error;
 	bool f_newline;
 
-	TokenElement m_tokenList;
+	std::array<asmc::Token, MAX_TOKEN_LIST_SIZE> m_tokenArr;
 
 	std::string m_program;
 	std::string m_currentFileName;

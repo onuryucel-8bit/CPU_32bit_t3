@@ -4,8 +4,12 @@ namespace asmc
 
 Parser::Parser(asmc::Lexer& lexer)
 	:m_lexer(lexer)
-{
-	m_peekToken = m_lexer.getToken();
+{	
+	m_tokenIndex = 0;
+	m_tokenList = m_lexer.getTokenList();
+
+	m_peekToken = m_tokenList[0];
+
 	moveCurrentToken();
 
 	//asmc::TokenElement* elem = m_lexer.getTokenList();
@@ -119,16 +123,17 @@ void Parser::run()
 	//--------------------------------------------------------------//
 	//parser
 	//--------------------------------------------------------------//
+	uti::Timer timer;
 
-	while (m_currentToken.m_type != asmc::TokenType::ENDOFLINE)
-	{		
-		if (m_currentToken.m_type != asmc::TokenType::NEWLINE)
-		{				
-			program();
-		}
+	std::cout << rang::bg::blue << "Running parser..." << rang::style::reset << "\n";
 
-		if (m_peekToken.m_type == asmc::TokenType::ENDOFLINE)
+	while (m_tokenList[m_tokenIndex].m_type != asmc::TokenType::ENDOFFILE)
+	{							
+		program();
+				
+		if (m_peekToken.m_type == asmc::TokenType::ENDOFFILE)
 		{
+			//if input stream is empty close the loop
 			if (m_lexer.popFile())
 			{
 				break;
@@ -139,7 +144,7 @@ void Parser::run()
 			}						
 		}
 		
-		moveCurrentToken();
+		moveCurrentToken();		
 	}
 
 	if (m_output.size() > 0)
@@ -178,16 +183,17 @@ void Parser::run()
 		//std::cout << '[' << key.m_text << "] status [" << magic_enum::enum_name(value.m_status) << "]" << " address[" << value.m_ramIndex << "]\n";
 	}
 
+	/*
 	if (fd_printHexOutput)
 	{
-		std::cout << rang::bg::green << "printBinHex() BEGIN"<< rang::style::reset << "\n";
+		std::cerr << rang::bg::green << "printBinHex() BEGIN"<< rang::style::reset << "\n";
 		for (size_t i = 0; i < m_output.size(); i++)
 		{
 			printBinHex(m_output[i].m_opcode, m_output[i].m_secondPart);
 		}
-		std::cout << rang::bg::green << "printBinHex() END" << rang::style::reset << "\n";
+		std::cerr << rang::bg::green << "printBinHex() END" << rang::style::reset << "\n";
 	}
-
+	*/
 	//if symbol info UNDEFINED
 	if (f_error)
 	{
@@ -198,10 +204,18 @@ void Parser::run()
 		return;
 	}
 
+	//--------------------------------------------------------------//
+	//Generate output Emu/logisim RAM
+	//--------------------------------------------------------------//
+
+
 	if (m_ramLocation != 0)
 	{
+		std::cout << rang::bg::blue << "Generating output file..." << rang::style::reset << "\n";
 		writeOutput();
 	}	
+
+	std::cerr <<"Total: " <<timer.getElapsedTime_milliseconds() << "ms passed..." << "\n";
 }
 
 
@@ -223,7 +237,7 @@ void Parser::writeOutput()
 
 
 	//--------------------------------------------------------------//
-	//output file
+	//output EMU file
 	//--------------------------------------------------------------//
 
 	std::ofstream file("out.txt");
@@ -379,7 +393,7 @@ void Parser::program()
 
 #ifdef PARSER_TEST_FUNCS
 
-	asmc::TokenType Parser::toToken(size_t opcode)
+asmc::TokenType Parser::toToken(size_t opcode)
 {
 		switch (opcode)
 		{
@@ -424,7 +438,7 @@ void Parser::program()
 		}
 }
 
-	void Parser::printBinHex(std::bitset<32> opcode, std::bitset<32> operand)
+void Parser::printBinHex(std::bitset<32> opcode, std::bitset<32> operand)
 {
 	std::string str = opcode.to_string();
 	
@@ -432,7 +446,7 @@ void Parser::program()
 
 	auto commandStr = magic_enum::enum_name(toToken(command));
 
-	std::cout		
+	std::cerr		
 			<< commandStr << "\n"
 			<<"oooooooo rrr rrr mmm\n"
 			
@@ -461,21 +475,21 @@ void Parser::program()
 		<< "========================================"
 		<< "\n";
 
-	std::cout << std::dec;
+	std::cerr << std::dec;
 }
 
-	void Parser::printCurrentPeekToken()
-	{
-		std::cout		
-			<< "printCurrentPeekToken()\n"		
-			<< "m_currentToken.text[" << m_currentToken.m_text << "]"
-			<< "m_currentToken.type[" << magic_enum::enum_name(m_currentToken.m_type) << "]"
-			<< "\n"
-			<< "m_peekToken.text[" << m_peekToken.m_text << "]"
-			<< "m_peekToken.type[" << magic_enum::enum_name(m_peekToken.m_type) << "]"		
-			<< "\n";
+void Parser::printCurrentPeekToken()
+{
+	std::cout		
+		<< "printCurrentPeekToken()\n"		
+		<< "m_currentToken.text[" << m_currentToken.m_text << "]"
+		<< "m_currentToken.type[" << magic_enum::enum_name(m_currentToken.m_type) << "]"
+		<< "\n"
+		<< "m_peekToken.text[" << m_peekToken.m_text << "]"
+		<< "m_peekToken.type[" << magic_enum::enum_name(m_peekToken.m_type) << "]"		
+		<< "\n";
 
-	}
+}
 
 #endif // PARSER_TEST_FUNCS
 
@@ -515,7 +529,15 @@ void Parser::printWarning(std::string message)
 void Parser::moveCurrentToken()
 {
 	m_currentToken = m_peekToken;
-	m_peekToken = m_lexer.getToken();
+
+	m_tokenIndex++;
+	if (m_tokenIndex >= m_tokenList.size())
+	{
+		m_tokenList = m_lexer.getTokenList();
+		m_tokenIndex = 0;
+	}
+
+	m_peekToken = m_tokenList[m_tokenIndex];
 }
 
 MemoryLayout Parser::parseOperand(uint32_t opcode)
@@ -710,6 +732,11 @@ void Parser::parseDB()
 		m_output.push_back(memlay);
 
 		moveCurrentToken();
+
+		if (m_currentToken.m_type == asmc::TokenType::NEWLINE)
+		{
+			moveCurrentToken();
+		}
 	}
 }
 

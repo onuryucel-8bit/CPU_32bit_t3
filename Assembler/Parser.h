@@ -16,6 +16,9 @@
 #include "Common.h"
 #include "LogisimPrinter.h"
 
+//TODO move to ..\utils
+#include "Timer.h"
+
 
 #define PARSER_TEST_FUNCS
 
@@ -92,7 +95,9 @@ private:
 	using funcPtr = void (asmc::Parser::*)();
 
 	funcPtr m_parserFuncs[64];
-	
+	std::array<asmc::Token, MAX_TOKEN_LIST_SIZE> m_tokenList;
+	size_t m_tokenIndex;
+
 	asmc::Token m_lastFuncName;
 
 	bool f_error;
