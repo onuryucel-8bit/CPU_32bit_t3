@@ -1,12 +1,7 @@
-#include <iostream>
-#include <string>
-#include <fstream>
-#include <sstream>
-
+#include "LexerPCH.h"
 #include "Lexer.h"
+
 #include "Parser.h"
-
-
 
 
 int main(int argc, char* argv[])

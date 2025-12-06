@@ -40,7 +40,7 @@ namespace uti
 	{
 		auto end_point = std::chrono::high_resolution_clock::now();
 		std::chrono::milliseconds milliSec = std::chrono::duration_cast<std::chrono::milliseconds>(end_point - start_point);
-		return milliSec.count();		
+		return milliSec.count();
 	}
 
 	inline void Timer::start()

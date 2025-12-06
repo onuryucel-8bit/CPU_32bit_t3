@@ -1,14 +1,6 @@
 #pragma once
 
-#include <iostream>
-#include <optional>
-#include <string>
-#include <cctype>
-#include <cstdint>
-#include <fstream>
-#include <sstream>
-#include <vector>
-#include <array>
+#include "LexerPCH.h"
 
 #include "../LibsLocal/magic_enum/magic_enum.hpp"
 #include "../libsLocal/rang.hpp"
