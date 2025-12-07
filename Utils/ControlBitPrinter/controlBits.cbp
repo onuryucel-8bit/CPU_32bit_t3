@@ -29,6 +29,7 @@
 	NOP
 }
 
+//CALISIYOR 07.12.25
 //4
 [LOAD 0]
 //LOAD r0,32bit
@@ -96,6 +97,13 @@
 
 	//@ry => MAR
 	POSTA_B_out
+	REG_out
+	REG_data_out
+	DATA_to_adr
+	
+
+	//mar = pc
+	//pc++	
 	MAR_we
 	PC_mux
 	#
@@ -180,12 +188,44 @@
 	Write
 	#
 }
+
+[STR 1]
+//str @rx,ry
+{	
+	POSTA_B_we
+	POSTA_A_we
+	#
+
+	//rx => adr_path	
+	REG_out
+	POSTA_A_out
+	REG_data_out
+	DATA_to_adr
+	//adr_path => mar
+	PC_mux
+	MAR_we
+	#
+
+	POSTA_B_out
+	REG_out
+	REG_data_out
+	Write
+	#
+	
+	
+}
+
+//CALISIYOR 07.12.25
 [ADD 0]
 //24 0x18
-//add rx,sayi
+//add rx,sayi 
 {
 	//rx => posta_b
 	POSTA_B_we
+	//mar = pc
+	//pc++
+	PC_enb
+	MAR_we	
 	#
 
 	//sayi => MDR
@@ -199,8 +239,7 @@
 	REG_out
 	#
 
-	//sayi => reg_path
-	REG_path_in
+	//sayi => reg_path	
 	MDR_out
 	ALU_mux
 	//rx, sayi => ALU => ACC
@@ -387,4 +426,24 @@
 	POSTA_A_out
 	#
 }
-//55 0x37 ???
+
+//CALISIYOR 07.12.25
+//jmp label
+[JMP 0]
+{
+	//mar = pc
+	//pc++
+	PC_enb
+	MAR_we
+	#
+
+	//adr_reg = adr
+	ADR_we
+	Read
+	#
+
+	//pc = adr
+	ADR_out
+	PC_load
+	#
+}

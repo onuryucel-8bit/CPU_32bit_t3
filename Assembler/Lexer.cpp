@@ -22,7 +22,7 @@ Lexer::Lexer(std::string path)
 	
 
 	f_error = false;
-	f_newline = true;
+	f_newline = true;//TODO ne? ???
 
 	nextChar();
 }
@@ -52,6 +52,7 @@ Token Lexer::getToken()
 	//TODO bosluklari es gecme mekanizmasi ekle
 	skipWhiteSpace();
 
+	//TODO f_newline ????
 
 	Token token;
 
@@ -69,7 +70,7 @@ Token Lexer::getToken()
 
 		f_newline = false;
 	}
-	//Register,[keyword,label,jumploc] check
+	//Register,[keyword,label] check
 	else if (std::isalpha(m_currentChar))
 	{
 		//Register?
@@ -77,7 +78,7 @@ Token Lexer::getToken()
 		{
 			token = lexRegPart();
 		}
-		//keyword,label,jumploc
+		//keyword,label
 		else
 		{
 			token = lexWord();
@@ -177,16 +178,16 @@ asmc::Token Lexer::lexRegPart()
 	asmc::Token token;
 
 	nextChar();
+	//check peek char is hex number
 	if (isxdigit(static_cast<uint8_t>(peek())))
 	{		
 		printError("invalid reg operand it should be r[0-7]\n");
-		//empty token
 
+		//empty token => error
 		token = { std::string(1,m_currentChar), asmc::TokenType::EMPTY};
 
 		return token;
 	}
-
 	
 	return token = { std::string(1,m_currentChar), asmc::TokenType::REGISTER };
 }
@@ -332,10 +333,12 @@ asmc::Token Lexer::lexWord()
 {
 	asmc::Token token;
 	
+	//TODO add std::isalpha && std::isalnum for ID checks #define LR0 0x56 is undefined
 	std::string tokenStr = getSubStr(m_position, 1, std::isalpha);
 
 	toUpper(tokenStr);
 
+	//check if tokenStr is a keyword(LOAD,XOR,AND, ...)
 	if (checkIfKeyword(tokenStr))
 	{
 		std::optional<TokenType> enumVal = magic_enum::enum_cast<TokenType>(tokenStr);
@@ -343,12 +346,14 @@ asmc::Token Lexer::lexWord()
 	}
 	else
 	{
+		//TODO f_newline ne lan bu ????
 		//label
 		if (f_newline == true && peek() != ':')
 		{
 			printError("LEXER:: label must end with ':' ");
 			
 		}
+		//valid label examples LOOP: CLEAR: ...
 		else if (peek() == ':')
 		{
 			token = { tokenStr, TokenType::LABEL };
@@ -358,6 +363,11 @@ asmc::Token Lexer::lexWord()
 		//variable
 		else
 		{
+			//if the lastToken is a jump instruction, next token should be a label
+			//	loop: 
+			//	JMP loop
+			//lastToken => JMP		
+			//loop => label
 			if (m_lastToken.m_type >= asmc::TokenType::JMP &&
 				m_lastToken.m_type <= asmc::TokenType::JCF)
 			{
@@ -367,11 +377,7 @@ asmc::Token Lexer::lexWord()
 			{
 				token = { tokenStr, TokenType::ID};
 			}
-				
-			//nextChar();
-
 		}
-
 	}
 
 	return token;

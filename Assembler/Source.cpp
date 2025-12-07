@@ -1,4 +1,5 @@
 #include "LexerPCH.h"
+
 #include "Lexer.h"
 
 #include "Parser.h"
@@ -7,11 +8,13 @@
 int main(int argc, char* argv[])
 {
 
-	/*if (argc < 2)
+	/*std::string path = argv[1];
+	if (argc < 2)
 	{
 		std::cout << "Expected file path...\n";
+		std::cout << "Loading default main.asm\n";
 		
-		return -1;
+		path = "main.asm";
 	}*/
 
 	/*
@@ -21,7 +24,7 @@ int main(int argc, char* argv[])
 		parser.fd_Print
 		break;
 	}
-	*/
+	*/	
 
 	asmc::Lexer lexer("main.asm");
 

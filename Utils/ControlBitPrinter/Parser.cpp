@@ -12,6 +12,7 @@ Parser::Parser(asmc::Lexer& lexer)
 	m_addressVec.m_selfAdr = 0;
 	m_addressVec.m_controlBitStartPos = 0;
 
+	//TODO make them hex
 	m_locationTable["LOAD"] = 0b0000'0001'001;
 	m_locationTable["STR"] = 0b0000'0010'010;
 	m_locationTable["MOV"] = 0b0000'1000'000;
@@ -193,6 +194,10 @@ void Parser::run()
 		case asmc::TokenType::REG_data_out:
 			m_sector.push_back(asmc::TokenType::REG_data_out);
 			break;
+
+		case asmc::TokenType::DATA_to_adr:
+			m_sector.push_back(asmc::TokenType::DATA_to_adr);
+			break;
 #pragma endregion
 		
 		case asmc::TokenType::NOP:
@@ -225,6 +230,7 @@ void Parser::run()
 
 			if (m_locationTable.contains(opcode))
 			{				
+				
 				m_adrRomSelfAdr = m_locationTable[opcode];
 
 				m_adrRomSelfAdr += offset;
@@ -235,9 +241,9 @@ void Parser::run()
 				tempVec.m_controlBitStartPos = m_controlRomIndex;
 				tempVec.m_selfAdr = m_adrRomSelfAdr;
 
-				std::cout << "m_adrRomSelfAdr :: hex " << std::hex << m_adrRomSelfAdr << "|"
+				/*std::cout << "m_adrRomSelfAdr :: hex " << std::hex << m_adrRomSelfAdr << "|"
 						  << "m_adrRomSelfAdr :: dec " << std::dec << m_adrRomSelfAdr << "|"
-					      << "m_controlRomIndex :: hex " << std::hex << m_controlRomIndex << "\n";
+					      << "m_controlRomIndex :: hex " << std::hex << m_controlRomIndex << "\n";*/
 
 				m_addressROM.push_back(tempVec);
 			}
@@ -315,10 +321,15 @@ void Parser::writeToFile()
 	{
 		file << rdx::decToHex(m_output[i]) << " ";
 
-		if ((i + 1) % 16 == 0)
+		if (m_output[i] == asmc::TokenType::END)
 		{
 			file << "\n";
 		}
+
+		/*if ((i + 1) % 16 == 0)
+		{
+			file << "\n";
+		}*/
 	}
 
 	file.close();
@@ -347,7 +358,7 @@ void Parser::writeToFile()
 			fileAddressRom << "0 ";
 
 			romIndex++;
-			if (romIndex % 8 == 0)
+			if (romIndex % 9 == 0)
 			{
 				fileAddressRom << "\n";
 			}
@@ -356,7 +367,7 @@ void Parser::writeToFile()
 		fileAddressRom << rdx::decToHex(m_addressROM[i].m_controlBitStartPos) << " ";
 
 		romIndex++;
-		if (romIndex % 8 == 0)
+		if (romIndex % 9 == 0)
 		{
 			fileAddressRom << "\n";
 		}

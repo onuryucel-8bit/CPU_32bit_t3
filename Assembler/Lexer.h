@@ -103,19 +103,31 @@ private:
 	//str token enum icerisinde tanimlimi
 	bool checkIfKeyword(std::string token);
 
-	//.ORIGIN .DB	
+	//------------------------------------------------------//
+	//---------------------lex[X]()-------------------------//
+	//------------------------------------------------------//
+
+	//returns token starting with '.' .ORIGIN .DB
 	[[nodiscard]] asmc::Token lexDotPart();
-	//rx	
+
+	//returns register hex part r0,r2,r3, .. => 0,2,3, ...	
 	[[nodiscard]] asmc::Token lexRegPart();
+
 	//0xff
 	[[nodiscard]] asmc::Token lexHexNumberPart();
+
 	//+,-,@,\n,EOF.... single char
 	[[nodiscard]] asmc::Token lexSingleChar();
-	//keyword, label, jumploc
+
+	//returns keywords LOAD,STR,ADD, LABEL or ID
 	[[nodiscard]] asmc::Token lexWord();
-	//#define, #include
+
+	//returns token starting with '#' #define, #include
 	[[nodiscard]] asmc::Token lexMacro();
 
+	//------------------------------------------------------//
+	//------------------------------------------------------//
+	//------------------------------------------------------//
 
 	
 	int m_position;

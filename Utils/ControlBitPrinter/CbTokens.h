@@ -82,9 +82,10 @@ namespace asmc
 		REG_out,			
 		REG_we,
 		REG_data_out,
-		REG_path_in,
-		
-		END,
+		REG_path_in,				
+		DATA_to_adr,
+
+		END,		
 		//----------------------//
 
 		NOP,

@@ -30,8 +30,7 @@ local function writeFile(data)
     
     for i = 1, #data, 1 do
         
-        file:write("0x")
-        file:write(data[i])
+        file:write(string.format("0x%02x", data[i]))
         file:write(",")
 
         if i % 8 == 0 then
