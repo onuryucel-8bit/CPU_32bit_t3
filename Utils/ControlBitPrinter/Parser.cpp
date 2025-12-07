@@ -317,9 +317,10 @@ void Parser::writeToFile()
 
 	file << "v3.0 hex words plain\n";
 
+	file << std::hex;
 	for (size_t i = 0; i < m_output.size(); i++)
 	{
-		file << rdx::decToHex(m_output[i]) << " ";
+		file << m_output[i] << " ";
 
 		if (m_output[i] == asmc::TokenType::END)
 		{
@@ -340,13 +341,13 @@ void Parser::writeToFile()
 		std::cout << elem.m_selfAdr << "\n";
 	}*/
 
+	file.open("AdrROM_output.txt");
+	
 
-	std::ofstream fileAddressRom("AdrROM_output.txt");
+	file << "v3.0 hex words plain\n";
 
-	fileAddressRom << "v3.0 hex words plain\n";
-
-	fileAddressRom << "\n";
-
+	file << "\n";
+	
 	int romIndex = 0;
 	for (size_t i = 0; i < m_addressROM.size(); i++)
 	{
@@ -355,25 +356,25 @@ void Parser::writeToFile()
 		//Fill gap with zeros
 		while (romIndex < target)
 		{
-			fileAddressRom << "0 ";
+			file << "0 ";
 
 			romIndex++;
 			if (romIndex % 9 == 0)
 			{
-				fileAddressRom << "\n";
+				file << "\n";
 			}
 		}
 		
-		fileAddressRom << rdx::decToHex(m_addressROM[i].m_controlBitStartPos) << " ";
+		file << m_addressROM[i].m_controlBitStartPos << " ";
 
 		romIndex++;
 		if (romIndex % 9 == 0)
 		{
-			fileAddressRom << "\n";
+			file << "\n";
 		}
 	}
 
-	fileAddressRom.close();
+	file.close();
 }
 
 }

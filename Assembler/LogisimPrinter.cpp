@@ -13,8 +13,8 @@ void LogisimPrinter::print(std::vector<asmc::MemoryLayout>& array)
 	std::ofstream file("logisimRAM_output.txt");
 
 	file << "v3.0 hex words plain\n";
-
-
+	
+	file << std::hex;
 	int romIndex = 0;
 	for (size_t i = 0; i < array.size(); i++)
 	{	
@@ -35,13 +35,13 @@ void LogisimPrinter::print(std::vector<asmc::MemoryLayout>& array)
 		
 		//write hex values to the file
 		//----------------------------------------------//
-		file << rdx::decToHex(array[i].m_opcode) << " ";
+		file << array[i].m_opcode << " ";
 
 		romIndex++;
 
 		if (array[i].m_packetSize == 2)
 		{
-			file << rdx::decToHex(array[i].m_secondPart) << " ";
+			file << array[i].m_secondPart << " ";
 			romIndex++;
 		}
 
