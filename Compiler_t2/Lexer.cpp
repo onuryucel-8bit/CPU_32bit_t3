@@ -88,19 +88,7 @@ Token Lexer::getToken()
 	//number check
 	else if (std::isdigit(m_currentChar))
 	{
-		//HEX NUMBER
-		if (isOperand())
-		{			
-			token = lexHexNumberPart();
-		}			
-		else
-		{			
-			//FIXME ???
-			f_error = true;
-
-		}
-		f_newline = false;
-
+		token = { std::string(1, m_currentChar), asmc::TokenType::NUMBER };
 	}
 	else
 	{
@@ -213,6 +201,10 @@ asmc::Token Lexer::lexSingleChar()
 	switch (m_currentChar)
 	{
 	
+	case '+':
+		token = { std::string(1,m_currentChar), asmc::TokenType::PLUS };
+		break;
+
 	case '\n':
 		//std::cout << "LEXER newline detected\n";
 		token = { std::string(1,m_currentChar), asmc::TokenType::NEWLINE };
@@ -268,9 +260,6 @@ asmc::Token Lexer::lexSingleChar()
 
 		break;
 
-	case '+':
-		token = { std::string(1,m_currentChar), asmc::TokenType::PLUS};
-		break;
 
 	case '$':
 		nextChar();//skip $

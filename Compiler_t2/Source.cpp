@@ -51,9 +51,27 @@
 --------------
 */
 
-
+#include "Lexer.h"
 
 int main()
 {
+	asmc::Lexer lexer("source.bc");
+	
+	asmc::Token token = lexer.getToken();	
 
+
+	
+	while (token.m_type != asmc::TokenType::ENDOFFILE)
+	{
+		std::cout << token.m_text << "|" << magic_enum::enum_name(token.m_type) <<"\n";
+		
+
+		if (token.m_type == asmc::TokenType::NUMBER)
+		{
+			std::cout << "LOAD r0," << token.m_text << "\n";
+		}
+		token = lexer.getToken();
+	}
+
+	
 }

@@ -1582,13 +1582,13 @@
       <a name="color" val="#eefdff"/>
       <a name="offcolor" val="#000000"/>
     </comp>
-    <comp lib="8" loc="(362,1822)" name="Text">
+    <comp lib="8" loc="(360,1820)" name="Text">
       <a name="text" val="21: Read; MDR_we"/>
     </comp>
-    <comp lib="8" loc="(364,1872)" name="Text">
+    <comp lib="8" loc="(360,1870)" name="Text">
       <a name="text" val="C0: MDR_out; IR_we"/>
     </comp>
-    <comp lib="8" loc="(426,1779)" name="Text">
+    <comp lib="8" loc="(425,1775)" name="Text">
       <a name="text" val="8008:  pc_enb, mar_we | pc++; mar = pc;"/>
     </comp>
     <comp loc="(430,1090)" name="CPU"/>

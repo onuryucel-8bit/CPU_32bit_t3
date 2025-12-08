@@ -1,0 +1,11 @@
+--Token dump---
+clang -Xclang -dump-tokens -fsyntax-only main.cpp
+
+--ast dump--
+clang -Xclang -ast-dump main.cpp -o main.ast
+
+--ir dump--
+clang -S -emit-llvm main.cpp -o main.ll
+
+--asm dump--
+clang -S -mllvm --x86-asm-syntax=intel main.cpp -o main.asm
