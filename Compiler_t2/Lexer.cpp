@@ -88,7 +88,13 @@ Token Lexer::getToken()
 	//number check
 	else if (std::isdigit(m_currentChar))
 	{
-		token = { std::string(1, m_currentChar), asmc::TokenType::NUMBER };
+		std::string tokenStr(1, m_currentChar);
+		while (std::isdigit(peek()))
+		{
+			nextChar();
+			tokenStr += m_currentChar;
+		}
+		token = { tokenStr, asmc::TokenType::NUMBER };
 	}
 	else
 	{
@@ -200,7 +206,43 @@ asmc::Token Lexer::lexSingleChar()
 
 	switch (m_currentChar)
 	{
-	
+
+	case '(':
+		token = { std::string(1,m_currentChar), asmc::TokenType::LPAREN };
+		break;
+
+	case ')':
+		token = { std::string(1,m_currentChar), asmc::TokenType::RPAREN };
+		break;
+
+	case '>':
+		token = { std::string(1,m_currentChar), asmc::TokenType::GREATER_THAN };
+		break;
+
+	case '<':
+		token = { std::string(1,m_currentChar), asmc::TokenType::LESS_THAN };
+		break;
+
+	case '}':
+		token = { std::string(1,m_currentChar), asmc::TokenType::RCPAREN };
+		break;
+
+	case '{':
+		token = { std::string(1,m_currentChar), asmc::TokenType::LCPAREN };
+		break;
+
+	case ']':
+		token = { std::string(1,m_currentChar), asmc::TokenType::RBRACE };
+		break;
+
+	case '[':
+		token = { std::string(1,m_currentChar), asmc::TokenType::LBRACE };
+		break;
+
+	case '=':
+		token = { std::string(1,m_currentChar), asmc::TokenType::ASSIGN };
+		break;
+
 	case '+':
 		token = { std::string(1,m_currentChar), asmc::TokenType::PLUS };
 		break;
@@ -208,102 +250,19 @@ asmc::Token Lexer::lexSingleChar()
 	case '\n':
 		//std::cout << "LEXER newline detected\n";
 		token = { std::string(1,m_currentChar), asmc::TokenType::NEWLINE };
-		f_newline = true;		
-		
-		break;
-
-		//ADDRESS
-	case '@':		
-
-		nextChar();//move cursor to number OR r
-
-		
-		if (m_currentChar == 'r')
-		{
-			nextChar();
-			token = { std::string(1, m_currentChar), asmc::TokenType::REGADR };
-		}
-		else
-		{
-			
-			tokenStr = getSubStr(m_position, 1, std::isxdigit);
-			
-			nextChar();//move cursor to '+' or ' '
-			
-			skipWhiteSpace();
-
-			//peek() == '+' || '-'
-			if (m_currentChar == '+' || m_currentChar == '-')
-			{				
-				tokenStr += m_currentChar;
-				
-				nextChar();//move cursor to 'r' or ' '
-				skipWhiteSpace();
-				
-				if (isOperand())
-				{
-					nextChar();//get register hex value
-					tokenStr += m_currentChar;
-
-					token = { tokenStr, asmc::TokenType::ADR_P_REG};
-				}
-			}
-			else
-			{
-				token = { tokenStr, asmc::TokenType::ADDRESS };
-			}
-
-			
-		}
-
-
-
-		break;
-
-
-	case '$':
-		nextChar();//skip $
-
-		tokenStr = getSubStr(m_position, 1, std::isxdigit);
-
-		token = {tokenStr, asmc::TokenType::DECNUMBER };
+		f_newline = true;
 
 		break;
 
 	case '"':
 		nextChar();
-		
-		tokenStr = getSubStr(m_position, 1, std::isalnum, false);
-
-		nextChar(); 
-
-		//is it "abcd.asm" path?
-		if (m_currentChar == '.')
+				
+		while (m_currentChar != '"')
 		{
 			tokenStr += m_currentChar;
-
 			nextChar();
-			while (m_currentChar != '"')
-			{
-				tokenStr += m_currentChar;
-				nextChar();
-			}
-			nextChar();//skip "
-
-			token = { tokenStr, asmc::TokenType::DIRECTORY};
 		}
-		else
-		{
-			token = { tokenStr, asmc::TokenType::STRING };
-		}		
-		
-		break;
-
-	case '\'':
-		nextChar();
-		token = { std::string(1, m_currentChar), asmc::TokenType::ASCII};
-		nextChar();
-
+		token = { tokenStr, asmc::TokenType::STRING };
 		break;
 
 	case ENDOFFILE:
@@ -322,12 +281,17 @@ asmc::Token Lexer::lexWord()
 {
 	asmc::Token token;
 	
-	//TODO add std::isalpha && std::isalnum for ID checks #define LR0 0x56 is undefined
-	std::string tokenStr = getSubStr(m_position, 1, std::isalpha);
+	size_t startPos = m_position;
+	size_t length = 1;
+	while (std::isalpha(peek()) || std::isdigit(peek()) || peek() == '_')
+	{
+		nextChar();
+		length++;
+	}
 
-	toUpper(tokenStr);
+	std::string tokenStr = m_program.substr(startPos, length);
 
-	//check if tokenStr is a keyword(LOAD,XOR,AND, ...)
+	
 	if (checkIfKeyword(tokenStr))
 	{
 		std::optional<TokenType> enumVal = magic_enum::enum_cast<TokenType>(tokenStr);
@@ -335,38 +299,7 @@ asmc::Token Lexer::lexWord()
 	}
 	else
 	{
-		//TODO f_newline ne lan bu ????
-		//label
-		if (f_newline == true && peek() != ':')
-		{
-			printError("LEXER:: label must end with ':' ");
-			
-		}
-		//valid label examples LOOP: CLEAR: ...
-		else if (peek() == ':')
-		{
-			token = { tokenStr, TokenType::LABEL };
-			nextChar();
-
-		}
-		//variable
-		else
-		{
-			//if the lastToken is a jump instruction, next token should be a label
-			//	loop: 
-			//	JMP loop
-			//lastToken => JMP		
-			//loop => label
-			if (m_lastToken.m_type >= asmc::TokenType::JMP &&
-				m_lastToken.m_type <= asmc::TokenType::JCF)
-			{
-				token = { tokenStr, TokenType::LABEL};
-			}
-			else
-			{
-				token = { tokenStr, TokenType::ID};
-			}
-		}
+		token = { tokenStr, TokenType::ID};
 	}
 
 	return token;
@@ -581,10 +514,7 @@ std::string Lexer::getSubStr(int startPos, int length, int (*cmpFunc)(int), bool
 
 	std::string tokenStr = m_program.substr(startPos, length);
 
-	if (upper)
-	{
-		toUpper(tokenStr);
-	}
+	
 	
 
 	return tokenStr;

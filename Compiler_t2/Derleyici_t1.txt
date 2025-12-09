@@ -1,0 +1,22 @@
+ascii[5] = { 'a',45,24,'b',"abcdef"} // .db 0xaf, 0x0f, 0xb2, ....
+let a = ascii[0] // r0 = 0xaf
+let index = 0
+
+while index < 5 then
+	print_tty(a);
+	index = index + 1	
+end 
+
+-------------------------
+struct
+{
+	let a
+	let b
+	
+}vec2
+
+
+let pos = vec2(0,0)
+
+pox.a = pos.a + 1
+pox.a = pos.b + 1

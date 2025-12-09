@@ -1,0 +1,457 @@
+<PROGRAM> ::= <TERM> ("+" | "-") <TERM>
+<TERM> ::= [0-9]+
+24 + 1
+
+//================================================//
+//================================================//
+//================================================//
+<PROGRAM> ::= <TERM> (("+" | "-") <TERM>)*
+<TERM> ::= [0-9]+
+
+1 + 2 + 3 + 4 + 5
+
+program()
+	result = term();
+
+	while currentToken.type == "+" | "-" 
+		currentToken = nextToken();
+		
+		if currentToken.type == "+"
+			nextToken()
+			result = result + term()
+		else
+			nextToken()
+			result = result - term()
+		
+term()
+	if currentToken.type == INTEGER
+		currentToken = lexer.getNextToken();
+	else
+		printError();
+
+
+//================================================//
+//================================================//
+//================================================//
+
+<PROGRAM> ::= <TERM> (("+" | "-") <TERM>)*
+<TERM> ::= <FACTOR> ("*" | "/")<FACTOR>)*
+<FACTOR> :: [0-9]+
+
+2 + 3 * 5
+
+//================================================//
+//================================================//
+//================================================//
+
+
+
+---------------------------
+<PROGRAM> ::= <LET_STMT>
+<LET_STMT> ::= "LET" <ID> "=" <NUMBER>
+<NUMBER> ::= [0-9]+
+<ID> ::= [a-zA-Z]+
+---------------------------
+LET A = 5
+
+program()
+	let_stmt()
+	
+let_stmt()
+	if expected(LET)
+		printError()
+	else
+		currentToken = lexer.getNextToken()
+		ident = id()
+		expect("=")
+		value = number()
+		
+		if(f_parserError != true)
+			table[ident, value]
+			std::cout << "load r0,"<< value <<"\n";
+
+number()
+	if expected(INTEGER)
+		printError()
+	else
+		currentToken = lexer.getNextToken()
+
+id()	
+	if expected(ID)
+		printError()
+	else
+		currentToken = lexer.getNextToken()
+	
+	
+		
+	
+
+---------------------------
+
+---------------------------
+<PROGRAM> ::= <STAMENT_LIST>
+
+<STAMENT_LIST> ::= <LET_STMT>
+				| <LET_STMT> <STAMENT_LIST>
+				
+<LET_STMT> ::= "LET" <ID> "=" <NUMBER>
+<NUMBER> ::= [0-9]+
+<ID> ::= [a-zA-Z]+
+---------------------------
+LET A = 5
+LET B = 3
+---------------------------
+program()
+	STATEMENT_LIST()
+	
+STAMENT_LIST()
+	 while (currentToken.type == LET)
+            LET_STMT()
+			
+			if(f_parserError)
+				break;
+	
+
+LET_STMT()
+	if expected(LET)
+		printError()
+	else
+		currentToken = lexer.getNextToken()
+		ident = id()
+		expect("=")
+		value = number()
+		
+		if(f_parserError != true)
+			table[ident, value]
+			std::cout << "load r0,"<< value <<"\n";
+
+number()
+	if expected(INTEGER)
+		printError()
+	else
+		currentToken = lexer.getNextToken()
+
+id()	
+	if expected(ID)
+		printError()
+	else
+		currentToken = lexer.getNextToken()
+
+
+
+---------------------------
+<PROGRAM> ::= <STAMENT_LIST>
+
+<STAMENT_LIST> ::= <STATEMENT> 				
+				| <STATEMENT> <STAMENT_LIST>
+				
+<STATEMENT> ::= <LET_STMT> 
+				| <ASSIGN_STMT>
+				
+<LET_STMT> ::= "LET" <ID> "=" <NUMBER>
+
+<ASSIGN_STMT> := <ID> "=" <ID>
+				| <ID> "=" <ID> ("+" | "-") ( <ID> | <NUMBER> )
+
+<NUMBER> ::= [0-9]+
+<ID> ::= [a-zA-Z]+
+---------------------------
+LET A = 5
+LET B = 3
+A = A + B 
+A = B 
+---------------------------
+
+eat(tokenType)
+	if currentToken.type != tokenType
+		printError()
+	else
+		currentToken = lexer.getNextToken()
+
+program()
+	STATEMENT_LIST()
+	
+STAMENT_LIST()
+	while currentToken.type != EOF && f_parserError == false
+		STATEMENT()
+	 
+
+STATEMENT()
+	switch currentToken
+	
+		case LET
+			LET_STMT()
+			
+		case ID 
+			ASSIGN_STMT()
+		
+		defualt
+			printError()
+			return;
+			
+<ASSIGN_STMT> := <ID> "=" <ID>
+				| <ID> "=" <ID> ("+" | "-") ( <ID> | <NUMBER> )
+ASSIGN_STMT()
+		<ID> "=" <ID>
+		ident1 = id()
+		eat("=")
+		ident2 = id()
+		
+		
+		
+		<ID> "=" <ID> ("+" | "-") ( <ID> | <NUMBER> )
+		operatorType = token
+		if (operatorType != "+" | "-")
+			MOV rx,ry
+			return;
+		
+		moveToken()		
+		token_t0 = id | NUMBER
+		
+		if(operatorType == "+")
+			ADD rx,ry
+		else
+			SUB rx,ry
+		
+		
+		
+
+
+
+LET_STMT()
+		eat(LET)
+		ident = id()
+		eat("=")
+		value = number()
+		
+		if(f_parserError != true)
+			table[ident, value]
+			std::cout << "load r0,"<< value <<"\n";
+
+number()
+	eat(NUMBER)
+	return m_currentToken
+	
+id()	
+	eat(ID)
+	return m_currentToken
+
+
+
+---------------------------
+<PROGRAM> ::= <STAMENT_LIST>
+
+<STAMENT_LIST> ::= <STATEMENT> 				
+				| <STATEMENT> <STAMENT_LIST>
+				
+<STATEMENT> ::= <LET_STMT> 
+				| <ASSIGN_STMT>
+				| <ARR_STMT>
+				
+<ARR_STMT> ::= "LET" <ID> "[" <NUMBER> "]" "=" "{" <NUMBER_LIST> "}"
+				
+<LET_STMT> ::= "LET" <ID> "=" <NUMBER>
+
+<ASSIGN_STMT> := <ID> "=" <ID>
+				| <ID> "=" <ID> ("+" | "-") ( <ID> | <NUMBER> )
+
+<NUMBER_LIST> ::= <NUMBER> 
+				| <NUMBER> "," <NUMBER_LIST>
+
+<NUMBER> ::= [0-9]+
+<ID> ::= [a-zA-Z]+
+---------------------------
+
+LET abc[5] = {1,2,35,654,656}
+---------------------------
+program()
+	STATEMENT_LIST()
+	
+STAMENT_LIST()
+	while currentToken.type != EOF && f_parserError == false
+		STATEMENT()
+	 
+
+STATEMENT()
+	switch currentToken
+	
+		case LET
+			LET_STMT()
+			
+		case ID 
+			ASSIGN_STMT()
+			
+		case ARR_STMT
+			ARR_STMT()
+		
+		defualt
+			printError()
+			return;
+			
+<ARR_STMT> ::= "LET" <ID> "[" <NUMBER> "]" "=" "{" <NUMBER_LIST> "}"
+ARR_STMT()
+	eat(LET)
+	ident1 = id()
+	eat([)
+	size = eat(NUMBER)
+	eat(])
+	eat(=)
+	eat({)
+	while m_currentToken.type != NUMBER
+		arr = NUMBER()
+		
+	if(size != arr.size)
+		printError()
+		
+	eat(})
+	
+	if(!f_parserError)
+		Class::type t_type = arr
+		table[ident, t_type]
+	
+			
+			
+<ASSIGN_STMT> := <ID> "=" <ID>
+				| <ID> "=" <ID> ("+" | "-") ( <ID> | <NUMBER> )
+ASSIGN_STMT()
+		<ID> "=" <ID>
+		ident1 = id()
+		eat("=")
+		ident2 = id()
+		
+		
+		
+		<ID> "=" <ID> ("+" | "-") ( <ID> | <NUMBER> )
+		operatorType = token
+		if (operatorType != "+" | "-")
+			MOV rx,ry
+			return;
+		
+		moveToken()		
+		token_t0 = id | NUMBER
+		
+		if(operatorType == "+")
+			ADD rx,ry
+		else
+			SUB rx,ry
+		
+		
+		
+
+
+
+LET_STMT()
+		eat(LET)
+		ident = id()
+		eat("=")
+		value = number()
+		
+		if(f_parserError != true)
+			table[ident, value]
+			std::cout << "load r0,"<< value <<"\n";
+
+number()
+	eat(NUMBER)
+	return m_currentToken
+	
+id()	
+	eat(ID)
+	return m_currentToken
+
+
+
+---------------------------
+
+---------------------------
+<PROGRAM> ::= <STAMENT_LIST>
+
+<STAMENT_LIST> ::= <STATEMENT> 				
+				| <STATEMENT> <STAMENT_LIST>
+				
+<STATEMENT> ::= <LET_STMT> 
+				| <ASSIGN_STMT>
+				| <ARR_STMT>
+				| <IF_STMT>
+				| <ARR_ASSIGN_STMT>
+
+<ASSIGN_STMT> ::= ( <ARR_ELEMENT> | <ID> ) "=" ( <NUMBER> | <ID> | <ARR_ELEMENT> ) (("+" | "-") ( <NUMBER> | <ID> | <ARR_ELEMENT> ) )*
+
+<IF_STMT> ::= "IF" <LOGICAL_OP> "THEN" <STAMENT_LIST> "END"
+
+<ARR_STMT> ::= "LET" <ID> "[" <NUMBER> "]" "=" "{" <NUMBER_LIST> "}"
+				
+<LET_STMT> ::= "LET" <ID> ("=" <NUMBER> )*
+				
+<LOGICAL_OP> ::= ( <ID> | <NUMBER> | <ARR_ELEMENT> ) "<" | "<=" | ">" | ">=" | "!=" ( <ID> | <NUMBER> | <ARR_ELEMENT> )
+
+<ARR_ELEMENT> ::= <ID> "[" <NUMBER> "]"
+
+
+<NUMBER_LIST> ::= <NUMBER> 
+				| <NUMBER> "," <NUMBER_LIST>
+
+<NUMBER> ::= [0-9]+
+<ID> ::= [a-zA-Z]+
+
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+
+
+<PROGRAM> ::= <STAMENT_LIST>
+
+<STAMENT_LIST> ::= <STATEMENT>*		
+								
+<STATEMENT> ::= <LET_STMT> 
+				| <ASSIGN_STMT>
+				| <ARR_STMT>
+				| <IF_STMT>
+				| <ARR_ASSIGN_STMT>
+				| <WHILE_STMT>
+				| <FUNC_DECLARE>
+				| <FUNC_CALL>
+				| <RETURN_STMT>
+				| <ARR_DECLARE>
+				
+//-----------------------------------------//
+<ARR_STMT> ::= <ARR_DECLARE> "=" "{" <NUMBER_LIST> "}"				
+<ARR_DECLARE> ::= "LET" <ID> "[" <NUMBER> "]"
+<ARR_ASSIGN_STMT> ::= <ID> "[" <NUMBER> "]" "=" <EXPRESSION>
+<ARR_ELEMENT> ::= <ID> "[" <NUMBER> "]"
+//-----------------------------------------//
+
+//-----------------------------------------//
+<RETURN_STMT> ::= "RETURN" <EXPRESSION>
+<FUNC_CALL> ::= <ID> "(" ( <ID_LIST> )? ")"
+<FUNC_DECLARE> ::= "FUNCTION" <ID> "(" ( <PARAM_LIST> )? ")" <STAMENT_LIST> "END"
+//-----------------------------------------//
+
+<WHILE_STMT> ::= "while" <CONDITION> "then" <STAMENT_LIST> "end"	
+<IF_STMT> ::= "IF" <CONDITION> "THEN" <STAMENT_LIST> "END"
+
+<ASSIGN_STMT> ::= ( <ARR_ELEMENT> | <ID> ) "=" <EXPRESSION> 
+
+<LET_STMT> ::= "LET" <ID> 
+			|  "LET" <ID> "=" <EXPRESSION>
+
+<EXPRESSION> ::= <TERM> (("+" | "-") <TERM>)*
+<TERM> ::= <FACTOR>
+<FACTOR> ::= <ID> | <NUMBER> | <ARR_ELEMENT>
+
+
+<CONDITION> ::= <EXPRESSION> <COMPARE_OP> <EXPRESSION>
+<COMPARE_OP> ::= "<" | "<=" | ">" | ">=" | "!=" 
+
+<ARG_LIST> ::= <EXPRESSION> ("," <EXPRESSION> )*
+<PARAM_LIST> ::= <ID> ("," <ID> )*					
+
+<NUMBER_LIST> ::= <NUMBER> ("," <NUMBER> )*
+
+<ID_LIST> ::= <ID> ("," <ID> )*		
+	
+
+<NUMBER> ::= [0-9]+
+<ID> ::= [a-zA-Z]+
+<STRUCT_NAME> ::= [a-zA-Z]+
+

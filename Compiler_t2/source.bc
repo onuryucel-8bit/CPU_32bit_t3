@@ -1,1 +1,36 @@
-2 + 3
+/*
+	SOURCE.BASIC_C .bc
+*/
+
+FUNCTION calc_t0()
+	LET A
+	LET B
+	B = 4
+	A = B
+	RET A
+END
+
+struct
+{
+	LET a
+	LET b
+
+}vec2
+
+LET arr[] = { 2, 5, 6, 256, 7}
+LET i = 0
+
+WHILE i < 4 THEN
+	
+	PRINT(arr[i])
+	
+	IF arr[i] == 256 THEN
+		PRINT("256!!")
+	ELSE
+		print("wer")
+	END
+
+	i = i + 1
+END
+
+

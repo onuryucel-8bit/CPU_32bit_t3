@@ -9,23 +9,44 @@ namespace asmc
 		LET,
 		IF,
 		THEN,
+		ELSE,
 		END,
 		WHILE,
 		IDENT,
-		STRING,
+		PRINT,
+		FUNCTION,
 
-
-		NUMBER,
+		STRING,			//"abc"
+		NUMBER,			//125
 		
 		PLUS,			// +
 		MINUS,			// -
-
-
 		ASTERISK,		// *
 		SLASH,			// /
-		EQUAL, 			// =
+
 		SEMICOLON, 		// ;
-		
+		RPAREN,			// (
+		LPAREN,			// )
+		RBRACE,			// ]
+		LBRACE,			// [
+		RCPAREN,		// }
+		LCPAREN,		// {
+
+		ASSIGN,			// =
+		LESS_THAN,		// <
+		LESS_EQ,		// <=
+		GREATER_THAN,	// >
+		GREATER_EQ,		// >=
+		NOT_EQ,			// !=
+		EQEQ,			// ==
+
+		SHL,			// <<
+		SHR,			// >>
+		NOT,			// !
+		AND,			// &
+		OR,				// |
+
+
 		
 		//REG - RAM
 		LOAD,
@@ -46,12 +67,6 @@ namespace asmc
 		SUB,
 		MUL,
 		DIV,
-		SHL,
-		SHR,
-
-		AND,
-		OR,
-		NOT,
 		XOR,
 
 		CMP,
@@ -82,8 +97,7 @@ namespace asmc
 
 		//Operands
 
-		DECNUMBER,
-		ASCII,
+		DECNUMBER,	
 		DIRECTORY,
 
 		REGISTER,
