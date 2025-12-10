@@ -24,6 +24,7 @@ struct Token
 {
 	std::string m_text = "";
 	TokenType m_type = TokenType::EMPTY;
+	size_t m_lineNumber = 0;
 
 	bool operator==(const Token& other) const
 	{

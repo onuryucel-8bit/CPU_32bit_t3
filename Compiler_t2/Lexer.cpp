@@ -206,6 +206,17 @@ asmc::Token Lexer::lexSingleChar()
 
 	switch (m_currentChar)
 	{
+	case '*':
+		token = { std::string(1,m_currentChar), asmc::TokenType::ASTERISK, m_lineNumber};
+		break;
+
+	case ';':
+		token = { std::string(1,m_currentChar), asmc::TokenType::SEMICOLON, m_lineNumber };
+		break;
+
+	case '-':
+		token = { std::string(1,m_currentChar), asmc::TokenType::MINUS, m_lineNumber };
+		break;
 
 	case '(':
 		token = { std::string(1,m_currentChar), asmc::TokenType::LPAREN };
@@ -299,7 +310,7 @@ asmc::Token Lexer::lexWord()
 	}
 	else
 	{
-		token = { tokenStr, TokenType::ID};
+		token = { tokenStr, TokenType::ID, m_lineNumber };
 	}
 
 	return token;
@@ -388,15 +399,6 @@ bool Lexer::isOperand()
 //--------------------------------------------//
 void Lexer::skipComments()
 {
-	if (m_currentChar == ';')
-	{
-		while (m_currentChar != '\n' && m_currentChar != ENDOFFILE)
-		{
-			nextChar();
-		}
-		f_newline = true;
-	}
-
 	//TODO aciklama satiri icerisinde / olunca hata veriyor duzelt bunu 
 	if (m_currentChar == '/')
 	{
@@ -467,7 +469,7 @@ void Lexer::pushFile(std::string path)
 
 	m_program = readFile(path);
 	m_currentChar = 0;
-	m_lineNumber = 0;
+	m_lineNumber = 1;
 	m_position = -1;
 
 	nextChar();

@@ -434,6 +434,8 @@ id()
 
 <LET_STMT> ::= "LET" <ID> 
 			|  "LET" <ID> "=" <EXPRESSION>
+			
+<LET_STMT> ::= "LET" <ID> ("=" <EXPRESSION>)?
 
 <EXPRESSION> ::= <TERM> (("+" | "-") <TERM>)*
 <TERM> ::= <FACTOR>
@@ -455,3 +457,80 @@ id()
 <ID> ::= [a-zA-Z]+
 <STRUCT_NAME> ::= [a-zA-Z]+
 
+
+void printError(std::string message)
+{
+	std::cout << "ERROR:: " << message << "\n";
+}
+
+void eat(asmc::TokenType type)
+{
+	if (currentToken.m_type != type)
+	{
+		printError("expected["+ std::string(magic_enum::enum_name(type)) + "] found [" + std::string(magic_enum::enum_name(currentToken.m_type)));
+		f_parserError = true;
+	}
+
+	currentToken = lexer.getToken();
+}
+
+int sayi()
+{
+	if (currentToken.m_type != asmc::TokenType::NUMBER)
+	{
+		printError("expected[NUMBER] found [" + std::string(magic_enum::enum_name(currentToken.m_type)));
+	}
+
+	int value = std::stoi(currentToken.m_text);
+	std::cout << "LOAD r0," << currentToken.m_text << "\n";
+
+	eat(asmc::TokenType::NUMBER);	
+	return value;
+}
+
+int islem()
+{
+	int leftOperand = sayi();
+	while (currentToken.m_type == asmc::TokenType::PLUS || currentToken.m_type == asmc::TokenType::MINUS)
+	{
+		eat(currentToken.m_type);
+
+		int rightOperand = sayi();
+		if (currentToken.m_type == asmc::TokenType::PLUS)
+		{			
+			std::cout << "ADD " << leftOperand << "," << rightOperand << "\n";
+
+			leftOperand += rightOperand;
+		}
+		else
+		{
+
+			std::cout << "SUB " << leftOperand << "," << rightOperand << "\n";
+
+		    leftOperand -= rightOperand;
+		}		
+	}
+	return leftOperand;
+}
+
+void STATEMENT_LIST()
+{
+	int result = islem();
+
+	while (currentToken.m_type == asmc::PLUS || currentToken.m_type == asmc::MINUS)
+	{
+
+	}
+}
+
+void program()
+{
+	while (currentToken.m_type != asmc::TokenType::ENDOFFILE)
+	{
+		if (currentToken.m_type != asmc::TokenType::NEWLINE)
+		{
+			std::cout << islem() << "\n";
+		}
+		currentToken = lexer.getToken();
+	}
+}
