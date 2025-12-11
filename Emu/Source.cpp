@@ -181,7 +181,7 @@ std::string readFile(std::string path)
 
 int main()
 {
-	/*std::string source = readFile("D:\\ProgrammingProjects\\Logisim\\32bitCPU_t3\\Assembler\\out.txt");
+	std::string source = readFile("D:\\ProgrammingProjects\\Logisim\\32bitCPU_t3\\Assembler\\out.txt");
 
 	AsmFileReader fr(source);
 
@@ -189,11 +189,12 @@ int main()
 
 	Cpu cpu(ram);
 
-	cpu.run();*/
+	cpu.run();
 
+	/*
 	Window w;
 	w.run(); 
-	
+	*/
 
 
 	//Cpu cpu;

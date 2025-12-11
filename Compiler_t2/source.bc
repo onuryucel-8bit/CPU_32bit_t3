@@ -1,6 +1,5 @@
 /*
 	SOURCE.BASIC_C .bc
 */
-LET A = 10
-
-A = A + B
+LET A = 5
+A = A * 5 + 2

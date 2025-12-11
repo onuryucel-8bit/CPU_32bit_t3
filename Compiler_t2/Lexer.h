@@ -30,6 +30,12 @@ struct Token
 	{
 		return m_text == other.m_text && m_type == other.m_type;
 	}
+
+	//DEBUG
+	friend std::ostream& operator<<(std::ostream& os, const asmc::Token& token)
+	{
+		return os << "lineNumber: [" << token.m_lineNumber << "] text[" + token.m_text + "], token[" + std::string(magic_enum::enum_name(token.m_type)) << + "]";
+	}
 };
 
 struct FileData
@@ -64,23 +70,21 @@ public:
 	
 	Lexer(std::string path);
 	
-	
 	[[nodiscard]] std::array<asmc::Token, MAX_TOKEN_LIST_SIZE> getTokenList();
 
-
 	bool getErrorFlag();
-
-	size_t m_lineNumber;
 
 	bool isInputStreamEmpty();
 
 	void pushFile(std::string path);
 
-	//if input stream is empty return s true
+	//if input stream is empty returns true
 	bool popFile();
 
 	std::string getCurrentFileName();
 	[[nodiscard]] Token getToken();
+
+	size_t getLineNumber();
 
 private:
 
@@ -135,11 +139,13 @@ private:
 	//returns token starting with '#' #define, #include
 	[[nodiscard]] asmc::Token lexMacro();
 
+	[[nodiscard]] asmc::Token lexNumber();
+
 	//------------------------------------------------------//
 	//------------------------------------------------------//
 	//------------------------------------------------------//
 
-	
+	size_t m_lineNumber;
 	int m_position;
 	char m_currentChar;
 	bool f_error;

@@ -5,8 +5,11 @@
 #define to_int(str) std::stoi(str)
 
 #include "../libsLocal/rang.hpp"
+#include "../libsLocal/utils/Radix.h"
 
 #include "Lexer.h"
+
+#define checkType(type) (m_currentToken.m_type == (type))
 
 namespace asmc
 {
@@ -37,14 +40,22 @@ namespace asmc
 
 		void printWarning(std::string message);
 		void printError(std::string message);
+		void printErrorExt(std::string message, asmc::Token token);
+		void printCurrentToken();
+
+		void emit(std::string str);
 
 		void asmLOAD(asmc::Token& token, int value);
 
 		void program();
-		void LET_STMT();
+		void let_stmt();
+		void assing_stmt();
+		void add_expr();
+		asmc::Token mult_expr();
 		void expression();
 
-		int number();
+		asmc::Token id();		
+		asmc::Token number();
 
 		void match(asmc::TokenType type);
 

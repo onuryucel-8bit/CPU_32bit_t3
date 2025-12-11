@@ -427,6 +427,26 @@
 	#
 }
 
+[NOT 0]
+//not rx
+{
+	POSTA_B_we
+	#
+
+	//alu.b = rx
+	REG_out
+	POSTA_B_out
+	I3B
+	ACC_we
+	#
+
+	//rx => register
+	ALU_out
+	REG_we
+	POSTA_B_out
+	#
+}
+
 //CALISIYOR 07.12.25
 //jmp label
 [JMP 0]

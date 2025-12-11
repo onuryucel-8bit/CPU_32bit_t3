@@ -9,6 +9,7 @@ namespace asmc
 		m_tokenList = lexer.getTokenList();
 
 		m_registerIndex = 0;
+		f_error = false;
 
 		m_tokenIndex = 0;
 		m_peekToken = m_tokenList[0];
@@ -18,14 +19,59 @@ namespace asmc
 	Parser::~Parser()
 	{
 	}
-	/*
 
-	<program> ::= <let_stmt>
-	<let_stmt> ::= "LET" <ID> ("=" <number>)?
-	<expression> ::= <ID> "=" <ID> + <ID>
-	<number> ::= [0-9]+
+	//-----------------------------------------------------------------------------------------//
+	//-----------------------------------------------------------------------------------------//
+	//-----------------------------------------------------------------------------------------//
 
-	*/
+	void Parser::printError(std::string message)
+	{
+		std::cout << rang::fg::red 
+			<< "ERROR:: line number["<< m_currentToken.m_lineNumber << "] "
+			<< message
+			<< " ["+ m_currentToken.m_text +"]" 
+			<< " type ["+ std::string(magic_enum::enum_name(m_currentToken.m_type)) + "] "			
+			<< rang::style::reset << "\n";
+
+		f_error = true;
+	}
+
+	void Parser::printErrorExt(std::string message, asmc::Token token)
+	{
+		std::cout << rang::fg::red
+			<< "ERROR:: line number[" << token.m_lineNumber << "] "
+			<< message
+			<< " [" + token.m_text + "]"
+			<< " type [" + std::string(magic_enum::enum_name(token.m_type)) + "] "
+			<< rang::style::reset << "\n";
+
+		f_error = true;
+	}
+
+	void Parser::printCurrentToken()
+	{
+		std::cout << m_currentToken << "\n_____________\n";		
+	}
+
+	void Parser::emit(std::string str)
+	{
+		if (!f_error)
+		{
+			std::cout << str << "\n";
+		}	
+	}
+
+	void Parser::printWarning(std::string message)
+	{
+		std::cout << rang::fg::yellow << "WARNING:: " << message << rang::style::reset << "\n";
+	}
+
+	//-----------------------------------------------------------------------------------------//
+	//-----------------------------------------------------------------------------------------//
+	//-----------------------------------------------------------------------------------------//
+
+
+	
 	void Parser::run()
 	{
 		while (m_currentToken.m_type != asmc::TokenType::ENDOFFILE)
@@ -50,42 +96,45 @@ namespace asmc
 
 	}
 
-	void Parser::printError(std::string message)
-	{
-		std::cout << rang::fg::red << "ERROR:: " << message << rang::style::reset << "\n";
-	}
-
-	void Parser::printWarning(std::string message)
-	{
-		std::cout << rang::fg::yellow << "WARNING:: "<< message << rang::style::reset << "\n";
-	}
-
 	void Parser::asmLOAD(asmc::Token& token, int value)
 	{
 		if (m_symbolTable[token].m_registerIndex != -1)
 		{
-			std::cout << "LOAD r " << m_symbolTable[token].m_registerIndex << "," << value <<"\n";
+			//std::cout << "LOAD r " << m_symbolTable[token].m_registerIndex << "," << value <<"\n";
 		}
 		else
 		{
-			std::cout << "PUSH " << value << " | " << token.m_text <<"\n";
+			//std::cout << "PUSH " << value << " | " << token.m_text <<"\n";
 		}
 	}
+	/*
+	* 
+	
+	<program> ::= (<let_stmt> | <assing_stmt>)*
+	<let_stmt> ::= "LET" <id> ("=" <number> | <id>)?
+	<assing_stmt> ::= <id> "=" <add_expr>
 
+	<add_expr> ::= <mult_expr> ((+ | -) <mult_expr>)*
+	<mult_expr> ::= (<id> | <number>) ((* | /) (<id> | <number>))*
+
+	<id> ::= [a-zA-Z]+
+	<number> ::= [0-9]+
+	*/
 	void Parser::program()
 	{
-		while (m_currentToken.m_type == asmc::TokenType::LET ||
-			m_currentToken.m_type == asmc::TokenType::ID)
+		while (checkType(asmc::TokenType::LET) ||
+			checkType(asmc::TokenType::ID))
 
-		{
+		{			
+
 			switch (m_currentToken.m_type)
 			{
 			case asmc::TokenType::LET:
-				LET_STMT();				
+				let_stmt();				
 				break;
 
 			case asmc::TokenType::ID:
-				expression();
+				assing_stmt();
 				break;
 			}
 			
@@ -93,83 +142,217 @@ namespace asmc
 		
 	}
 
-	void Parser::LET_STMT()
+	void Parser::let_stmt()
 	{
 		match(asmc::TokenType::LET);
 
-		asmc::Token ct = m_currentToken;
+		asmc::Token idName = id();
+		
+		m_symbolTable[idName] = { .m_value = -1, .m_registerIndex = -1, .m_status = asmc::symbolStatus::NOT_USED };
 
-		m_symbolTable[ct] = { .m_value = -1, .m_registerIndex = -1, .m_status = asmc::symbolStatus::NOT_USED };
-
-		match(asmc::TokenType::ID);
-		if (m_currentToken.m_type == asmc::TokenType::ASSIGN)
+		if (checkType(asmc::TokenType::ASSIGN))
 		{
 			match(asmc::TokenType::ASSIGN);
 
+			asmc::Token value = number();
+			//emit("LOAD r"+ std::to_string(m_registerIndex) + "," + idName.m_text + " ," + value.m_text);
+			emit("LOAD r" + std::to_string(m_registerIndex) + ",0x" + rdx::decToHex(std::stoi(value.m_text)));
+			
+			m_symbolTable[idName].m_value = std::stoi(value.m_text);
+			m_symbolTable[idName].m_registerIndex = m_registerIndex;
+			m_symbolTable[idName].m_status = asmc::symbolStatus::NOT_USED;
 
-			int value = number();
-
-			if (m_registerIndex < 4)
-			{
-				m_symbolTable[ct].m_registerIndex = m_registerIndex;
-				m_registerIndex++;
-			}
-			else
-			{
-				m_symbolTable[ct].m_registerIndex = -1;
-			}
-
-			m_symbolTable[ct].m_value = value;
-			m_symbolTable[ct].m_status = asmc::symbolStatus::USED;
-
-								
-
-			asmLOAD(ct, value);
-		}
+			m_registerIndex++;
+		};
+			
+		
 	}
 
-	//<expression> ::= <ID> "=" <ID> + <ID>
-	void Parser::expression()
+	void Parser::assing_stmt()
 	{
-		asmc::Token id = m_currentToken;
+		asmc::Token idRes = id();
 
-		match(asmc::TokenType::ID);
-		match(asmc::TokenType::ASSIGN);
-		
-		asmc::Token id_left = m_currentToken;
-		match(asmc::TokenType::ID);
-		match(asmc::TokenType::PLUS);
-		asmc::Token id_right = m_currentToken;
-
-		if (m_symbolTable.contains(id_left) && m_symbolTable.contains(id_right))
+		if (!m_symbolTable.contains(idRes))
 		{
-			std::cout << "ADD r" << m_symbolTable[id_left].m_registerIndex << ",r" << m_symbolTable[id_right].m_registerIndex << "\n";			
+			printErrorExt("undefined variable used ", idRes);
 		}
 		else
 		{
-			printError("id_left or id_right is undefined" + std::to_string(id_left.m_lineNumber));			
+			m_symbolTable[idRes].m_status = asmc::symbolStatus::USED;
 		}
+		//emit("assign_stmt VAR " + idRes.m_text + " = ");
 
-		match(asmc::TokenType::ID);
+		if (!(checkType(asmc::TokenType::ASSIGN)))
+		{
+			printError("assign_stmt() Expected '=' found, ");
+		}
+		
+		moveCurrentToken();
+
+		add_expr();
+	}
+	//<add_expr> ::= <mult_expr> ((+ | -) <mult_expr>)*
+	void Parser::add_expr()
+	{
+		asmc::Token idLeft = mult_expr();
+		
+		asmc::Token idRight;
+
+		while (checkType(asmc::TokenType::PLUS) || checkType(asmc::TokenType::MINUS))
+		{
+			asmc::Token op = m_currentToken;
+			//emit("OPERATOR," + op.m_text);
+
+			moveCurrentToken();
+
+			if (checkType(asmc::TokenType::ID))
+			{
+				idRight = mult_expr();
+			}
+			else if (checkType(asmc::TokenType::NUMBER))
+			{				
+				idRight = mult_expr();
+
+				switch (op.m_type)
+				{
+					case asmc::TokenType::PLUS:
+						emit("ADD r" + std::to_string(m_symbolTable[idLeft].m_registerIndex) + ", 0x" + rdx::decToHex(std::stoi(idRight.m_text)));
+						break;
+					case asmc::TokenType::MINUS:
+						emit("SUB r" + std::to_string(m_symbolTable[idLeft].m_registerIndex) + ", 0x" + rdx::decToHex(std::stoi(idRight.m_text)));
+						break;
+
+				}
+			}
+			else
+			{
+				printError("expression() while + - ");
+			}
+		}
 	}
 
-	int Parser::number()
+	//<mult_expr> ::= (<id> | <number>) ((* | /) (<id> | <number>))*
+	asmc::Token Parser::mult_expr()
 	{
-		
-		int value = 0;
-		if (m_currentToken.m_type == asmc::TokenType::NUMBER)
+		asmc::Token idLeft;
+
+		switch (m_currentToken.m_type)
 		{
-			value = to_int(m_currentToken.m_text);
+		case asmc::TokenType::ID:
+			idLeft = id();
+			if (!m_symbolTable.contains(idLeft))
+			{
+				printErrorExt("undefined variable used ", idLeft);
+			}
+			else
+			{
+				m_symbolTable[idLeft].m_status = asmc::symbolStatus::USED;
+			}
+
+			//emit("VAR " + idLeft.m_text);
+			break;
+
+		case asmc::TokenType::NUMBER:
+			idLeft = number();
+			//emit("NUMBER ," + idLeft.m_text);
+			break;
+
+		default:
+			printError("expected <ID> or <NUMBER> found,");
+			break;
+		}		
+		
+		//TODO fix idRight
+
+		asmc::Token idRight;
+
+		while (checkType(asmc::TokenType::ASTERISK) || checkType(asmc::TokenType::SLASH))
+		{
+
+			asmc::Token op = m_currentToken;
+			
+
+			moveCurrentToken();
+
+			if (checkType(asmc::TokenType::ID))
+			{
+				idRight = id();
+				emit("OPERATOR," + op.m_text + "," + idRight.m_text);
+			}
+			else if (checkType(asmc::TokenType::NUMBER))
+			{
+				idRight = number();
+				switch (op.m_type)
+				{
+				case asmc::TokenType::ASTERISK:
+					emit("MUL r" + std::to_string(m_symbolTable[idLeft].m_registerIndex) + ", 0x" + rdx::decToHex(std::stoi(idRight.m_text)));
+					break;
+				case asmc::TokenType::DIV:
+					emit("DIV r" + std::to_string(m_symbolTable[idLeft].m_registerIndex) + ", 0x" + rdx::decToHex(std::stoi(idRight.m_text)));
+					break;
+
+				}
+			}
+			else
+			{
+				printError("expected <ID> or <NUMBER> found,");
+			}
 		}
 
-		match(asmc::TokenType::NUMBER);
+		
 
-		return value;
+		return idLeft;
+	}
+
+	//<expression> :: = <id> "=" (<id> | <number>) ((+| -) (<id> | < number>)) *
+	void Parser::expression()
+	{
+
+		
+
+	}
+
+	asmc::Token Parser::id()
+	{
+		asmc::Token retval;
+		
+		if (checkType(asmc::TokenType::ID))
+		{
+			retval = m_currentToken;
+		}
+		else
+		{
+			printError("expected <ID>, found");
+		}
+		
+		moveCurrentToken();
+
+		return retval;
+
+	}
+
+	asmc::Token Parser::number()
+	{
+		
+		asmc::Token token;
+		if (checkType(asmc::TokenType::NUMBER))
+		{
+			token = m_currentToken;
+		}
+		else
+		{
+			printError("number() error");
+		}
+		
+		moveCurrentToken();
+
+		return token;
 		
 	}
 
 	void Parser::match(asmc::TokenType type)
 	{
+	
 		if (m_currentToken.m_type != type)
 		{
 			//printError
@@ -180,7 +363,10 @@ namespace asmc
 
 	void Parser::moveCurrentToken()
 	{
+		
 		m_currentToken = m_peekToken;
+		//printCurrentToken();
+
 
 		m_tokenIndex++;
 		if (m_tokenIndex >= m_tokenList.size())

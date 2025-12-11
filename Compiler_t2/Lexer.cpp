@@ -19,6 +19,7 @@ Lexer::Lexer(std::string path)
 	m_position = -1;
 	m_currentChar = 0;
 	m_lineNumber = 0;
+
 	
 
 	f_error = false;
@@ -88,13 +89,7 @@ Token Lexer::getToken()
 	//number check
 	else if (std::isdigit(m_currentChar))
 	{
-		std::string tokenStr(1, m_currentChar);
-		while (std::isdigit(peek()))
-		{
-			nextChar();
-			tokenStr += m_currentChar;
-		}
-		token = { tokenStr, asmc::TokenType::NUMBER };
+		token = lexNumber();		
 	}
 	else
 	{
@@ -107,6 +102,11 @@ Token Lexer::getToken()
 	m_lastToken = token;
 
 	return token;
+}
+
+size_t Lexer::getLineNumber()
+{
+	return m_lineNumber;
 }
 
 std::array<asmc::Token, MAX_TOKEN_LIST_SIZE> Lexer::getTokenList()
@@ -219,43 +219,43 @@ asmc::Token Lexer::lexSingleChar()
 		break;
 
 	case '(':
-		token = { std::string(1,m_currentChar), asmc::TokenType::LPAREN };
+		token = { std::string(1,m_currentChar), asmc::TokenType::LPAREN , m_lineNumber };
 		break;
 
 	case ')':
-		token = { std::string(1,m_currentChar), asmc::TokenType::RPAREN };
+		token = { std::string(1,m_currentChar), asmc::TokenType::RPAREN , m_lineNumber };
 		break;
 
 	case '>':
-		token = { std::string(1,m_currentChar), asmc::TokenType::GREATER_THAN };
+		token = { std::string(1,m_currentChar), asmc::TokenType::GREATER_THAN , m_lineNumber };
 		break;
 
 	case '<':
-		token = { std::string(1,m_currentChar), asmc::TokenType::LESS_THAN };
+		token = { std::string(1,m_currentChar), asmc::TokenType::LESS_THAN, m_lineNumber };
 		break;
 
 	case '}':
-		token = { std::string(1,m_currentChar), asmc::TokenType::RCPAREN };
+		token = { std::string(1,m_currentChar), asmc::TokenType::RCPAREN , m_lineNumber };
 		break;
 
 	case '{':
-		token = { std::string(1,m_currentChar), asmc::TokenType::LCPAREN };
+		token = { std::string(1,m_currentChar), asmc::TokenType::LCPAREN , m_lineNumber };
 		break;
 
 	case ']':
-		token = { std::string(1,m_currentChar), asmc::TokenType::RBRACE };
+		token = { std::string(1,m_currentChar), asmc::TokenType::RBRACE , m_lineNumber };
 		break;
 
 	case '[':
-		token = { std::string(1,m_currentChar), asmc::TokenType::LBRACE };
+		token = { std::string(1,m_currentChar), asmc::TokenType::LBRACE , m_lineNumber };
 		break;
 
 	case '=':
-		token = { std::string(1,m_currentChar), asmc::TokenType::ASSIGN };
+		token = { std::string(1,m_currentChar), asmc::TokenType::ASSIGN , m_lineNumber };
 		break;
 
 	case '+':
-		token = { std::string(1,m_currentChar), asmc::TokenType::PLUS };
+		token = { std::string(1,m_currentChar), asmc::TokenType::PLUS , m_lineNumber };
 		break;
 
 	case '\n':
@@ -273,11 +273,11 @@ asmc::Token Lexer::lexSingleChar()
 			tokenStr += m_currentChar;
 			nextChar();
 		}
-		token = { tokenStr, asmc::TokenType::STRING };
+		token = { tokenStr, asmc::TokenType::STRING , m_lineNumber };
 		break;
 
 	case ENDOFFILE:
-		token = { std::string(1,m_currentChar), asmc::TokenType::ENDOFFILE };
+		token = { std::string(1,m_currentChar), asmc::TokenType::ENDOFFILE , m_lineNumber };
 		break;
 	default:
 		printError("LEXER Default CASE! ");
@@ -306,7 +306,7 @@ asmc::Token Lexer::lexWord()
 	if (checkIfKeyword(tokenStr))
 	{
 		std::optional<TokenType> enumVal = magic_enum::enum_cast<TokenType>(tokenStr);
-		token = { tokenStr, enumVal.value() };
+		token = { tokenStr, enumVal.value() , m_lineNumber };
 	}
 	else
 	{
@@ -335,6 +335,21 @@ asmc::Token Lexer::lexMacro()
 	{
 		printError("macro is not in list");
 	}
+
+	return token;
+}
+
+asmc::Token Lexer::lexNumber()
+{
+	asmc::Token token;
+
+	std::string tokenStr(1, m_currentChar);
+	while (std::isdigit(peek()))
+	{
+		nextChar();
+		tokenStr += m_currentChar;
+	}
+	token = { tokenStr, asmc::TokenType::NUMBER , m_lineNumber };
 
 	return token;
 }
@@ -405,13 +420,15 @@ void Lexer::skipComments()
 		if (peek() == '*')
 		{
 			nextChar();//*
-			nextChar();// \n
+			nextChar();// \n			
 			while (m_currentChar != asmc::TokenType::ENDOFFILE && m_currentChar != '*' && peek() != '/')
 			{
 				nextChar();
 			}
 			nextChar();// /
 			nextChar();// \n
+			m_lineNumber++;
+			
 		}
 		else
 		{
@@ -533,6 +550,12 @@ void Lexer::toUpper(std::string& str)
 //returns next char if pos >= program.length returns enum::EOF
 void Lexer::nextChar()
 {	
+	//for printError
+	if (m_currentChar == '\n')
+	{
+		m_lineNumber++;
+	}
+
 	m_position++;
 	if (m_position >= m_program.length())
 	{
@@ -543,11 +566,8 @@ void Lexer::nextChar()
 		m_currentChar = m_program[m_position];
 	}
 
-	//for printError
-	if (m_currentChar == '\n')
-	{
-		m_lineNumber++;
-	}
+	
+	
 }
 
 //--------------------------------------------//

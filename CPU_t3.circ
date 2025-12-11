@@ -59,7 +59,7 @@
     <a name="appearance" val="logisim_evolution"/>
     <a name="circuit" val="main"/>
     <a name="circuitnamedboxfixedsize" val="true"/>
-    <a name="simulationFrequency" val="2048000.0"/>
+    <a name="simulationFrequency" val="32.0"/>
     <comp lib="0" loc="(1000,1870)" name="Splitter">
       <a name="bit1" val="0"/>
       <a name="bit10" val="2"/>
@@ -2988,6 +2988,8 @@
     <wire from="(300,790)" to="(560,790)"/>
     <wire from="(300,860)" to="(560,860)"/>
     <wire from="(310,1270)" to="(990,1270)"/>
+    <wire from="(380,1000)" to="(380,1090)"/>
+    <wire from="(380,1000)" to="(560,1000)"/>
     <wire from="(380,1090)" to="(380,1180)"/>
     <wire from="(380,1090)" to="(550,1090)"/>
     <wire from="(380,1180)" to="(550,1180)"/>
@@ -2996,10 +2998,8 @@
     <wire from="(380,280)" to="(560,280)"/>
     <wire from="(380,410)" to="(380,950)"/>
     <wire from="(380,410)" to="(560,410)"/>
-    <wire from="(380,950)" to="(380,1090)"/>
+    <wire from="(380,950)" to="(380,1000)"/>
     <wire from="(380,950)" to="(550,950)"/>
-    <wire from="(400,1000)" to="(400,1050)"/>
-    <wire from="(400,1000)" to="(560,1000)"/>
     <wire from="(400,1050)" to="(400,1140)"/>
     <wire from="(400,1050)" to="(550,1050)"/>
     <wire from="(400,1140)" to="(550,1140)"/>
@@ -3012,7 +3012,7 @@
     <wire from="(400,770)" to="(560,770)"/>
     <wire from="(400,840)" to="(400,910)"/>
     <wire from="(400,840)" to="(560,840)"/>
-    <wire from="(400,910)" to="(400,1000)"/>
+    <wire from="(400,910)" to="(400,1050)"/>
     <wire from="(400,910)" to="(550,910)"/>
     <wire from="(440,200)" to="(580,200)"/>
     <wire from="(440,350)" to="(580,350)"/>
@@ -3463,7 +3463,8 @@ c80040 4202000 1e 1000 10001 8004 21 2002200
 10c80040 4202000 1e 1400 a012000 28004 21 2000a00
 10c80040 4200400 1e 1400 10001 a052000 28004 21
 2000a00 10c80040 4200800 1e 1400 2000a00 2882000 4200800
-1e 8008 10001 20010 1e
+1e 1000 2882000 4202000 1e 8008 10001 20010
+1e
 </a>
       <a name="dataWidth" val="32"/>
     </comp>
@@ -3472,7 +3473,8 @@ c80040 4202000 1e 1000 10001 8004 21 2002200
       <a name="appearance" val="classic"/>
       <a name="contents">addr/data: 11 8
 9*0 5 a f 14 5*0 1b 21
-109*0 25 2b 33 3b 44 82*0 49
+109*0 25 2b 33 3b 44 55*0 49
+26*0 4d
 </a>
       <a name="labelvisible" val="true"/>
     </comp>

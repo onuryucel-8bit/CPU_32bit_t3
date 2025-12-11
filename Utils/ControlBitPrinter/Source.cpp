@@ -93,3 +93,6 @@ int main()
 
 	return 0;
 }
+
+//TODO adr_rom ile output arasinda uyusmazlik var 
+//NOT 49 gosteriyor kontorol bitleri ise 4A? adresinde

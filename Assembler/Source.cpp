@@ -36,19 +36,13 @@ int main(int argc, char* argv[])
 
 /*
 
-.include "math.asm"
+TODO
+hata var sayilar 5 3 tanimsiz oldugu icin add (icinde donusum)?
+yaparken sonsuz donguye takiliyor
 
-.origin 0xff
-
-.text "test_txt"
-
-.ascii 'a','b','c'
-
-.dword 0xff,0xaa,0x24
-
-#define ARRAY_START_ADDRESS 0x0f
-
-<opcode> ::= (<adr> | <hex> | <reg> | <regadr>) | (<adr> | <hex> | <reg> | <regadr>)?
+LOAD r0, 5
+LOAD r1, 3
+ADD r0, r1
 
 */
 

@@ -11,8 +11,7 @@ namespace asmc
 		THEN,
 		ELSE,
 		END,
-		WHILE,
-		IDENT,
+		WHILE,		
 		PRINT,
 		FUNCTION,
 
