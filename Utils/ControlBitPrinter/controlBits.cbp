@@ -151,13 +151,14 @@
 
 }
 
+//CALISIYOR 20.12.25
+[AND 5]
 [ADD 5]
 [SUB 5]
 [MUL 5]
 [DIV 5]
 [XOR 5]
 [OR 5]
-[AND 5]
 //AND rx,ry
 {
 	//a,b = rx,ry

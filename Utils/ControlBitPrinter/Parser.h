@@ -54,8 +54,7 @@ namespace asmc
 		std::vector<int> m_output;
 
 		std::vector<asmc::adrVec> m_addressROM;
-		asmc::adrVec m_addressVec;
-		size_t m_adrRomSelfAdr;
+		asmc::adrVec m_addressVec;		
 
 		std::unordered_map<std::string, size_t> m_locationTable;
 

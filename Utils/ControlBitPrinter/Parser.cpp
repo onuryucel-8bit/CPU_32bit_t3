@@ -369,6 +369,14 @@ void Parser::writeToFile()
 
 	file << "\n";
 	
+	//sort std::vector
+	std::sort(m_addressROM.begin(), m_addressROM.end(),
+		[](adrVec& a, adrVec& b)
+		{
+			return a.m_selfAdr < b.m_selfAdr;
+		}
+	);
+
 	int romIndex = 0;
 	for (size_t i = 0; i < m_addressROM.size(); i++)
 	{
@@ -377,21 +385,21 @@ void Parser::writeToFile()
 		//Fill gap with zeros
 		while (romIndex < target)
 		{
-			file << "0 ";
+			file << "0 ";			
 
 			romIndex++;
 			if (romIndex % 9 == 0)
 			{
-				file << "\n";
+				file << "\n";				
 			}
 		}
 		
 		file << m_addressROM[i].m_controlBitStartPos << " ";
-
+		
 		romIndex++;
 		if (romIndex % 9 == 0)
 		{
-			file << "\n";
+			file << "\n";			
 		}
 	}
 
