@@ -1,6 +1,7 @@
 #include "Lexer.h"
 #include "Parser.h"
 
+
 int main()
 {
 	asmc::Lexer lexer("Source.bc");
@@ -79,6 +80,8 @@ int main()
 	===================================================
 	===================================================
 	v2
+
+	--11.12.25-- carpma hatasi var
 
 	LET a = 10
 	LET b = a

@@ -13,32 +13,32 @@ Parser::Parser(asmc::Lexer& lexer)
 	m_addressVec.m_controlBitStartPos = 0;
 
 	//TODO make them hex
-	m_locationTable["LOAD"] = 0b0000'0001'001;
-	m_locationTable["STR"] = 0b0000'0010'010;
+	m_locationTable["LOAD"] = 0b0000'0001'000;
+	m_locationTable["STR"] = 0b0000'0010'000;
 	m_locationTable["MOV"] = 0b0000'1000'000;
 
-	m_locationTable["ADD"] = 0b0001'0000'001;
-	m_locationTable["SUB"] = 0b0001'0001'001;
-	m_locationTable["MUL"] = 0b0001'0010'001;
-	m_locationTable["DIV"] = 0b0001'0011'001;
-	m_locationTable["AND"] = 0b0001'0100'101;
-	m_locationTable["OR"] =  0b0001'0101'101;
-	m_locationTable["XOR"] = 0b0001'0110'101;
-	m_locationTable["NOT"] = 0b0001'0111'101;
-	m_locationTable["CMP"] = 0b0001'0111'010;
+	m_locationTable["ADD"] = 0b0001'0000'000;
+	m_locationTable["SUB"] = 0b0001'0001'000;
+	m_locationTable["MUL"] = 0b0001'0010'000;
+	m_locationTable["DIV"] = 0b0001'0011'000;
+	m_locationTable["AND"] = 0b0001'0100'000;
+	m_locationTable["OR"] =  0b0001'0101'000;
+	m_locationTable["XOR"] = 0b0001'0110'000;
+	m_locationTable["NOT"] = 0b0001'0111'000;
+	m_locationTable["CMP"] = 0b0001'0111'000;
 	m_locationTable["SHL"] = 0b0001'1001'000;
 	m_locationTable["SHR"] = 0b0001'1010'000;
-
+										 
 	m_locationTable["CALL"]= 0b0000'0011'000;
 	m_locationTable["RET"] = 0b0000'0100'000;
-	m_locationTable["PUSH"]= 0b0000'0101'001;
+	m_locationTable["PUSH"]= 0b0000'0101'000;
 	m_locationTable["POP"] = 0b0000'0110'000;
-
+										 
 	m_locationTable["JMP"] = 0b0001'1011'000;
 	m_locationTable["JAZ"] = 0b0001'1100'000;
 	m_locationTable["JLZ"] = 0b0001'1101'000;
 	m_locationTable["JGZ"] = 0b0001'1110'000;
-
+										 
 	m_locationTable["JSC"] = 0b0001'1111'000;
 	m_locationTable["JUC"] = 0b0010'0000'000;
 	m_locationTable["JCT"] = 0b0010'0001'000;
@@ -55,6 +55,9 @@ void Parser::run()
 	std::array<asmc::Token, MAX_TOKEN_LIST_SIZE> tokenList = m_lexer.getTokenList();
 	
 	std::string opcode;
+
+	size_t location = 0;
+
 	uint32_t offset = 0;
 	int i = 0;	
 	while (tokenList[i].m_type != asmc::TokenType::ENDOFFILE)
@@ -67,7 +70,9 @@ void Parser::run()
 
 #pragma region CASE_T0
 
-
+		case asmc::TokenType::TEMP_out:
+			m_sector.push_back(asmc::TokenType::TEMP_out);
+			break;
 
 		case asmc::TokenType::Read:
 			m_sector.push_back(asmc::TokenType::Read);
@@ -223,29 +228,45 @@ void Parser::run()
 	
 		case asmc::TokenType::CONTROL_BIT_LOCATION:
 
-			//substr [COMMAND NUMBER]
+			//substr [COMMAND modbit]
+			//[LOAD 1]
+
+			//LOAD
 			opcode = t.m_text.substr(0, t.m_text.find(' '));
-			offset = rdx::hexToDec(t.m_text.substr(t.m_text.find(' ') + 1, t.m_text.length() - 1));
+			//1
+			offset = (uint32_t)std::stoi(t.m_text.substr(t.m_text.find(' ') + 1, t.m_text.length() - 1));
 
 
 			if (m_locationTable.contains(opcode))
 			{				
+				//start of control bit location adr
+				location = m_locationTable[opcode];
+
+				//command type value
+				//[LOAD mod]
+				//0000_0001 + 011 => 1011
+				location += offset;
+				/*				 
+								[opcode]   [mod]
+				load rx,0xff => 0000_0001 + 001 => 0000_1001 control bits pointer location
+				load rx,@adr => 0000_0001 + 010 => 0000_1010
+				load rx,@ry  => 0000_0001 + 011 => 0000_1011
 				
-				m_adrRomSelfAdr = m_locationTable[opcode];
-
-				m_adrRomSelfAdr += offset;
-
-				//std::cout<<"opcode" << opcode << "| self adr" <<std::hex<< m_adrRomSelfAdr << "\n";
+				add rx,ry    => 0001_0000 + 101 => 1000_0101
+				*/
 				
 				asmc::adrVec tempVec;
+				//control bits pointer value
+				 
+				//ptr_bits = LOAD_type_rx_0xff_location, add_type_rx_ry_location... etc
 				tempVec.m_controlBitStartPos = m_controlRomIndex;
-				tempVec.m_selfAdr = m_adrRomSelfAdr;
-
-				/*std::cout << "m_adrRomSelfAdr :: hex " << std::hex << m_adrRomSelfAdr << "|"
-						  << "m_adrRomSelfAdr :: dec " << std::dec << m_adrRomSelfAdr << "|"
-					      << "m_controlRomIndex :: hex " << std::hex << m_controlRomIndex << "\n";*/
-
+				tempVec.m_selfAdr = location;
+				
 				m_addressROM.push_back(tempVec);
+			}
+			else
+			{
+				std::cout << "ERROR:: invalid CONTROL_BIT_LOCATION found\n";
 			}
 			break;
 

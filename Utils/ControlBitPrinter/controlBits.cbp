@@ -31,7 +31,7 @@
 
 //CALISIYOR 07.12.25
 //4
-[LOAD 0]
+[LOAD 1]
 //LOAD r0,32bit
 {	
 	//reg => posta
@@ -59,391 +59,129 @@
 	//------------------------------
 }
 
-//7
-[LOAD 1]
-//load rx,@adr
+//CALISIYOR 20.12.25
+//STR @adr,rx
+[STR 2]
 {
-	//rx => posta_b
+	//postab = rx
 	POSTA_B_we
-	//adr => MDR
-	Read
-	MDR_we
-	#
-
-	//adr => MAR
-	MDR_out
-	MAR_we
-	PC_mux
-	#	
-
-	//ram[adr] => MDR
-	Read
-	MDR_we
-	#
-
-	POSTA_B_out
-	MDR_out
-	REG_we
-	#
-}
-//11-B
-[LOAD 2]
-//load rx,@ry
-{
-	//rx,ry => posta
-	POSTA_A_we
-	POSTA_B_we
-	#
-
-	//@ry => MAR
-	POSTA_B_out
-	REG_out
-	REG_data_out
-	DATA_to_adr
-	
-
-	//mar = pc
-	//pc++	
-	MAR_we
-	PC_mux
-	#
-
-	//ram[@ry] => MDR
-	Read
-	MDR_we
-	#
-
-	//MDR => reg[posta_a]
-	POSTA_A_out
-	MDR_out
-	REG_we
-	#
-}
-//15-F
-[LOAD 3]
-//load rx,@adr + ry
-{
-	//rx,ry => posta
-	POSTA_A_we
-	POSTA_A_we
-	#
-
-	//adr => ADR_reg
-	Read
-	ADR_we
-	#
-
-	//@adr + ry => ADR_reg
-	REG_data_out
-	ADR_mux
-	ADR_we
-	#
-
-	//adr => MAR
-	PC_mux
-	MAR_we
-	#
-
-	//ram[adr + ry] => MDR
-	Read
-	MDR_we
-	#
-
-	//MDR => reg[posta_a]
-	POSTA_A_out
-	MDR_out
-	REG_we
-	#
-
-
-}
-//21-0x15
-[STR 0]
-//str @adr,rx
-{
-	POSTA_B_we
-	#
-
 	//mar = pc
 	//pc++
 	PC_enb
 	MAR_we
 	#
 	
-	//adr_reg = adr
+	//mdr = adr
 	Read
 	ADR_we
 	#
 
-	//mar = adr_reg
+	//mar = adr
 	ADR_out
 	PC_mux
 	MAR_we
 	#
 
-	//ram = reg_file[adr_reg]
-	POSTA_B_out
 	REG_out
+	POSTA_B_out
 	REG_data_out
 	Write
 	#
 }
 
-[STR 1]
-//str @rx,ry
-{	
-	POSTA_B_we
-	POSTA_A_we
-	#
-
-	//rx => adr_path	
-	REG_out
-	POSTA_A_out
-	REG_data_out
-	DATA_to_adr
-	//adr_path => mar
-	PC_mux
-	MAR_we
-	#
-
-	POSTA_B_out
-	REG_out
-	REG_data_out
-	Write
-	#
-	
-	
-}
-
-//CALISIYOR 07.12.25
-[ADD 0]
-//24 0x18
-//add rx,sayi 
+//CALISIYOR 20.12.25
+[MOV 0]
+//mov rx,ry
 {
-	//rx => posta_b
+	//a = rx
+	//b = ry
+	POSTA_A_we
 	POSTA_B_we
-	//mar = pc
-	//pc++
-	PC_enb
-	MAR_we	
 	#
 
-	//sayi => MDR
-	Read
-	MDR_we
-	#
-
-	//rx => temp
-	TEMP_we
 	POSTA_B_out
 	REG_out
+	TEMP_we
 	#
 
-	//sayi => reg_path	
-	MDR_out
-	ALU_mux
-	//rx, sayi => ALU => ACC
-	I3B
-	ACC_we
-	#
-
-	//rx + sayi => rx
-	ALU_out
+	POSTA_A_out
+	TEMP_out	
 	REG_we
-	POSTA_B_out
 	#
 }
+
+//CALISIYOR 20.12.25
 [ADD 1]
-//29 - 0x1d
-//add rx, @adr
+[SUB 1]
+[MUL 1]
+[DIV 1]
+//ADD rx,sayi
 {
-	//rx => posta_b
+	//b = rx
+	//pc++
 	POSTA_B_we
-	#
-
-	//adr => adr_Reg
-	Read
-	ADR_we
-	#
-
-	//adr => MAR
-	PC_mux
+	PC_enb
 	MAR_we
 	#
 
-	//ram[adr] => MDR
+	//mdr = sayi
 	Read
 	MDR_we
 	#
-
-	//rx => temp	
-	POSTA_B_out
-	REG_out
-	TEMP_we
-	#
-
-	//rx + ram[adr] => acc
-	MDR_out
-	REG_path_in
-	ALU_mux
-	I3B
-	ACC_we	
-	#
-
-	//acc => rx
-	ALU_out
-	POSTA_B_out
-	REG_we
-	#
-
-	
-}
-[ADD 2]
-//36 - 0x24
-//add rx, @ry
-{
-	//rx => posta_a
-	//ry => posta_b
-	POSTA_A_we
-	POSTA_B_we
-	#
-
-	//@ry => adr_reg
-	REG_data_out
-	POSTA_B_out
-	REG_out
-	ADR_we
-	#
-
-	//adr => MAR
-	ADR_out
-	PC_mux
-	MAR_we
-	#
-
-	//ram[ry] => MDR
-	Read
-	MDR_we
-	#
-
-	//rx => temp
-	POSTA_A_out
-	REG_out
-	TEMP_we
-	#
-
-	//rx + ram[@ry] => acc
-	MDR_out
-	REG_path_in
-	ALU_mux
-	I3B
-	ACC_we
-	#
-
-	//acc => rx
-	ALU_out
-	REG_we
-	POSTA_A_we
-	#
-
-}
-[ADD 3]
-//43 - 0x2b
-//add rx, @adr + ry
-{
-	POSTA_A_we
-	POSTA_B_we
-	#
-
-	//adr => adr_reg
-	Read
-	ADR_we
-	#
-
-	//adr + ry
-	POSTA_B_out
-	REG_out
-	REG_data_out
-	ADR_mux
-	ADR_we
-	#
-
-	ADR_out
-	PC_mux
-	MAR_we
-	#
-
-	//@adr + ry => MDR
-	Read
-	MDR_we
-	#
-
-	//rx => temp
-	POSTA_A_out
-	REG_out
-	TEMP_we
-	#
-
-	MDR_out
-	ALU_mux
-	REG_path_in
-	I3B
-	ACC_we
-	#
-
-	ALU_out
-	REG_we
-	POSTA_A_out
-	#
-}
-[ADD 4]
-//51 0x33
-//add rx,ry ?= sub rx,ry
-{
-	//rx => posta_a
-	//ry => posta_b
-	POSTA_A_we
-	POSTA_B_we
-	#
-
 
 	//temp = rx
-	TEMP_we
-	POSTA_A_out
-	REG_out
-	#
-
-	//ry => alu
 	POSTA_B_out
 	REG_out
+	TEMP_we
+	#
+
+	//acc = rx (i3b) sayi
+	MDR_out	
+	ALU_mux
 	I3B
-	//acc = rx + ry
 	ACC_we
 	#
-	
+
+	//rx = acc
 	ALU_out
 	REG_we
-	POSTA_A_out
+	POSTA_B_out
 	#
+
+
 }
 
-[NOT 0]
-//not rx
+[ADD 5]
+[SUB 5]
+[MUL 5]
+[DIV 5]
+[XOR 5]
+[OR 5]
+[AND 5]
+//AND rx,ry
 {
+	//a,b = rx,ry
+	POSTA_A_we
 	POSTA_B_we
 	#
 
-	//alu.b = rx
+	//temp = rx
+	POSTA_A_out
 	REG_out
+	TEMP_we
+	#
+
+	//acc = rx (i3b) ry
 	POSTA_B_out
+	REG_out
 	I3B
 	ACC_we
 	#
 
-	//rx => register
+	//rx = acc
 	ALU_out
 	REG_we
-	POSTA_B_out
+	POSTA_A_out
 	#
 }
 

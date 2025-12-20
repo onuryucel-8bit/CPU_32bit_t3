@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 
+
 #define to_int(str) std::stoi(str)
 
 #include "../libsLocal/rang.hpp"
@@ -9,24 +10,62 @@
 
 #include "Lexer.h"
 
-#define checkType(type) (m_currentToken.m_type == (type))
+#include "MemoryManager.h"
+
+#define getAdr_str(exprVal)(std::to_string(m_symbolTable[exprVal.m_token].m_ramIndex))
+#define asmc_ConstantFolding 1
+
+//#define PRINT_RL 1
 
 namespace asmc
 {
+	/*
+	*	holds variable initial values and addresses
+	*	LET A = 5;
+	*	LET B = 3;
+	*	used for writing var section
+	*
+	*
+	*	.origin VAR_SECTION
+	*	.db 5, 3
+	*/
+	struct variableVec
+	{
+		uint32_t m_value;
+		uint32_t m_ramIndex;
+	};
+
+	enum class Location
+	{		
+		None,
+		Register,
+		Stack
+	};
+
+	struct ExprVal
+	{				
+		asmc::Token m_token;
+		asmc::Location m_location = Location::None;
+		char m_registerIndex = -1;
+		//rhs right hand side
+		bool m_rhsComputed = false;
+		uint32_t m_value;
+	};
+
+
 	enum class symbolStatus
 	{
 		USED,
 		NOT_USED
 	};
 
-	typedef struct 
+	struct SymbolEntry
 	{
-		int m_value;
-		int m_registerIndex;
-		symbolStatus m_status;
+		size_t m_ramIndex = 0;
+		uint32_t m_value = 0;		
+		symbolStatus m_status = symbolStatus::NOT_USED;		
 
-	}variableVec;
-
+	};
 
 	class Parser
 	{
@@ -37,42 +76,54 @@ namespace asmc
 		void run();
 
 	private:
-
-		void printWarning(std::string message);
-		void printError(std::string message);
-		void printErrorExt(std::string message, asmc::Token token);
-		void printCurrentToken();
-
-		void emit(std::string str);
-
-		void asmLOAD(asmc::Token& token, int value);
-
+				
 		void program();
 		void let_stmt();
 		void assing_stmt();
-		void add_expr();
+		asmc::ExprVal add_expr();
 		asmc::Token mult_expr();
-		void expression();
 
-		asmc::Token id();		
-		asmc::Token number();
 
-		void match(asmc::TokenType type);
+		asmc::ExprVal expression();		
+		asmc::ExprVal id();
+		asmc::ExprVal number();
+		
+		//======PRINT=============================================//
+		void printWarning(std::string message);
+		void printError(std::string message);
+		void printErrorExt(std::string message, asmc::Token token);
+		//========================================================//
 
-		void moveCurrentToken();
 
+		//========================================================//
+		void emit(std::string str);
+		void loadToRegister(asmc::ExprVal& expval);
+		void instruction(asmc::TokenType operation, int registerIndex, int opcodeType, int value);
+		//========================================================//
+
+		//=================Lexer==================================//
 		asmc::Lexer& m_lexer;
-
 		asmc::Token m_currentToken;
 		asmc::Token m_peekToken;
 
 		std::array<asmc::Token, MAX_TOKEN_LIST_SIZE> m_tokenList;
 		size_t m_tokenIndex;
+		//========================================================//
+
+		void checkTable(asmc::ExprVal& expval);
+
+		void match(asmc::TokenType type);
+
+		void moveCurrentToken();
 
 
-		std::unordered_map<asmc::Token, variableVec> m_symbolTable;
+		asmc::MemoryManager m_memManager;
 
-		int m_registerIndex;
+		std::vector<variableVec> m_varlist;
+		
+		std::unordered_map<asmc::Token, SymbolEntry> m_symbolTable;
+
+		
 
 		bool f_error;
 	};

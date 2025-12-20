@@ -183,7 +183,7 @@ void Parser::run()
 		//std::cout << '[' << key.m_text << "] status [" << magic_enum::enum_name(value.m_status) << "]" << " address[" << value.m_ramIndex << "]\n";
 	}
 
-	/*
+	
 	if (fd_printHexOutput)
 	{
 		std::cerr << rang::bg::green << "printBinHex() BEGIN"<< rang::style::reset << "\n";
@@ -193,7 +193,7 @@ void Parser::run()
 		}
 		std::cerr << rang::bg::green << "printBinHex() END" << rang::style::reset << "\n";
 	}
-	*/
+	
 	//if symbol info UNDEFINED
 	if (f_error)
 	{
@@ -1020,7 +1020,7 @@ void Parser::parseLogicPart()
 	moveCurrentToken();
 	uint32_t registerPart = rdx::hexToDec(m_currentToken.m_text);
 
-	registerPart <<= asmc_ShiftAmount_RegA;
+	registerPart <<= asmc_ShiftAmount_RegB;
 	opcode |= registerPart;
 
 	moveCurrentToken();

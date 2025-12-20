@@ -85,6 +85,8 @@ namespace asmc
 		REG_path_in,				
 		DATA_to_adr,
 
+		TEMP_out,
+
 		END,		
 		//----------------------//
 
