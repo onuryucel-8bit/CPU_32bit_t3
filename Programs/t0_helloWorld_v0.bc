@@ -1,0 +1,41 @@
+/*
+	SOURCE.BASIC_C .bc
+*/
+
+/*
+		+-------------------+
+		|					|
+		|		Code 		|
+		|					|
+		+-------------------+
+		|					|
+		|	  Variables		|
+		|					|
+		+-------------------+
+		
+*/
+
+//h    e   l   l   o  ' ' w   o   r   l   d
+//104 101 108 108 111 32 119 111 114 108 100
+
+LET A = 104;
+LET B = 101;
+LET C = 108;
+LET D = 111;
+LET E = 32;
+LET Q = 119;
+LET W = 111;
+LET R = 114;
+LET T = 108;
+LET Y = 100;
+
+PRINT(A);
+PRINT(B);
+PRINT(C);
+PRINT(D);
+PRINT(E);
+PRINT(Q);
+PRINT(W);
+PRINT(R);
+PRINT(T);
+PRINT(Y);

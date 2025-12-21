@@ -112,9 +112,13 @@ namespace asmc
 
 		
 		std::cout << ".db ";
-		for (variableVec& vec : m_varlist)
-		{			
-			std::cout << std::hex << vec.m_value << ",";
+		for (size_t i = 0; i < m_varlist.size(); ++i)
+		{
+			std::cout << std::hex << m_varlist[i].m_value;
+			if (i + 1 < m_varlist.size())
+			{
+				std::cout << ",";
+			}
 		}
 		std::cout << "\n";
 
