@@ -36,8 +36,6 @@
 {	
 	//reg => posta
 	POSTA_B_we
-	#
-
 	//mar = pc
 	//pc++
 	PC_enb
@@ -57,6 +55,41 @@
 	REG_we
 	#
 	//------------------------------
+}
+
+//CALISIYOR 21.12.25
+[LOAD 2]
+//LOAD rx,@adr
+{
+	//reg => posta
+	POSTA_B_we	
+	//mar = pc
+	//pc++
+	PC_enb
+	MAR_we
+	#
+
+	//mdr = adr
+	Read
+	ADR_we
+	#
+
+	//mar = adr
+	ADR_out
+	PC_mux
+	MAR_we
+	#
+
+	//mdr = ram[adr]
+	Read
+	MDR_we
+	#
+
+	//regFile[posta] = mdr	
+	POSTA_B_out
+	MDR_out
+	REG_we
+	#
 }
 
 //CALISIYOR 20.12.25
@@ -159,6 +192,9 @@
 [DIV 5]
 [XOR 5]
 [OR 5]
+[CMP 5]
+[SHL 5]
+[SHR 5]
 //AND rx,ry
 {
 	//a,b = rx,ry
@@ -183,6 +219,32 @@
 	ALU_out
 	REG_we
 	POSTA_A_out
+	#
+}
+
+//CALISIYOR 21.12.25
+[NOT 0]
+//NOT rx
+{
+	POSTA_B_we
+	#
+
+	POSTA_B_out
+	REG_out
+	TEMP_we
+	#
+
+	//acc = rx (i3b) ry
+	POSTA_B_out
+	REG_out
+	I3B
+	ACC_we
+	#
+
+	//rx = acc
+	ALU_out
+	REG_we
+	POSTA_B_out
 	#
 }
 

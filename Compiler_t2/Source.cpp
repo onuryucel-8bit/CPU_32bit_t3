@@ -1,6 +1,45 @@
 #include "Lexer.h"
 #include "Parser.h"
 
+/*
+	let a = 0;
+	let b = 5;
+	a = R0_t < R1_t;
+
+	if a < b then
+		
+	end
+
+	LOAD r0,R0_t
+	LOAD r1,R1_t	
+	CMP r0,r1
+	JEZ .l0
+		
+	.l0	
+	STR @A, r0
+	
+
+	<program> ::= (<let_stmt> | <assing_stmt>)*
+
+	<let_stmt> ::= "LET" <id> ("=" <number> | <id>)? ";"
+
+
+	<assing_stmt> ::= <id> "=" <expression> ";"
+
+	<expression> ::= <add_expr> (("<" | "<=" | ">" | ">=" | "==" | "!=") <add_expr>)?
+	<add_expr> ::= <mult_expr> ((+ | -) <mult_expr>)*
+	<mult_expr> ::= <primary> ((* | /) <primary>)*
+
+	<primary> ::= <id>
+				| <number>
+				| "(" <expression> ")"
+	
+	<id> ::= [a-zA-Z]+
+	<number> ::= [0-9]+
+
+*/
+
+
 
 int main()
 {

@@ -206,6 +206,11 @@ asmc::Token Lexer::lexSingleChar()
 
 	switch (m_currentChar)
 	{
+
+	case '/':
+		token = { std::string(1,m_currentChar), asmc::TokenType::SLASH, m_lineNumber };
+		break;
+
 	case '*':
 		token = { std::string(1,m_currentChar), asmc::TokenType::ASTERISK, m_lineNumber};
 		break;
@@ -430,6 +435,15 @@ void Lexer::skipComments()
 			m_lineNumber++;
 			
 		}
+		else if (peek() == '/')
+		{
+
+			while (m_currentChar != asmc::TokenType::ENDOFFILE && m_currentChar != '\n')
+			{
+				nextChar();
+			}
+		}
+		
 		else
 		{
 			printError("LEXER::Comment is not defined ::error ");

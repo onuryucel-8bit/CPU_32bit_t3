@@ -12,8 +12,10 @@
 
 #include "MemoryManager.h"
 
-#define getAdr_str(exprVal)(std::to_string(m_symbolTable[exprVal.m_token].m_ramIndex))
-#define asmc_ConstantFolding 1
+#define getAdr_asString(exprVal)(std::to_string(m_symbolTable[exprVal.m_token].m_ramIndex))
+
+#define asmc_TTY_adr 10000000
+
 
 //#define PRINT_RL 1
 
@@ -49,6 +51,7 @@ namespace asmc
 		char m_registerIndex = -1;
 		//rhs right hand side
 		bool m_rhsComputed = false;
+		bool m_recRet = false;
 		uint32_t m_value;
 	};
 
@@ -79,12 +82,15 @@ namespace asmc
 				
 		void program();
 		void let_stmt();
+		void print_stmt();
+
 		void assing_stmt();
+		asmc::ExprVal expression();
 		asmc::ExprVal add_expr();
-		asmc::Token mult_expr();
+		asmc::ExprVal mult_expr();
+		
 
-
-		asmc::ExprVal expression();		
+		asmc::ExprVal primary();		
 		asmc::ExprVal id();
 		asmc::ExprVal number();
 		

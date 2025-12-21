@@ -24,8 +24,8 @@ namespace asmc
 		SLASH,			// /
 
 		SEMICOLON, 		// ;
-		RPAREN,			// (
-		LPAREN,			// )
+		RPAREN,			// )
+		LPAREN,			// (
 		RBRACE,			// ]
 		LBRACE,			// [
 		RCPAREN,		// }
