@@ -62,12 +62,19 @@ namespace asmc
 		NOT_USED
 	};
 
+	enum class variableType
+	{
+		Int32,
+		Array,
+		String
+	};
+
 	struct SymbolEntry
 	{
 		size_t m_ramIndex = 0;
 		uint32_t m_value = 0;		
 		symbolStatus m_status = symbolStatus::NOT_USED;		
-
+		variableType m_type = variableType::Int32;
 	};
 
 	class Parser

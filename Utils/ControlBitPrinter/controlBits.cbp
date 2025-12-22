@@ -92,6 +92,33 @@
 	#
 }
 
+//CALISIYOR 22.12.25
+[LOAD 3]
+//LOAD rx,@ry
+{
+	
+	POSTA_A_we
+	POSTA_B_we
+	#
+	//mar = @ry
+	REG_out
+	POSTA_B_out
+	REG_data_out
+	DATA_to_adr
+	PC_mux
+	MAR_we
+	#
+	//mdr = ram[@ry]
+	Read
+	MDR_we
+	#
+	//rx = ram[@ry]
+	MDR_out
+	POSTA_A_out
+	REG_we
+	#
+}
+
 //CALISIYOR 20.12.25
 //STR @adr,rx
 [STR 2]
@@ -220,6 +247,53 @@
 	REG_we
 	POSTA_A_out
 	#
+}
+
+//CALISIYOR 22.12.25
+[CMP 2]
+[DIV 2]
+[MUL 2]
+[SUB 2]
+[ADD 2]
+//ADD rx,@adr
+{
+	//b = rx
+	//pc++
+	POSTA_B_we
+	PC_enb
+	MAR_we
+	#
+
+	//adr_reg = adr
+	Read
+	ADR_we
+	#
+
+	ADR_out
+	PC_mux
+	MAR_we
+	#
+
+	//mdr = ram[@adr]
+	//temp = rx
+	Read
+	MDR_we
+	REG_out
+	POSTA_B_out
+	TEMP_we
+	#
+
+	MDR_out
+	ALU_mux
+	I3B
+	ACC_we
+	#
+
+	ALU_out
+	REG_we
+	POSTA_B_out
+	#
+	
 }
 
 //CALISIYOR 21.12.25

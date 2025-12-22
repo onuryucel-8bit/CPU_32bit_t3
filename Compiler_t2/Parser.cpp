@@ -104,22 +104,22 @@ namespace asmc
 				  << "Printing VAR-SECTION...\n";
 
 		emit(".origin 1000");		
-		/*for (variableVec& vec : m_varlist)
+		for (variableVec& vec : m_varlist)
 		{
 			std::cout << vec.m_ramIndex << " = ";
 			emit(".db " + std::to_string(vec.m_value));
-		}*/
+		}
 
 		
 		std::cout << ".db ";
-		for (size_t i = 0; i < m_varlist.size(); ++i)
+		/*for (size_t i = 0; i < m_varlist.size(); ++i)
 		{
 			std::cout << std::hex << m_varlist[i].m_value;
 			if (i + 1 < m_varlist.size())
 			{
 				std::cout << ",";
 			}
-		}
+		}*/
 		std::cout << "\n";
 
 		std::cout << "===========================\n"
@@ -188,19 +188,47 @@ namespace asmc
 		{
 			match(asmc::TokenType::ASSIGN);
 
-			asmc::ExprVal value = primary();
+			//LET a = "asdasfasfsdaf";
+			if (m_currentToken.m_type == asmc::TokenType::STRING)
+			{				
+			
+				uint32_t entryVal = (uint32_t)(m_currentToken.m_text[0]);
+				uint32_t ramIndex = m_memManager.allocVariable();
 
+				asmc::variableVec varvec = { .m_value = entryVal ,.m_ramIndex = ramIndex };
+				m_varlist.push_back(varvec);
 
-			uint32_t entryVal = std::stoi(value.m_token.m_text);
-			uint32_t ramIndex = m_memManager.allocVariable();
+				//insert variable to the table
+				m_symbolTable[idName.m_token].m_value = entryVal;
+				m_symbolTable[idName.m_token].m_ramIndex = ramIndex;
+				m_symbolTable[idName.m_token].m_type = asmc::variableType::String;
 
-			//insert variable to the table
-			m_symbolTable[idName.m_token].m_value = entryVal;			
-			m_symbolTable[idName.m_token].m_ramIndex = ramIndex;			
+				//insert all chars to variable_sector
+				for (size_t i = 1; i < m_currentToken.m_text.length(); i++)
+				{
+					uint8_t cha = m_currentToken.m_text[i];
+					uint32_t ramIndex = m_memManager.allocVariable();
 
-			asmc::variableVec varvec = {.m_value = entryVal ,.m_ramIndex = ramIndex };
-			m_varlist.push_back(varvec);										
-		
+					asmc::variableVec varvec = { .m_value = (uint32_t)cha ,.m_ramIndex = ramIndex };
+					m_varlist.push_back(varvec);
+				}
+
+				match(asmc::TokenType::STRING);
+			}
+			else
+			{
+				asmc::ExprVal value = primary();
+
+				uint32_t entryVal = std::stoi(value.m_token.m_text);
+				uint32_t ramIndex = m_memManager.allocVariable();
+
+				//insert variable to the table
+				m_symbolTable[idName.m_token].m_value = entryVal;
+				m_symbolTable[idName.m_token].m_ramIndex = ramIndex;
+				
+				asmc::variableVec varvec = { .m_value = entryVal ,.m_ramIndex = ramIndex };
+				m_varlist.push_back(varvec);
+			}														
 		}
 		//"LET" <id> ([ <number> ])? "=" (<expression> | ({ <expression>* })? ) ";"
 		else if (m_currentToken.m_type == asmc::TokenType::LBRACE)
@@ -254,19 +282,57 @@ namespace asmc
 
 		m_symbolTable[exprId.m_token].m_status = asmc::symbolStatus::USED;
 
-		if (!m_memManager.allocRegister())
+		std::string reg;
+		std::string sourceAdr;
+		uint32_t arrPointer;
+
+		switch (m_symbolTable[exprId.m_token].m_type)
 		{
-			//print error
+		case asmc::variableType::Int32:
+
+				if (!m_memManager.allocRegister())
+				{
+					//print error
+				}
+				reg = std::to_string(m_memManager.m_activeRegister);
+				sourceAdr = getAdr_asString(exprId);
+
+				emit("LOAD r" + reg + ",@" + sourceAdr);
+				emit("STR @" + std::to_string(asmc_TTY_adr) + ",r" + reg);
+
+				
+
+				//release register
+				m_memManager.releaseRegister(m_memManager.m_activeRegister);
+			break;
+
+		case asmc::variableType::String:
+			//load r0,@a
+			//str @tty,r0
+			//load r0,@a + 1
+
+			//if (!m_memManager.allocRegister())
+			//{
+			//	//print error
+			//}
+			//reg = std::to_string(m_memManager.m_activeRegister);
+			//arrPointer = m_symbolTable[exprId.m_token].m_ramIndex;
+
+			//TODO
+			/*while (??)
+			{				
+				emit("LOAD r" + reg + ",@" + std::to_string(arrPointer));
+				emit("STR @" + std::to_string(asmc_TTY_adr) + ",r" + reg);
+
+				arrPointer++;
+			}*/
+
+			break;
 		}
-		std::string reg = std::to_string(m_memManager.m_activeRegister);
-		std::string sourceAdr = getAdr_asString(exprId);		
-
-		emit("LOAD r" + reg + ",@" + sourceAdr);
-		emit("STR @" + std::to_string(asmc_TTY_adr) + ",r" + reg);
-
+			
 		match(asmc::TokenType::RPAREN);
 		match(asmc::TokenType::SEMICOLON);
-
+			
 	}
 
 	//<id> "=" <add_expr>* ";"

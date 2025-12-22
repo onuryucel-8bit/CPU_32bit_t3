@@ -59,7 +59,7 @@
     <a name="appearance" val="logisim_evolution"/>
     <a name="circuit" val="main"/>
     <a name="circuitnamedboxfixedsize" val="true"/>
-    <a name="simulationFrequency" val="4.0"/>
+    <a name="simulationFrequency" val="32.0"/>
     <comp lib="0" loc="(1000,1870)" name="Splitter">
       <a name="bit1" val="0"/>
       <a name="bit10" val="2"/>
@@ -3584,11 +3584,13 @@
     <comp lib="4" loc="(1180,560)" name="ROM">
       <a name="appearance" val="classic"/>
       <a name="contents">addr/data: 8 32
-8008 21 c0 0 1f 1000 8008 21
-4002040 1f 9008 10001 28004 a002002 1f 1400
-2002200 44000800 1f 9008 21 2002200 c80040 4202000
-1f 1400 2000a00 2882000 4200800 1f 1000 2002200
-2882000 4202000 1f 8008 10001 20010 1f
+8008 21 c0 0 1f 9008 21 4002040
+1f 9008 10001 28004 21 4002040 1f 1400
+2a00a004 21 4000840 1f 9008 10001 28004 a002002
+1f 1400 2002200 44000800 1f 9008 21 2002200
+c80040 4202000 1f 1400 2000a00 2882000 4200800 1f
+1000 2002200 2882000 4202000 1f 8008 10001 20010
+1f
 </a>
       <a name="dataWidth" val="32"/>
     </comp>
@@ -3596,13 +3598,13 @@
       <a name="addrWidth" val="11"/>
       <a name="appearance" val="classic"/>
       <a name="contents">addr/data: 11 8
-9*0 5 8*0 a 45*0 f 64*0 13
-0 0 0 19 0 0 0 13
-0 0 0 19 0 0 0 13
-0 0 0 19 0 0 0 13
-0 0 0 19 7*0 19 7*0 19
-7*0 19 0 0 1e 4*0 19 15*0
-19 7*0 19 0 0 23
+9*0 5 9 f 6*0 14 45*0 19
+64*0 1d 0 0 0 23 0 0
+0 1d 0 0 0 23 0 0
+0 1d 0 0 0 23 0 0
+0 1d 0 0 0 23 7*0 23
+7*0 23 7*0 23 0 0 28 4*0
+23 15*0 23 7*0 23 0 0 2d
 </a>
       <a name="labelvisible" val="true"/>
     </comp>
