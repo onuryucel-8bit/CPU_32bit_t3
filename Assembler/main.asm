@@ -1,9 +1,23 @@
+/*
+	int i = 0;
+	char c = arr[i];
+	while(true)
+	{
+		print(c);		
+		i++;
+		c = arr[i];
+	}
+
+
+*/
 LOAD r0,0x1000
 LOAD r1,0x104
+
 loop:
-STR @10000000,r1
-ADD r0,0x1
-LOAD r1,@r0
+	STR @10000000,r1
+	ADD r0,0x1
+	LOAD r1,@r0
+	
 JMP loop
 
 .origin 0x1000

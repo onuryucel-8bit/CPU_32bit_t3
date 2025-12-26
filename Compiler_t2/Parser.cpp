@@ -15,6 +15,7 @@ namespace asmc
 		m_peekToken = m_tokenList[0];
 		moveCurrentToken();
 
+		m_labelIndex = 0;
 		
 	}
 
@@ -143,6 +144,12 @@ namespace asmc
 	<program> ::= <let_stmt> 
 				| <assing_stmt> 
 				| <print_stmt>
+				| <if_stmt>
+				| <while_stmt>
+
+	<while_stmt> ::= "WHILE" "THEN" "END"
+	
+	<if_stmt> ::= "IF" "THEN" "END"
 
 	<print_stmt> ::= PRINT "(" <id> ")" ";"
 
@@ -162,14 +169,25 @@ namespace asmc
 	*/
 	void Parser::program()
 	{
-		while (m_currentToken.m_type ==  asmc::TokenType::LET ||
-			   m_currentToken.m_type == asmc::TokenType::ID ||
-			   m_currentToken.m_type == asmc::TokenType::PRINT)
+		while (m_currentToken.m_type ==  asmc::TokenType::LET  ||
+			   m_currentToken.m_type == asmc::TokenType::ID    ||
+			   m_currentToken.m_type == asmc::TokenType::PRINT ||
+			   m_currentToken.m_type == asmc::TokenType::IF    ||
+			   m_currentToken.m_type == asmc::TokenType::WHILE)
+
 
 		{			
 
 			switch (m_currentToken.m_type)
 			{
+			case asmc::TokenType::WHILE:
+				while_stmt();
+				break;
+
+			case asmc::TokenType::IF:
+				if_stmt();
+				break;
+
 			case asmc::TokenType::LET:
 				let_stmt();				
 				break;
@@ -185,6 +203,52 @@ namespace asmc
 			
 		}
 		
+	}
+
+	void Parser::while_stmt()
+	{
+		match(asmc::TokenType::WHILE);
+		asmc::ExprVal condition = expression();
+
+		emit("jmp l" + std::to_string(m_labelIndex));
+		
+
+		emit("CODE");
+		emit("l" + std::to_string(m_labelIndex) + ":");
+		m_labelIndex++;
+		m_memManager.releaseRegister(condition.m_registerIndex);
+		match(asmc::TokenType::THEN);
+		match(asmc::TokenType::END);
+		
+	}
+
+	void Parser::if_stmt()
+	{
+		match(asmc::TokenType::IF);
+
+		asmc::ExprVal condition = expression();
+
+		emit("jmp l" + std::to_string(m_labelIndex));
+		
+
+		emit("CODE");
+		emit("l" + std::to_string(m_labelIndex) + ":");
+		m_labelIndex++;
+
+		/*
+		6 < A
+		load r0,0x6
+		load r1,@a
+		cmp r0,r1
+		jmp l0
+			add r1,a
+		l0:
+		
+		*/
+
+		m_memManager.releaseRegister(condition.m_registerIndex);
+		match(asmc::TokenType::THEN);
+		match(asmc::TokenType::END);
 	}
 
 	//"LET" <id> ([ <number> ])? "=" (<expression> | ({ <expression>* })? ) ";"
@@ -443,8 +507,8 @@ namespace asmc
 //		}
 //#pragma endregion
 //
-//		asmc::ExprVal exprRight;
-//		//"<" | "<=" | ">" | ">=" | "==" | "!="
+		asmc::ExprVal exprRight;
+		//"<" | "<=" | ">" | ">=" | "==" | "!="
 		while (m_currentToken.m_type == asmc::TokenType::GREATER_THAN
 			|| m_currentToken.m_type == asmc::TokenType::GREATER_EQ
 			|| m_currentToken.m_type == asmc::TokenType::LESS_THAN
@@ -455,12 +519,13 @@ namespace asmc
 		{
 
 			asmc::Token op = m_currentToken;
-
+			moveCurrentToken();
+			exprRight = add_expr();
 
 			switch (op.m_type)
 			{
 			case asmc::TokenType::LESS_THAN:
-				
+				exprLeft.m_value = exprLeft.m_value < exprRight.m_value ? 1 : 0;				
 				break;
 						
 			}

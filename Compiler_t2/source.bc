@@ -15,9 +15,13 @@
 		
 */
 
-//h    e   l   l   o  ' ' w   o   r   l   d
-//104 101 108 108 111 32 119 111 114 108 100
+LET A = 10;
 
-LET A = "hello world";
+A = 6 < A;
 
-PRINT(A);
+IF 6 < A THEN
+
+END
+IF 6 < A THEN
+
+END

@@ -86,21 +86,28 @@ namespace asmc
 		void run();
 
 	private:
-				
+						
+		//======PARSE=============================================//
 		void program();
+		void while_stmt();
+		void if_stmt();
 		void let_stmt();
 		void print_stmt();
 
+		//---------------------//
 		void assing_stmt();
 		asmc::ExprVal expression();
 		asmc::ExprVal add_expr();
 		asmc::ExprVal mult_expr();
 		
-
+		//---------------------//
 		asmc::ExprVal primary();		
 		asmc::ExprVal id();
 		asmc::ExprVal number();
-		
+
+		//========================================================//
+
+
 		//======PRINT=============================================//
 		void printWarning(std::string message);
 		void printError(std::string message);
@@ -108,7 +115,7 @@ namespace asmc
 		//========================================================//
 
 
-		//========================================================//
+		//=====OUTPUT=============================================//
 		void emit(std::string str);
 		void loadToRegister(asmc::ExprVal& expval);
 		void instruction(asmc::TokenType operation, int registerIndex, int opcodeType, int value);
@@ -136,7 +143,7 @@ namespace asmc
 		
 		std::unordered_map<asmc::Token, SymbolEntry> m_symbolTable;
 
-		
+		uint32_t m_labelIndex;
 
 		bool f_error;
 	};
