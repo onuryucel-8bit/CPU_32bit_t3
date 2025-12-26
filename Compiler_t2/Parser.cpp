@@ -104,22 +104,22 @@ namespace asmc
 				  << "Printing VAR-SECTION...\n";
 
 		emit(".origin 1000");		
-		for (variableVec& vec : m_varlist)
+		/*for (variableVec& vec : m_varlist)
 		{
-			std::cout << vec.m_ramIndex << " = ";
+			std::cout << "data: " << (char)vec.m_value  << " " << vec.m_ramIndex << " = ";
 			emit(".db " + std::to_string(vec.m_value));
-		}
+		}*/
 
 		
 		std::cout << ".db ";
-		/*for (size_t i = 0; i < m_varlist.size(); ++i)
+		for (size_t i = 0; i < m_varlist.size(); ++i)
 		{
 			std::cout << std::hex << m_varlist[i].m_value;
 			if (i + 1 < m_varlist.size())
 			{
 				std::cout << ",";
 			}
-		}*/
+		}
 		std::cout << "\n";
 
 		std::cout << "===========================\n"
@@ -140,7 +140,25 @@ namespace asmc
 
 
 	/*
-			
+	<program> ::= <let_stmt> 
+				| <assing_stmt> 
+				| <print_stmt>
+
+	<print_stmt> ::= PRINT "(" <id> ")" ";"
+
+	<let_stmt> ::= "LET" <id> (<var_def> | <arr_def>)
+		<arr_def>  ::= [ <number> ] "=" "{" <expression>* "}" ";"
+		<var_def>  ::= "=" <expression> ";"
+
+	<expression> ::= <add_expr> (("<" | "<=" | ">" | ">=" | "==" | "!=") <add_expr>)?
+	<assing_stmt> ::= <id> "=" <add_expr>* ";"
+	<add_expr> ::= <mult_expr> ((+ | -) <mult_expr>)*
+	<mult_expr> ::= <primary> ((* | /) <primary>)*
+	<primary> ::= <id> | <number>
+
+	<id> ::= [a-z]+
+	<number> ::= [0-9]+
+
 	*/
 	void Parser::program()
 	{
@@ -188,6 +206,7 @@ namespace asmc
 		{
 			match(asmc::TokenType::ASSIGN);
 
+			//STRING
 			//LET a = "asdasfasfsdaf";
 			if (m_currentToken.m_type == asmc::TokenType::STRING)
 			{				
@@ -213,8 +232,17 @@ namespace asmc
 					m_varlist.push_back(varvec);
 				}
 
+				
+				ramIndex = m_memManager.allocVariable();
+
+				varvec = { .m_value = '\0' ,.m_ramIndex = ramIndex};
+				m_varlist.push_back(varvec);
+
+
 				match(asmc::TokenType::STRING);
 			}
+			//INT
+			//LET a = 10;
 			else
 			{
 				asmc::ExprVal value = primary();
@@ -283,49 +311,67 @@ namespace asmc
 		m_symbolTable[exprId.m_token].m_status = asmc::symbolStatus::USED;
 
 		std::string reg;
+		std::string indexReg;
 		std::string sourceAdr;
 		uint32_t arrPointer;
 
 		switch (m_symbolTable[exprId.m_token].m_type)
 		{
 		case asmc::variableType::Int32:
-
-				if (!m_memManager.allocRegister())
-				{
-					//print error
-				}
-				reg = std::to_string(m_memManager.m_activeRegister);
+								
 				sourceAdr = getAdr_asString(exprId);
 
-				emit("LOAD r" + reg + ",@" + sourceAdr);
-				emit("STR @" + std::to_string(asmc_TTY_adr) + ",r" + reg);
+				emit("LOAD r0,@" + sourceAdr);
+				emit("STR @" + std::to_string(asmc_TTY_adr) + ",r0");
 
-				
-
-				//release register
-				m_memManager.releaseRegister(m_memManager.m_activeRegister);
 			break;
 
 		case asmc::variableType::String:
-			//load r0,@a
-			//str @tty,r0
-			//load r0,@a + 1
+												
+			
+			///*
+			//	int i = 0;
 
-			//if (!m_memManager.allocRegister())
-			//{
-			//	//print error
-			//}
-			//reg = std::to_string(m_memManager.m_activeRegister);
-			//arrPointer = m_symbolTable[exprId.m_token].m_ramIndex;
+			//	while(str[i] != '\0')
+			//	{
+			//		std::cout << str[i];
+			//		i++;
+			//	}
+			emit("LOAD r0,0x" + getAdr_asString(exprId));
+			emit("LOAD r1,0x" + std::to_string(m_symbolTable[exprId.m_token].m_value));
+			emit("loop: ");
+				emit("STR @" + std::to_string(asmc_TTY_adr) + ",r1");
+				emit("ADD r0, 0x1");
+				emit("LOAD r1, @r0");
+				emit("JMP loop");
+			///*
+			//	load r0, index
+			//	load r1,@r0
+			//				
+			//	loop:
+			//		str @tty, r1
+			//		add r0,1
+			//		load r1, @r0
+			//		
+			//		jmp loop
+			//		
+			//*/
+			//
+			//sourceAdr = getAdr_asString(exprId);
+			//emit("load r0," + sourceAdr);
+			
+			//
+			//emit("loop: ");
+			//	emit("str @" + std::to_string(asmc_tty_adr) + ",r1");
+			//	emit("load r0" + reg + ",@" + std::to_string(arrpointer));
+			//	emit("load r1, @r0");
+			//
+			//emit("jmp loop");
 
-			//TODO
-			/*while (??)
-			{				
-				emit("LOAD r" + reg + ",@" + std::to_string(arrPointer));
-				emit("STR @" + std::to_string(asmc_TTY_adr) + ",r" + reg);
-
-				arrPointer++;
-			}*/
+			//
+			//
+			//m_memmanager.releaseregister(std::stoi(reg));
+			//m_memmanager.releaseregister(std::stoi(indexreg));
 
 			break;
 		}
@@ -335,7 +381,7 @@ namespace asmc
 			
 	}
 
-	//<id> "=" <add_expr>* ";"
+	//<id> "=" <expression>* ";"
 	void Parser::assing_stmt()
 	{
 		asmc::ExprVal idRes = id();	
@@ -399,14 +445,26 @@ namespace asmc
 //
 //		asmc::ExprVal exprRight;
 //		//"<" | "<=" | ">" | ">=" | "==" | "!="
-//		while (m_currentToken.m_type == asmc::TokenType::GREATER_THAN 
-//			|| m_currentToken.m_type == asmc::TokenType::GREATER_EQ
-//			|| m_currentToken.m_type == asmc::TokenType::LESS_THAN
-//			|| m_currentToken.m_type == asmc::TokenType::LESS_EQ
-//			|| m_currentToken.m_type == asmc::TokenType::EQEQ
-//			|| m_currentToken.m_type == asmc::TokenType::NOT_EQ
-//			)
-//		{
+		while (m_currentToken.m_type == asmc::TokenType::GREATER_THAN
+			|| m_currentToken.m_type == asmc::TokenType::GREATER_EQ
+			|| m_currentToken.m_type == asmc::TokenType::LESS_THAN
+			|| m_currentToken.m_type == asmc::TokenType::LESS_EQ
+			|| m_currentToken.m_type == asmc::TokenType::EQEQ
+			|| m_currentToken.m_type == asmc::TokenType::NOT_EQ
+			)
+		{
+
+			asmc::Token op = m_currentToken;
+
+
+			switch (op.m_type)
+			{
+			case asmc::TokenType::LESS_THAN:
+				
+				break;
+						
+			}
+		}
 //			//get operator
 //			asmc::Token op = m_currentToken;
 //
@@ -585,7 +643,7 @@ namespace asmc
 		return exprLeft;
 	}
 
-	//<expression> ::= <id> | <number>
+	//<primary> ::= <id> | <number>
 	asmc::ExprVal Parser::primary()
 	{
 

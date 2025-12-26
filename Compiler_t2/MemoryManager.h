@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
 
 namespace asmc
 {
@@ -14,6 +15,7 @@ namespace asmc
 
 		bool allocRegister();
 		void releaseRegister(int index);
+		void releaseRegister(std::string index);
 
 		uint32_t allocVariable();
 		void defineFunction();
