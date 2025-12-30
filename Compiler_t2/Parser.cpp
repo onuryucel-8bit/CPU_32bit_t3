@@ -104,7 +104,7 @@ namespace asmc
 		std::cout << "===========================\n"
 				  << "Printing VAR-SECTION...\n";
 
-		emit(".origin 1000");		
+		emit(".origin 0x1000");		
 		/*for (variableVec& vec : m_varlist)
 		{
 			std::cout << "data: " << (char)vec.m_value  << " " << vec.m_ramIndex << " = ";
@@ -115,7 +115,7 @@ namespace asmc
 		std::cout << ".db ";
 		for (size_t i = 0; i < m_varlist.size(); ++i)
 		{
-			std::cout << std::hex << m_varlist[i].m_value;
+			std::cout <<"0x"<< std::hex << m_varlist[i].m_value;
 			if (i + 1 < m_varlist.size())
 			{
 				std::cout << ",";
@@ -374,10 +374,9 @@ namespace asmc
 
 		m_symbolTable[exprId.m_token].m_status = asmc::symbolStatus::USED;
 
-		std::string reg;
-		std::string indexReg;
+		
 		std::string sourceAdr;
-		uint32_t arrPointer;
+		
 
 		switch (m_symbolTable[exprId.m_token].m_type)
 		{
@@ -395,47 +394,22 @@ namespace asmc
 			
 			///*
 			//	int i = 0;
-
+			//	char ch = str[i];
+			// 
 			//	while(str[i] != '\0')
 			//	{
-			//		std::cout << str[i];
+			//		std::cout << ch;
 			//		i++;
+			//		ch = str[i]
 			//	}
 			emit("LOAD r0,0x" + getAdr_asString(exprId));
-			emit("LOAD r1,0x" + std::to_string(m_symbolTable[exprId.m_token].m_value));
+			emit("LOAD r1,0x" + rdx::decToHex(m_symbolTable[exprId.m_token].m_value));
 			emit("loop: ");
 				emit("STR @" + std::to_string(asmc_TTY_adr) + ",r1");
 				emit("ADD r0, 0x1");
 				emit("LOAD r1, @r0");
-				emit("JMP loop");
-			///*
-			//	load r0, index
-			//	load r1,@r0
-			//				
-			//	loop:
-			//		str @tty, r1
-			//		add r0,1
-			//		load r1, @r0
-			//		
-			//		jmp loop
-			//		
-			//*/
-			//
-			//sourceAdr = getAdr_asString(exprId);
-			//emit("load r0," + sourceAdr);
-			
-			//
-			//emit("loop: ");
-			//	emit("str @" + std::to_string(asmc_tty_adr) + ",r1");
-			//	emit("load r0" + reg + ",@" + std::to_string(arrpointer));
-			//	emit("load r1, @r0");
-			//
-			//emit("jmp loop");
-
-			//
-			//
-			//m_memmanager.releaseregister(std::stoi(reg));
-			//m_memmanager.releaseregister(std::stoi(indexreg));
+				emit("CMP r1, 0x0");
+				emit("JNE loop");
 
 			break;
 		}

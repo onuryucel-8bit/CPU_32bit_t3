@@ -211,6 +211,35 @@
 
 }
 
+//CALISIYOR 30.12.25
+[CMP 1]
+//CMP rx,sayi
+{
+
+	//pc++
+	POSTA_B_we
+	PC_enb
+	MAR_we
+	#
+
+	//mdr = sayi
+	Read
+	MDR_we
+	#
+
+	//temp = rx
+	POSTA_B_out
+	REG_out
+	TEMP_we
+	#
+
+	MDR_out	
+	ALU_mux
+	I3B	
+	#
+}
+
+
 //CALISIYOR 20.12.25
 [AND 5]
 [ADD 5]
@@ -219,7 +248,6 @@
 [DIV 5]
 [XOR 5]
 [OR 5]
-[CMP 5]
 [SHL 5]
 [SHR 5]
 //AND rx,ry
@@ -250,7 +278,6 @@
 }
 
 //CALISIYOR 22.12.25
-[CMP 2]
 [DIV 2]
 [MUL 2]
 [SUB 2]
@@ -296,6 +323,17 @@
 	
 }
 
+[DIV 3]
+[MUL 3]
+[SUB 3]
+[ADD 3]
+//ADD rx,@ry
+{
+	POSTA_A_we
+	#
+}
+
+
 //CALISIYOR 21.12.25
 [NOT 0]
 //NOT rx
@@ -325,6 +363,10 @@
 //CALISIYOR 07.12.25
 //jmp label
 [JMP 0]
+[JNE 0]
+[JE 0]
+[JGT 0]
+[JLT 0]
 {
 	//mar = pc
 	//pc++

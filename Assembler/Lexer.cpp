@@ -356,7 +356,7 @@ asmc::Token Lexer::lexWord()
 		//valid label examples LOOP: CLEAR: ...
 		else if (peek() == ':')
 		{
-			token = { tokenStr, TokenType::LABEL };
+			token = { tokenStr, asmc::TokenType::LABEL };
 			nextChar();
 
 		}
@@ -369,7 +369,7 @@ asmc::Token Lexer::lexWord()
 			//lastToken => JMP		
 			//loop => label
 			if (m_lastToken.m_type >= asmc::TokenType::JMP &&
-				m_lastToken.m_type <= asmc::TokenType::JCF)
+				m_lastToken.m_type <= asmc::TokenType::JUMP_INST)
 			{
 				token = { tokenStr, TokenType::LABEL};
 			}

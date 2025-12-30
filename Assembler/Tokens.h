@@ -52,15 +52,13 @@ namespace asmc
 
 		//JUMP
 		JMP,
-		JAZ,
-		JLZ,
+		JNE,
+		JE,
 
-		JGZ,
-		JSC,
-		JUC,
+		JGT,
+		JLT,		
 
-		JCT,
-		JCF,
+		JUMP_INST,
 
 		DEFINE,
 		ORIGIN,

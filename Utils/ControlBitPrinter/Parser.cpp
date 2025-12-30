@@ -13,36 +13,32 @@ Parser::Parser(asmc::Lexer& lexer)
 	m_addressVec.m_controlBitStartPos = 0;
 
 	//TODO make them hex
-	m_locationTable["LOAD"] = 0b0000'0001'000;
-	m_locationTable["STR"] = 0b0000'0010'000;
-	m_locationTable["MOV"] = 0b0000'1000'000;
+	m_locationTable["LOAD"]= 0x01;
+	m_locationTable["STR"] = 0x02;
+	m_locationTable["MOV"] = 0x08;
 
-	m_locationTable["ADD"] = 0b0001'0000'000;
-	m_locationTable["SUB"] = 0b0001'0001'000;
-	m_locationTable["MUL"] = 0b0001'0010'000;
-	m_locationTable["DIV"] = 0b0001'0011'000;
-	m_locationTable["AND"] = 0b0001'0100'000;
-	m_locationTable["OR"] =  0b0001'0101'000;
-	m_locationTable["XOR"] = 0b0001'0110'000;
-	m_locationTable["NOT"] = 0b0001'0111'000;
-	m_locationTable["CMP"] = 0b0001'0111'000;
-	m_locationTable["SHL"] = 0b0001'1001'000;
-	m_locationTable["SHR"] = 0b0001'1010'000;
+	m_locationTable["ADD"] = 0x10;
+	m_locationTable["SUB"] = 0x11;
+	m_locationTable["MUL"] = 0x12;
+	m_locationTable["DIV"] = 0x13;
+	m_locationTable["AND"] = 0x14;
+	m_locationTable["OR"] =  0x15;
+	m_locationTable["XOR"] = 0x16;
+	m_locationTable["NOT"] = 0x17;
+	m_locationTable["CMP"] = 0x18;
+	m_locationTable["SHL"] = 0x19;
+	m_locationTable["SHR"] = 0x1a;
+										
+	m_locationTable["CALL"]= 0x03;
+	m_locationTable["RET"] = 0x04;
+	m_locationTable["PUSH"]= 0x05;
+	m_locationTable["POP"] = 0x06;
 										 
-	m_locationTable["CALL"]= 0b0000'0011'000;
-	m_locationTable["RET"] = 0b0000'0100'000;
-	m_locationTable["PUSH"]= 0b0000'0101'000;
-	m_locationTable["POP"] = 0b0000'0110'000;
-										 
-	m_locationTable["JMP"] = 0b0001'1011'000;
-	m_locationTable["JAZ"] = 0b0001'1100'000;
-	m_locationTable["JLZ"] = 0b0001'1101'000;
-	m_locationTable["JGZ"] = 0b0001'1110'000;
-										 
-	m_locationTable["JSC"] = 0b0001'1111'000;
-	m_locationTable["JUC"] = 0b0010'0000'000;
-	m_locationTable["JCT"] = 0b0010'0001'000;
-	m_locationTable["JCF"] = 0b0010'0010'000;
+	m_locationTable["JMP"] = 0x1b;	
+	m_locationTable["JNE"] = 0x1c;
+	m_locationTable["JE"] =  0x1d;
+	m_locationTable["JGT"] = 0x1e;
+	m_locationTable["JLT"] = 0x1f;
 }
 
 Parser::~Parser()
@@ -241,6 +237,8 @@ void Parser::run()
 			{				
 				//start of control bit location adr
 				location = m_locationTable[opcode];
+
+				location <<= 3;
 
 				//command type value
 				//[LOAD mod]

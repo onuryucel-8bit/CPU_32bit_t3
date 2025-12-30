@@ -15,13 +15,6 @@
 		
 */
 
-LET A = 10;
+LET A = "Deneme";
 
-A = 6 < A;
-
-IF 6 < A THEN
-
-END
-IF 6 < A THEN
-
-END
+PRINT(A);

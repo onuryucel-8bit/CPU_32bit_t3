@@ -57,13 +57,10 @@ Parser::Parser(asmc::Lexer& lexer)
 
 	//JUMP
 	m_parserFuncs[asmc::TokenType::JMP] = &asmc::Parser::parseJMP;
-	m_parserFuncs[asmc::TokenType::JAZ] = &asmc::Parser::parseJMP;
-	m_parserFuncs[asmc::TokenType::JLZ] = &asmc::Parser::parseJMP;
-	m_parserFuncs[asmc::TokenType::JGZ] = &asmc::Parser::parseJMP;
-	m_parserFuncs[asmc::TokenType::JSC] = &asmc::Parser::parseJMP;
-	m_parserFuncs[asmc::TokenType::JUC] = &asmc::Parser::parseJMP;
-	m_parserFuncs[asmc::TokenType::JCT] = &asmc::Parser::parseJMP;
-	m_parserFuncs[asmc::TokenType::JCF] = &asmc::Parser::parseJMP;
+	m_parserFuncs[asmc::TokenType::JNE] = &asmc::Parser::parseJMP;
+	m_parserFuncs[asmc::TokenType::JE] = &asmc::Parser::parseJMP;
+	m_parserFuncs[asmc::TokenType::JGT] = &asmc::Parser::parseJMP;
+	m_parserFuncs[asmc::TokenType::JLT] = &asmc::Parser::parseJMP;	
 
 	m_parserFuncs[asmc::TokenType::LABEL] = &asmc::Parser::parseLabel;
 
@@ -100,13 +97,10 @@ Parser::Parser(asmc::Lexer& lexer)
 
 	//JUMP
 	m_opcodeHexTable[asmc::TokenType::JMP] = 0x1B;
-	m_opcodeHexTable[asmc::TokenType::JAZ] = 0x1C;
-	m_opcodeHexTable[asmc::TokenType::JLZ] = 0x1D;
-	m_opcodeHexTable[asmc::TokenType::JGZ] = 0x1E;
-	m_opcodeHexTable[asmc::TokenType::JSC] = 0x1F;
-	m_opcodeHexTable[asmc::TokenType::JUC] = 0x20;
-	m_opcodeHexTable[asmc::TokenType::JCT] = 0x21;
-	m_opcodeHexTable[asmc::TokenType::JCF] = 0x22;
+	m_opcodeHexTable[asmc::TokenType::JNE] = 0x1C;
+	m_opcodeHexTable[asmc::TokenType::JE] = 0x1D;
+	m_opcodeHexTable[asmc::TokenType::JGT] = 0x1E;
+	m_opcodeHexTable[asmc::TokenType::JLT] = 0x1F;	
 
 }
 
@@ -140,7 +134,8 @@ void Parser::run()
 			}
 			else
 			{
-				moveCurrentToken();
+				//TODO include file reading
+				m_tokenList = m_lexer.getTokenList();
 			}						
 		}
 		
@@ -408,13 +403,10 @@ asmc::TokenType Parser::toToken(size_t opcode)
 
 			// JUMP
 			case 0x1b: return asmc::TokenType::JMP;
-			case 0x1c: return asmc::TokenType::JAZ;
-			case 0x1d: return asmc::TokenType::JLZ;
-			case 0x1e: return asmc::TokenType::JGZ;
-			case 0x1f: return asmc::TokenType::JSC;
-			case 0x20: return asmc::TokenType::JUC;
-			case 0x21: return asmc::TokenType::JCT;
-			case 0x22: return asmc::TokenType::JCF;
+			case 0x1c: return asmc::TokenType::JNE;
+			case 0x1d: return asmc::TokenType::JE;
+			case 0x1e: return asmc::TokenType::JGT;
+			case 0x1f: return asmc::TokenType::JLT;			
 		
 			default: return asmc::TokenType::EMPTY;
 		}
@@ -762,7 +754,12 @@ void Parser::parseINCLUDE()
 
 	
 	m_lexer.pushFile(m_peekToken.m_text);
-	moveCurrentToken(); //currentToken is directory now
+
+	//get new token list
+	m_tokenList = m_lexer.getTokenList();
+	m_peekToken = m_tokenList[0];
+	m_tokenIndex = 0;
+	m_currentToken = m_peekToken;	
 
 	//currentToken points the token in newfile
 	//called in run()
@@ -1100,10 +1097,30 @@ void Parser::parseCMP()
 
 	if (m_currentToken.m_type != asmc::REGISTER &&
 		m_currentToken.m_type != asmc::REGADR   &&
-		m_currentToken.m_type != asmc::ADDRESS)
+		m_currentToken.m_type != asmc::ADDRESS  )
 	{
 		printError("unexpected operand");
 	}
+	switch (m_peekToken.m_type)
+	{
+		case asmc::TokenType::HEXNUMBER:
+			opcode |= asmc_CombineMODBits(opcode, asmc_MOD_Number);
+			break;
+
+		case asmc::TokenType::ADDRESS:
+			opcode |= asmc_CombineMODBits(opcode, asmc_MOD_Adr);
+			break;
+
+		case asmc::TokenType::REGADR:
+			opcode |= asmc_CombineMODBits(opcode, asmc_MOD_RegAdr);
+			break;
+
+		case asmc::TokenType::REGISTER:
+			//5
+			opcode |= asmc_CombineMODBits(opcode, asmc_MOD_Rx_Ry);
+			break;
+	}
+
 
 	switch (m_peekToken.m_type)
 	{
@@ -1116,6 +1133,7 @@ void Parser::parseCMP()
 			opcode = opcode | (rdx::hexToDec(m_currentToken.m_text) << asmc_ShiftAmount_RegB);
 		break;
 
+	case asmc::TokenType::HEXNUMBER:
 	case asmc::TokenType::ADDRESS:
 			opcode = opcode | (rdx::hexToDec(m_currentToken.m_text) << asmc_ShiftAmount_RegB);
 
@@ -1395,33 +1413,22 @@ void Parser::parseJMP()
 		opcode = m_opcodeHexTable[asmc::TokenType::JMP] << asmc_ShiftAmount_Opcode;
 		break;
 
-	case asmc::TokenType::JAZ:
-		opcode = m_opcodeHexTable[asmc::TokenType::JAZ] << asmc_ShiftAmount_Opcode;
+	case asmc::TokenType::JNE:
+		opcode = m_opcodeHexTable[asmc::TokenType::JNE] << asmc_ShiftAmount_Opcode;
 		break;
 
-	case asmc::TokenType::JLZ:
-		opcode = m_opcodeHexTable[asmc::TokenType::JLZ] << asmc_ShiftAmount_Opcode;
+	case asmc::TokenType::JE:
+		opcode = m_opcodeHexTable[asmc::TokenType::JE] << asmc_ShiftAmount_Opcode;
 		break;
 
-	case asmc::TokenType::JGZ:
-		opcode = m_opcodeHexTable[asmc::TokenType::JGZ] << asmc_ShiftAmount_Opcode;
+	case asmc::TokenType::JGT:
+		opcode = m_opcodeHexTable[asmc::TokenType::JGT] << asmc_ShiftAmount_Opcode;
 		break;
 
-	case asmc::TokenType::JSC:
-		opcode = m_opcodeHexTable[asmc::TokenType::JSC] << asmc_ShiftAmount_Opcode;
+	case asmc::TokenType::JLT:
+		opcode = m_opcodeHexTable[asmc::TokenType::JLT] << asmc_ShiftAmount_Opcode;
 		break;
 
-	case asmc::TokenType::JUC:
-		opcode = m_opcodeHexTable[asmc::TokenType::JUC] << asmc_ShiftAmount_Opcode;
-		break;
-
-	case asmc::TokenType::JCT:
-		opcode = m_opcodeHexTable[asmc::TokenType::JCT] << asmc_ShiftAmount_Opcode;
-		break;
-
-	case asmc::TokenType::JCF:
-		opcode = m_opcodeHexTable[asmc::TokenType::JCF] << asmc_ShiftAmount_Opcode;
-		break;
 	}
 
 	moveCurrentToken();
