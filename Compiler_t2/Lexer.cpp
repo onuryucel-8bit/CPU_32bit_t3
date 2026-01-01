@@ -313,6 +313,10 @@ asmc::Token Lexer::lexWord()
 		std::optional<TokenType> enumVal = magic_enum::enum_cast<TokenType>(tokenStr);
 		token = { tokenStr, enumVal.value() , m_lineNumber };
 	}
+	else if (checkIfKeyword(toUpper(tokenStr)))
+	{
+		printError("mistyped keyword detected ["+ tokenStr +"]: keyword MUST be upper case ");
+	}
 	else
 	{
 		token = { tokenStr, TokenType::ID, m_lineNumber };
@@ -553,12 +557,14 @@ std::string Lexer::getSubStr(int startPos, int length, int (*cmpFunc)(int), bool
 	return tokenStr;
 }
 
-void Lexer::toUpper(std::string& str)
+std::string asmc::Lexer::toUpper(std::string str)
 {
 	for (size_t i = 0; i < str.length(); i++)
 	{
 		str[i] = std::toupper(str[i]);
 	}
+
+	return str;
 }
 
 //returns next char if pos >= program.length returns enum::EOF

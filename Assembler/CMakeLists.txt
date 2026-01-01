@@ -9,14 +9,19 @@ set(SOURCES
 	Source.cpp
 	Parser.cpp
 	Lexer.cpp
+	LexerPCH.cpp
+	LogisimPrinter.cpp
 	utils/Radix.cpp
 )
 
 set(HEADERS
 	Parser.h
 	Lexer.h
+	LexerPCH.h
+	LogisimPrinter.h
 	utils/Radix.h
 	Tokens.h
+	Timer.h
 )
 
 add_executable(Assembler ${HEADERS} ${SOURCES})

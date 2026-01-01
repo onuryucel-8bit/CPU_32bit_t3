@@ -1,57 +1,34 @@
-Hedefler
-=======
--Donen kup
--Donen 3d Model
--Bad Apple
--Mandelbrot
--Pong
--Xox minmax
-=======
+# Hedefler
 
--------
-Logisim
-Assembler
-Compiler
-Emu
-utils/ROMPrinter
-utils/CharsetROMPrinter
--------
+### Donen kup
+### Donen 3d Model (caydanlik veya dusuk poligonlu model)
+### Bad Apple
+### Mandelbrot
+### Pong
+### Xox minmax
 
-----AssemblerV4----
+### Logisim
+	- kosullu ziplamalar eklendi 31.12.2025
+	- yigin registerini register file icine koy
+	- flag registerini register file icine koy
 
-	+Tekrar eden kisimlari fonksiyon veya macro haline getir
-	+Ziplama komutlarini parser`a ekle
+### Assembler 
+	- #include hatasi var
+	- f_newline ??
 
-	+Tokens.h adli dosya olustur enum tokentype i oraya tasi
-	-.ascii ve .text ekle
-	-Hata algilama kismini iyilestir
-	+Cikti dizisini tanimla
+### Derleyici
+	- if else kosul yapilarini ekle
+	- while dongusunu ekle
+	- ekran karti ile iletisime gecicek fonksiyonu ekle
+	- fonksiyonlari ekle
+	- diziler
+	- mantik operatorlerini ekle & | ^ !
 
-	-TODO kisimlarini yaz	
-	+"Fonksiyon" komutlarini parser`a ekle
-	~#define makrolarini ekle
+### Calismakta olan programlar
+	- t0_tty_ayi => birimine ascii ayi cizer (cikti :: tty)
+	- t1_helloWorld_v(0|1) => klasik merhaba dunya programi (cikti :: tty)
 
-	+#include "stdmath.asm" dosya okuma sistemini ekle		
-	
------------------
-
-- Makefile ekle
-
-+Yakalama(Fetch) Dongusu
-	t0 
-	Mar = pc
-	pc++
-	t1
-	MDR = ram[MAR]
-	t2
-	IR = MDR
-
-- ROM yazicisini kontrol et	
-- LOAD rx,Sayi ROM kontrolBitleri
-- Komut kumesini iyilestir
-- Emulator .u yaz
-- Teletype Ciktisi
-- Fibonacci
+- Makefile/cmake ekle
 - Float(Kesirli sayi) islemlerini ekle 16-32 IEEE veya sabit noktali tanim olucak
 - pi ve sinx hesaplayan program ciktisini TTY birimine gonder
 - Stack(Yigin) [ayri RAM veya RAM_0 icinde belirli bir alan] tanimla
@@ -61,9 +38,6 @@ utils/CharsetROMPrinter
 - Ekran kartini bagla
 - Bresenham cizgi algoritma devresini ekran kartina ekle
 - Ekran kartina piksel degerlerini gondererek basit cizim yap
-+ Ekran kartina Ascii karakter yolla
-+ RLE fonksiyonu yaz
-+ Bad Apple dosyasini proje icin hazirla(fps dusur, RLE den gecir)
 - Bad Apple denemesi
 - Buzzer devresini tasarla
 - Buzzer devresini bagla
@@ -73,7 +47,6 @@ utils/CharsetROMPrinter
 - Bad Apple ses Denemesi
 - Bad Apple video denemesi
 - Derleyici BASIC + C tasarla
-- C Derleyicisi yaz
 - Mandelbrot 
 - Pong
 - MinMax xox

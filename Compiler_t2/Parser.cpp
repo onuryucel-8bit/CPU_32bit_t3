@@ -95,12 +95,14 @@ namespace asmc
 		std::cout << "Parser running... \n"
 				  << "===========================\n";
 
-		while (m_currentToken.m_type != asmc::TokenType::ENDOFFILE)
+		if (m_lexer.getErrorFlag() == false)
 		{
-			//std::cout << m_currentToken.m_text << "\n";
-			program();
+			while (m_currentToken.m_type != asmc::TokenType::ENDOFFILE)
+			{
+				//std::cout << m_currentToken.m_text << "\n";
+				program();
+			}
 		}
-
 		std::cout << "===========================\n"
 				  << "Printing VAR-SECTION...\n";
 
@@ -385,7 +387,7 @@ namespace asmc
 				sourceAdr = getAdr_asString(exprId);
 
 				emit("LOAD r0,@" + sourceAdr);
-				emit("STR @" + std::to_string(asmc_TTY_adr) + ",r0");
+				emit("STR @" + rdx::decToHex(asmc_TTY_adr) + ",r0");
 
 			break;
 
@@ -405,7 +407,7 @@ namespace asmc
 			emit("LOAD r0,0x" + getAdr_asString(exprId));
 			emit("LOAD r1,0x" + rdx::decToHex(m_symbolTable[exprId.m_token].m_value));
 			emit("loop: ");
-				emit("STR @" + std::to_string(asmc_TTY_adr) + ",r1");
+				emit("STR @" + rdx::decToHex(asmc_TTY_adr) + ",r1");
 				emit("ADD r0, 0x1");
 				emit("LOAD r1, @r0");
 				emit("CMP r1, 0x0");
@@ -442,7 +444,7 @@ namespace asmc
 
 		if (result.m_location == asmc::Location::None)
 		{
-			emit("STR  @" + getAdr_asString(idRes) + ",0x" + std::to_string(result.m_value));
+			emit("STR  @" + getAdr_asString(idRes) + ",0x" + rdx::decToHex(result.m_value));
 		}
 		else
 		{
@@ -809,7 +811,7 @@ namespace asmc
 		//asmc::TokenType::NUMBER
 		else
 		{
-			emit("LOAD r" + std::to_string(expval.m_registerIndex) + ",0x" + std::to_string(expval.m_value));
+			emit("LOAD r" + std::to_string(expval.m_registerIndex) + ",0x" + rdx::decToHex(expval.m_value));
 		}
 
 	}

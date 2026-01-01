@@ -88,7 +88,7 @@ public:
 
 private:
 
-	void toUpper(std::string& str);
+	std::string toUpper(std::string str);
 
 	//sonraki karakteri isaret eder
 	void nextChar();

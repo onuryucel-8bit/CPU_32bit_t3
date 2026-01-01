@@ -14,7 +14,7 @@
 
 #define getAdr_asString(exprVal)(std::to_string(m_symbolTable[exprVal.m_token].m_ramIndex))
 
-#define asmc_TTY_adr 10000000
+const uint32_t asmc_TTY_adr = 0xffff'ffff;
 
 
 //#define PRINT_RL 1

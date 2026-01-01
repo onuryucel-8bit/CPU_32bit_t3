@@ -1,20 +1,8 @@
-/*
-	SOURCE.BASIC_C .bc
-*/
-
-/*
-		+-------------------+
-		|					|
-		|		Code 		|
-		|					|
-		+-------------------+
-		|					|
-		|	  Variables		|
-		|					|
-		+-------------------+
-		
-*/
-
-LET A = "Deneme";
-
+LET A = 10;
+PRINT(A);
+A = A + 1;
+PRINT(A);
+A = A + 1;
+PRINT(A);
+A = A + 1;
 PRINT(A);
