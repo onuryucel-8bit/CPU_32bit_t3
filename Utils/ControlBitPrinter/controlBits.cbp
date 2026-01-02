@@ -333,6 +333,25 @@
 	#
 }
 
+//CALISIYOR 02.01.26
+[CMP 5]
+//CMP rx,ry
+{
+	POSTA_A_we
+	POSTA_B_we
+	#
+
+	POSTA_A_out
+	REG_out
+	TEMP_we
+	#
+
+	POSTA_B_out
+	REG_out
+	I3B
+	#
+
+}
 
 //CALISIYOR 21.12.25
 [NOT 0]

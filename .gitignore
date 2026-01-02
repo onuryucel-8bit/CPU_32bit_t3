@@ -1,3 +1,6 @@
+Utils/ImageCompressor_RLE/images/*
+Utils/ImageCompressor_RLE/rleRAM_data/*
+Utils/ImageCompressor_RLE/output/*
 main.asm
 out.txt
 ROM_t0.txt

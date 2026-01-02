@@ -8,6 +8,7 @@
 #include "Tokens.h"
 
 #define MAX_TOKEN_LIST_SIZE 30
+#define asmc_CLOSE_DEBUG_WORD "CLOSEDEB"
 
 namespace asmc
 {
@@ -45,7 +46,6 @@ namespace std
 	};
 }
 
-
 namespace asmc
 {
 
@@ -60,6 +60,7 @@ public:
 
 
 	bool getErrorFlag();
+	bool getDebugFlag();
 
 	size_t m_lineNumber;
 
@@ -135,6 +136,7 @@ private:
 	char m_currentChar;
 	bool f_error;
 	bool f_newline;
+	bool fd_debug;
 
 	std::array<asmc::Token, MAX_TOKEN_LIST_SIZE> m_tokenArr;
 

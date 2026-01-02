@@ -206,7 +206,18 @@ asmc::Token Lexer::lexSingleChar()
 
 	switch (m_currentChar)
 	{
+	case '!':
+		if (peek() == '=')
+		{
+			token = { std::string(1,m_currentChar), asmc::TokenType::NOT_EQ, m_lineNumber };
+			nextChar();
+		}
+		else
+		{
+			token = { std::string(1,m_currentChar), asmc::TokenType::NOT, m_lineNumber };
+		}
 
+		break;
 	case '/':
 		token = { std::string(1,m_currentChar), asmc::TokenType::SLASH, m_lineNumber };
 		break;
@@ -270,6 +281,22 @@ asmc::Token Lexer::lexSingleChar()
 
 		break;
 
+		case '\'':
+			nextChar();
+
+			while (m_currentChar != '\'')
+			{
+				tokenStr += m_currentChar;
+				nextChar();
+			}
+			if (tokenStr.length() > 1)
+			{
+				printError("check char ");
+			}
+
+			token = { tokenStr, asmc::TokenType::CHAR , m_lineNumber };
+			break;
+
 	case '"':
 		nextChar();
 				
@@ -280,7 +307,7 @@ asmc::Token Lexer::lexSingleChar()
 		}
 		token = { tokenStr, asmc::TokenType::STRING , m_lineNumber };
 		break;
-
+ 
 	case ENDOFFILE:
 		token = { std::string(1,m_currentChar), asmc::TokenType::ENDOFFILE , m_lineNumber };
 		break;
@@ -312,10 +339,21 @@ asmc::Token Lexer::lexWord()
 	{
 		std::optional<TokenType> enumVal = magic_enum::enum_cast<TokenType>(tokenStr);
 		token = { tokenStr, enumVal.value() , m_lineNumber };
+
+		m_lastToken = token;
 	}
 	else if (checkIfKeyword(toUpper(tokenStr)))
 	{
 		printError("mistyped keyword detected ["+ tokenStr +"]: keyword MUST be upper case ");
+	}
+	else if (peek() == ':')
+	{
+		token = { tokenStr, TokenType::LABEL, m_lineNumber };
+		nextChar();
+	}
+	else if (m_lastToken.m_type == asmc::TokenType::GOTO)
+	{
+		token = { tokenStr, TokenType::LABEL, m_lineNumber };
 	}
 	else
 	{

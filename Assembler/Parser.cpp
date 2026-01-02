@@ -179,7 +179,7 @@ void Parser::run()
 	}
 
 	
-	if (fd_printHexOutput)
+	if (fd_printHexOutput && m_lexer.getDebugFlag())
 	{
 		std::cerr << rang::bg::green << "printBinHex() BEGIN"<< rang::style::reset << "\n";
 		for (size_t i = 0; i < m_output.size(); i++)

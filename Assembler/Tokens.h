@@ -60,6 +60,8 @@ namespace asmc
 
 		JUMP_INST,
 
+		DEBUG_TOKEN,
+
 		DEFINE,
 		ORIGIN,
 		INCLUDE,

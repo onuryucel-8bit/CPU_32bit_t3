@@ -25,8 +25,9 @@
 	- mantik operatorlerini ekle & | ^ !
 
 ### Calismakta olan programlar
-	- t0_tty_ayi => birimine ascii ayi cizer (cikti :: tty)
+	- t0_tty_ayi => ascii ayi cizer (cikti :: tty)
 	- t1_helloWorld_v(0|1) => klasik merhaba dunya programi (cikti :: tty)
+	- t3_yildiz => 5x5 yildiz karesi cizer (cikti :: tty)
 
 - Makefile/cmake ekle
 - Float(Kesirli sayi) islemlerini ekle 16-32 IEEE veya sabit noktali tanim olucak
@@ -40,7 +41,6 @@
 - Ekran kartina piksel degerlerini gondererek basit cizim yap
 - Bad Apple denemesi
 - Buzzer devresini tasarla
-- Buzzer devresini bagla
 - Bad Apple ses ciktisini WAV donustur
 - WAV okuyucusu yaz
 - Ses dosyasini RLE den gecir

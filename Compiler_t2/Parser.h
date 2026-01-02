@@ -14,7 +14,15 @@
 
 #define getAdr_asString(exprVal)(std::to_string(m_symbolTable[exprVal.m_token].m_ramIndex))
 
-const uint32_t asmc_TTY_adr = 0xffff'ffff;
+const uint32_t asmc_TTY_adr	   = 0xffff'ffff;
+
+const uint32_t asmc_BUZZER_adr = 0xffff'fffd;
+const uint32_t asmc_BUZZER_con = 0xffff'fffc;
+
+const uint32_t asmc_KMT_adr	   = 0xffff'fffb;
+const uint32_t asmc_COLOR_adr  = 0xffff'fffa;
+const uint32_t asmc_POSX_adr   = 0xffff'fff9;
+const uint32_t asmc_POSY_adr   = 0xffff'fff8;
 
 
 //#define PRINT_RL 1
@@ -89,10 +97,15 @@ namespace asmc
 						
 		//======PARSE=============================================//
 		void program();
+
+		void statements();
+
 		void while_stmt();
 		void if_stmt();
 		void let_stmt();
 		void print_stmt();
+		void buzz_stmt();
+		void draw_stmt();
 
 		//---------------------//
 		void assing_stmt();
@@ -101,7 +114,9 @@ namespace asmc
 		asmc::ExprVal mult_expr();
 		
 		//---------------------//
+		
 		asmc::ExprVal primary();		
+		asmc::ExprVal charType();
 		asmc::ExprVal id();
 		asmc::ExprVal number();
 
@@ -130,7 +145,7 @@ namespace asmc
 		size_t m_tokenIndex;
 		//========================================================//
 
-		void checkTable(asmc::ExprVal& expval);
+		void checkTable(const asmc::ExprVal& expval);
 
 		void match(asmc::TokenType type);
 
@@ -142,6 +157,8 @@ namespace asmc
 		std::vector<variableVec> m_varlist;
 		
 		std::unordered_map<asmc::Token, SymbolEntry> m_symbolTable;
+
+		std::unordered_map<asmc::Token, symbolStatus> m_jumpTable;
 
 		uint32_t m_labelIndex;
 

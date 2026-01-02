@@ -23,6 +23,7 @@ Lexer::Lexer(std::string path)
 
 	f_error = false;
 	f_newline = true;//TODO ne? ???
+	fd_debug = true;
 
 	nextChar();
 }
@@ -127,10 +128,14 @@ std::array<asmc::Token, MAX_TOKEN_LIST_SIZE> Lexer::getTokenList()
 			m_tokenArr[i] = { "EOF", asmc::TokenType::ENDOFFILE };
 		}
 
-		if (token.m_type != asmc::TokenType::NEWLINE)
+		if (token.m_type != asmc::TokenType::NEWLINE && token.m_type != asmc::TokenType::DEBUG_TOKEN)
 		{
 			m_tokenArr[i] = token;
 			i++;
+		}
+		else if (token.m_type == asmc::TokenType::DEBUG_TOKEN)
+		{
+			fd_debug = false;
 		}
 	}
 
@@ -339,7 +344,11 @@ asmc::Token Lexer::lexWord()
 	toUpper(tokenStr);
 
 	//check if tokenStr is a keyword(LOAD,XOR,AND, ...)
-	if (checkIfKeyword(tokenStr))
+	if (tokenStr == asmc_CLOSE_DEBUG_WORD)
+	{
+		token = { tokenStr, asmc::TokenType::DEBUG_TOKEN};
+	}
+	else if (checkIfKeyword(tokenStr))
 	{
 		std::optional<TokenType> enumVal = magic_enum::enum_cast<TokenType>(tokenStr);
 		token = { tokenStr, enumVal.value() };
@@ -651,6 +660,11 @@ void Lexer::printError(std::string message)
 bool Lexer::getErrorFlag()
 {
 	return f_error;
+}
+
+bool Lexer::getDebugFlag()
+{
+	return fd_debug;
 }
 
 bool Lexer::isInputStreamEmpty()

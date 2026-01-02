@@ -14,8 +14,13 @@ namespace asmc
 		WHILE,		
 		PRINT,
 		FUNCTION,
+		GOTO,
+		LABEL,
+		BUZZ,
+		DRAW,
 
 		STRING,			//"abc"
+		CHAR,			//'a'
 		NUMBER,			//125
 		
 		PLUS,			// +
@@ -88,7 +93,7 @@ namespace asmc
 		INCLUDE,
 		DB,	//define byte
 
-		LABEL,
+		
 
 		EMPTY,
 		NEWLINE,

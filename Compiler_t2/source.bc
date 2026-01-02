@@ -1,8 +1,10 @@
-LET A = 10;
-PRINT(A);
-A = A + 1;
-PRINT(A);
-A = A + 1;
-PRINT(A);
-A = A + 1;
-PRINT(A);
+
+
+LET x = 1;
+LET y = 0;
+
+    DRAW x y 3;
+                           
+    x = x + 1;
+
+    DRAW x y 4;

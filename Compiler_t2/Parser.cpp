@@ -97,11 +97,10 @@ namespace asmc
 
 		if (m_lexer.getErrorFlag() == false)
 		{
-			while (m_currentToken.m_type != asmc::TokenType::ENDOFFILE)
-			{
-				//std::cout << m_currentToken.m_text << "\n";
-				program();
-			}
+			
+			//std::cout << m_currentToken.m_text << "\n";
+			program();
+			
 		}
 		std::cout << "===========================\n"
 				  << "Printing VAR-SECTION...\n";
@@ -148,6 +147,8 @@ namespace asmc
 				| <print_stmt>
 				| <if_stmt>
 				| <while_stmt>
+				| <goto_stmt>
+				| <label_stmt>
 
 	<while_stmt> ::= "WHILE" "THEN" "END"
 	
@@ -171,17 +172,65 @@ namespace asmc
 	*/
 	void Parser::program()
 	{
-		while (m_currentToken.m_type ==  asmc::TokenType::LET  ||
-			   m_currentToken.m_type == asmc::TokenType::ID    ||
-			   m_currentToken.m_type == asmc::TokenType::PRINT ||
-			   m_currentToken.m_type == asmc::TokenType::IF    ||
-			   m_currentToken.m_type == asmc::TokenType::WHILE)
+		while (m_currentToken.m_type != asmc::TokenType::ENDOFFILE)
+		{
+			statements();
+		}				
+	}
+
+	void Parser::statements()
+	{
+		if (m_currentToken.m_type == asmc::TokenType::LET	||
+			m_currentToken.m_type == asmc::TokenType::ID	||
+			m_currentToken.m_type == asmc::TokenType::PRINT ||
+			m_currentToken.m_type == asmc::TokenType::IF    ||
+			m_currentToken.m_type == asmc::TokenType::WHILE ||
+			m_currentToken.m_type == asmc::TokenType::GOTO  ||
+			m_currentToken.m_type == asmc::TokenType::LABEL ||
+			m_currentToken.m_type == asmc::TokenType::BUZZ	||
+			m_currentToken.m_type == asmc::TokenType::DRAW)
 
 
-		{			
+		{
 
 			switch (m_currentToken.m_type)
 			{
+			case asmc::TokenType::DRAW:
+				draw_stmt();
+				break;
+
+			case asmc::TokenType::BUZZ:
+				buzz_stmt();
+				break;
+
+			case asmc::TokenType::LABEL:
+				m_jumpTable[m_currentToken] = asmc::symbolStatus::NOT_USED;
+
+				emit(m_currentToken.m_text + ":");
+
+				match(asmc::TokenType::LABEL);
+				break;
+
+			case asmc::TokenType::GOTO:
+
+				match(asmc::TokenType::GOTO);
+
+				if (!m_jumpTable.contains(m_currentToken))
+				{
+					printError("label is undefined");
+				}
+				else
+				{
+					m_jumpTable[m_currentToken] = asmc::symbolStatus::USED;
+
+					emit("jmp " + m_currentToken.m_text);
+				}
+
+
+				match(asmc::TokenType::LABEL);
+
+				break;
+
 			case asmc::TokenType::WHILE:
 				while_stmt();
 				break;
@@ -191,7 +240,7 @@ namespace asmc
 				break;
 
 			case asmc::TokenType::LET:
-				let_stmt();				
+				let_stmt();
 				break;
 
 			case asmc::TokenType::ID:
@@ -202,9 +251,8 @@ namespace asmc
 				print_stmt();
 				break;
 			}
-			
+
 		}
-		
 	}
 
 	void Parser::while_stmt()
@@ -224,16 +272,48 @@ namespace asmc
 		
 	}
 
+	//<if_stmt> ::= IF <id> "!=" <number> THEN <statments> END
 	void Parser::if_stmt()
 	{
 		match(asmc::TokenType::IF);
 
-		asmc::ExprVal condition = expression();
+		asmc::ExprVal exprLeft = id();
 
-		emit("jmp l" + std::to_string(m_labelIndex));
+		emit("LOAD r0,@" + getAdr_asString(exprLeft));
 		
 
-		emit("CODE");
+		asmc::ExprVal exprRight;
+		//"<" | "<=" | ">" | ">=" | "==" | "!="
+		while (m_currentToken.m_type == asmc::TokenType::GREATER_THAN
+			|| m_currentToken.m_type == asmc::TokenType::GREATER_EQ
+			|| m_currentToken.m_type == asmc::TokenType::LESS_THAN
+			|| m_currentToken.m_type == asmc::TokenType::LESS_EQ
+			|| m_currentToken.m_type == asmc::TokenType::EQEQ
+			|| m_currentToken.m_type == asmc::TokenType::NOT_EQ
+			)
+		{
+
+			asmc::Token op = m_currentToken;
+			moveCurrentToken();
+			exprRight = number();
+
+			switch (op.m_type)
+			{
+			case asmc::TokenType::NOT_EQ:				
+				emit("LOAD r1,0x" + rdx::decToHex(exprRight.m_value));
+				emit("CMP r0, r1");
+				emit("JE l" + std::to_string(m_labelIndex));
+
+				match(asmc::TokenType::THEN);
+				statements();
+
+				break;
+
+			}
+		}
+		
+
+
 		emit("l" + std::to_string(m_labelIndex) + ":");
 		m_labelIndex++;
 
@@ -248,8 +328,6 @@ namespace asmc
 		
 		*/
 
-		m_memManager.releaseRegister(condition.m_registerIndex);
-		match(asmc::TokenType::THEN);
 		match(asmc::TokenType::END);
 	}
 
@@ -313,7 +391,20 @@ namespace asmc
 			{
 				asmc::ExprVal value = primary();
 
-				uint32_t entryVal = std::stoi(value.m_token.m_text);
+				uint32_t entryVal;
+
+				if (value.m_token.m_type == asmc::TokenType::CHAR)
+				{
+					entryVal = value.m_token.m_text[0];
+				}
+				else
+				{
+					entryVal = std::stoi(value.m_token.m_text);
+				}
+				
+
+				
+
 				uint32_t ramIndex = m_memManager.allocVariable();
 
 				//insert variable to the table
@@ -421,7 +512,87 @@ namespace asmc
 			
 	}
 
-	//<id> "=" <expression>* ";"
+	//<buzz_stmt> ::= BUZZ (<id> | <number>) (0 | 1) ;
+	void Parser::buzz_stmt()
+	{
+		match(asmc::TokenType::BUZZ);
+
+		asmc::ExprVal expr = primary();
+
+		if (expr.m_token.m_type == asmc::TokenType::CHAR)
+		{
+			printError("expected id or number found char ");
+		}
+
+		checkTable(expr);
+		
+		asmc::ExprVal type = number();
+
+		switch (expr.m_token.m_type)
+		{
+
+		case asmc::TokenType::ID:
+			emit("LOAD r0, @" + getAdr_asString(expr));			
+			break;
+		
+		case asmc::TokenType::NUMBER:
+			emit("LOAD r0, 0x" + std::to_string(expr.m_value));					
+			break;
+		}
+
+		if (type.m_value == 0)
+		{
+			emit("STR @" + rdx::decToHex(asmc_BUZZER_adr) + ",r0");			
+		}
+		else
+		{
+			emit("STR @" + rdx::decToHex(asmc_BUZZER_con) + ",r0");
+		}
+
+		match(asmc::TokenType::SEMICOLON);
+
+	}
+	//<draw_stmt> ::= (<id> | <number>) (<id> | <number>) (<id> | <number>)
+	void Parser::draw_stmt()
+	{
+		match(asmc::TokenType::DRAW);
+
+		asmc::ExprVal posx = primary();		
+		asmc::ExprVal posy = primary();
+		asmc::ExprVal color = primary();
+		
+		checkTable(posx);
+		checkTable(posy);
+		
+		/*
+			0001 -> drawPixel
+			0000 -> color
+			0000'0000 -> posx
+			0000'0000 -> posy
+
+			posy		posx		color  command
+			0(000'0000) 0(000'0000) 0(000) 0(001)
+		
+		*/
+
+		
+		emit("LOAD r0, @" + getAdr_asString(posx));
+		emit("STR @" + rdx::decToHex(asmc_POSX_adr) + ",r0");
+
+		emit("LOAD r0, @" + getAdr_asString(posy));
+		emit("STR @" + rdx::decToHex(asmc_POSY_adr) + ",r0");
+
+		emit("LOAD r0,0x" + rdx::decToHex(color.m_value));
+		emit("STR @" + rdx::decToHex(asmc_COLOR_adr) + ",r0");
+		
+		emit("LOAD r0,0x01");
+		emit("STR @" + rdx::decToHex(asmc_KMT_adr) + ",r0");
+		
+
+		match(asmc::TokenType::SEMICOLON);
+	}
+
+	//<id> "=" <add_expr>* ";"
 	void Parser::assing_stmt()
 	{
 		asmc::ExprVal idRes = id();	
@@ -439,7 +610,7 @@ namespace asmc
 
 		match(asmc::TokenType::ASSIGN);
 
-		asmc::ExprVal result = expression();
+		asmc::ExprVal result = add_expr();
 
 
 		if (result.m_location == asmc::Location::None)
@@ -451,7 +622,7 @@ namespace asmc
 			emit("STR  @" + getAdr_asString(idRes) + ",r" + std::to_string((int)result.m_registerIndex));
 		}
 
-		m_symbolTable[idRes.m_token].m_value = result.m_value;
+		//m_symbolTable[idRes.m_token].m_value = result.m_value;
 
 		//release register
 		m_memManager.releaseRegister(result.m_registerIndex);	
@@ -501,7 +672,8 @@ namespace asmc
 			switch (op.m_type)
 			{
 			case asmc::TokenType::LESS_THAN:
-				exprLeft.m_value = exprLeft.m_value < exprRight.m_value ? 1 : 0;				
+				exprLeft.m_value = exprLeft.m_value < exprRight.m_value ? 1 : 0;
+				emit("JLT l" + std::to_string(m_labelIndex));
 				break;
 						
 			}
@@ -544,7 +716,7 @@ namespace asmc
 
 
 		//load register
-		loadToRegister(exprLeft);
+		//loadToRegister(exprLeft);
 
 		return exprLeft;
 	}
@@ -552,26 +724,27 @@ namespace asmc
 	//<add_expr> ::= <mult_expr> ((+ | -) <mult_expr>)* 
 	asmc::ExprVal Parser::add_expr()
 	{
-		asmc::ExprVal exprLeft = mult_expr();				
+		asmc::ExprVal exprLeft = primary();
 		
 
-		#pragma region ErrorCheck
-		//check id is defined
-		if (exprLeft.m_recRet == false)
-		{
-			checkTable(exprLeft);
+#pragma region ErrorCheck
+		//check id is defined		
+		checkTable(exprLeft);
 
-			if (exprLeft.m_token.m_type == asmc::TokenType::ID)
-			{
-				m_symbolTable[exprLeft.m_token].m_status = asmc::symbolStatus::USED;
-				exprLeft.m_value = m_symbolTable[exprLeft.m_token].m_value;
-			}
-			else
-			{
-				exprLeft.m_value = std::stoi(exprLeft.m_token.m_text);
-			}		
+		if (exprLeft.m_token.m_type == asmc::TokenType::ID)
+		{
+			m_symbolTable[exprLeft.m_token].m_status = asmc::symbolStatus::USED;
+			exprLeft.m_value = m_symbolTable[exprLeft.m_token].m_value;
+
+			//emit("LOAD rx, @" + getAdr_asString(exprLeft));
+			loadToRegister(exprLeft);
 		}
-		#pragma endregion
+		//left int
+		else
+		{
+			exprLeft.m_value = std::stoi(exprLeft.m_token.m_text);
+		}		
+#pragma endregion
 
 		asmc::ExprVal exprRight;
 
@@ -581,36 +754,39 @@ namespace asmc
 			asmc::Token op = m_currentToken;
 			
 			moveCurrentToken();
-			exprRight = mult_expr();
+			exprRight = primary();
 
 			checkTable(exprRight);
 
 			//get value, change status of id
-			if (exprRight.m_token.m_type == asmc::TokenType::ID && exprRight.m_recRet == false)
+			if (exprRight.m_token.m_type == asmc::TokenType::ID)
 			{
 				exprRight.m_value = m_symbolTable[exprRight.m_token].m_value;
 				m_symbolTable[exprRight.m_token].m_status = asmc::symbolStatus::USED;
+
+				loadToRegister(exprRight);
 			}
 					
-			if (exprLeft.m_token.m_type == asmc::TokenType::ID)
+			/*if (exprLeft.m_token.m_type == asmc::TokenType::ID)
 			{
 				exprLeft.m_rhsComputed = true;
-			}
-
+			}*/
 		
-
 			switch (op.m_type)
 			{
 			case asmc::TokenType::PLUS:
-				exprLeft.m_value += exprRight.m_value;				
+				 
+				emit("ADD r"+ std::to_string(exprLeft.m_registerIndex) + ", 0x" + std::to_string(exprRight.m_value));								
 				break;
 
 			case asmc::TokenType::MINUS:
-				exprLeft.m_value -= exprRight.m_value;
+				emit("SUB r" + std::to_string(exprLeft.m_registerIndex) + ", 0x" + std::to_string(exprRight.m_value));
 				break;
 			}
 
 		}//WHILE END				
+
+		
 
 		return exprLeft;
 	}
@@ -684,7 +860,7 @@ namespace asmc
 		return exprLeft;
 	}
 
-	//<primary> ::= <id> | <number>
+	//<primary> ::= <id> | <number> | <char>
 	asmc::ExprVal Parser::primary()
 	{
 
@@ -698,12 +874,35 @@ namespace asmc
 		{						
 			retval = id();			
 		}
+		else if (m_currentToken.m_type == asmc::TokenType::CHAR)
+		{
+			retval = charType();
+		}
 		else
 		{
 			printError("id or number expected at");
 		}
 
 		
+		return retval;
+	}
+
+	//<char>
+	asmc::ExprVal Parser::charType()
+	{
+		asmc::ExprVal retval;
+
+		if (m_currentToken.m_type == asmc::TokenType::CHAR)
+		{
+			retval.m_token = m_currentToken;
+		}
+		else
+		{
+			printError("expected <CHAR>, found");
+		}
+
+		moveCurrentToken();
+
 		return retval;
 	}
 
@@ -753,7 +952,7 @@ namespace asmc
 	//---------------------------------------------------------------------------------//
 	//---------------------------------------------------------------------------------//
 
-	void Parser::checkTable(asmc::ExprVal& expval)
+	void Parser::checkTable(const asmc::ExprVal& expval)
 	{
 		//check id is defined
 		if (expval.m_token.m_type == asmc::TokenType::ID && !m_symbolTable.contains(expval.m_token))
@@ -767,7 +966,7 @@ namespace asmc
 	
 		if (m_currentToken.m_type != type)
 		{
-			printErrorExt("; expected end of the line", m_currentToken);
+			printErrorExt("match() ", m_currentToken);
 
 			//printError
 			//f_error = true
@@ -848,6 +1047,10 @@ namespace asmc
 
 		case asmc::TokenType::ASTERISK:
 			opcode = "MUL";			
+			break;
+
+		case asmc::TokenType::DIV:
+			opcode = "MUL";
 			break;
 		}
 
