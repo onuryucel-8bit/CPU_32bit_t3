@@ -148,7 +148,7 @@ int main(int argc, char* argv[])
 
 	
 	int limit = 219;
-
+	std::vector<rleInfo> dataRLE;
 	for (size_t i = 0; i < limit; i++)
 	{	
 		std::cout << "Compressing[" << imagePath.string() << "]\n";
@@ -164,11 +164,8 @@ int main(int argc, char* argv[])
 		stb.saveAsBMP("output\\outFrame_" + std::to_string(frameIndex) + ".bmp", true, 128, 128, 3, rawdata);
 
 		//compressed rle data
-		std::vector<rleInfo> dataRLE = rle.compressBMP(rawdata, false);
-
-		//write .txt
-		writeRleToFile(dataRLE, "rleRAM_data\\output_"+ std::to_string(frameIndex) + ".txt");
-				
+		rle.compressBMP(dataRLE, rawdata, false);
+						
 		//next frame path
 		frameIndex++;
 		size_t nx = std::to_string(frameIndex).length();
@@ -177,6 +174,9 @@ int main(int argc, char* argv[])
 
 		imagePath /= file_name;
 	}
+
+	//write .txt
+	writeRleToFile(dataRLE, "rleRAM_data\\output_" + std::to_string(frameIndex) + ".txt");
 
 #endif // INPUT_ARG_TYPE
 	

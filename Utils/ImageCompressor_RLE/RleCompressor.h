@@ -17,7 +17,7 @@ public:
 	RleCompressor();
 	~RleCompressor();
 
-	std::vector<rleInfo> compressBMP(std::vector<stb::Pixel> imgRawData, bool writeCompResult);
+	void compressBMP(std::vector<rleInfo>& output ,std::vector<stb::Pixel> imgRawData, bool writeCompResult);
 	std::vector<stb::Pixel> deCompressBMP(std::vector<rleInfo> compressedData);
 
 private:

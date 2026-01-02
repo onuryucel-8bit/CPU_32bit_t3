@@ -8,12 +8,11 @@ RleCompressor::~RleCompressor()
 {
 }
 
-std::vector<rleInfo> RleCompressor::compressBMP(std::vector<stb::Pixel> imgRawData, bool writeCompResult)
+void RleCompressor::compressBMP(std::vector<rleInfo>& output ,std::vector<stb::Pixel> imgRawData, bool writeCompResult)
 {
 	stb::Pixel lastColor = imgRawData[0];
 	size_t counter = 1;
 
-	std::vector<rleInfo> output;
 
 	//RLE compression
 	for (size_t i = 1; i < imgRawData.size(); i++)
@@ -46,7 +45,7 @@ std::vector<rleInfo> RleCompressor::compressBMP(std::vector<stb::Pixel> imgRawDa
 		std::cout << "-------------------\n";
 		std::cout << "output in kb    [" << (float)(output.size() * 3) / 1204 << "]\n";
 	}
-	return output;
+	
 }
 
 std::vector<stb::Pixel> RleCompressor::deCompressBMP(std::vector<rleInfo> compressedData)
