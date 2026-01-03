@@ -1,7 +1,6 @@
 Utils/ImageCompressor_RLE/images/*
 Assembler/CMakeFiles/*
 Utils/ImageCompressor_RLE/output/*
-main.asm
 out.txt
 ROM_t0.txt
 .~lock.*#
