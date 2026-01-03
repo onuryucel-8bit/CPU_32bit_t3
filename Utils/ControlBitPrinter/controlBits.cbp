@@ -333,6 +333,17 @@
 	#
 }
 
+[DIV 4]
+[MUL 4]
+[SUB 4]
+[ADD 4]
+//ADD rx,@adr + ry
+{
+	POSTA_A_we
+	POSTA_B_we
+	#
+}
+
 //CALISIYOR 02.01.26
 [CMP 5]
 //CMP rx,ry
@@ -383,7 +394,7 @@
 //jmp label
 [JMP 0]
 [JNE 0]
-[JE 0]
+[JE 0]`
 [JGT 0]
 [JLT 0]
 {

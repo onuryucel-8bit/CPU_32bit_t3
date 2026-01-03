@@ -2,7 +2,7 @@
 
 ### Donen kup
 ### Donen 3d Model (caydanlik veya dusuk poligonlu model)
-### Bad Apple
+### <ins> Bad Apple (Tamamlandi 03.01.2026 | logisim)</ins>
 ### Mandelbrot
 ### Pong
 ### Xox minmax

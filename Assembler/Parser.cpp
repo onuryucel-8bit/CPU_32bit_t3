@@ -1131,6 +1131,10 @@ void Parser::parseCMP()
 			moveCurrentToken();
 			
 			opcode = opcode | (rdx::hexToDec(m_currentToken.m_text) << asmc_ShiftAmount_RegB);
+
+			memlay.m_packetSize = 1;
+			memlay.m_ramIndex = m_ramLocation;
+			m_ramLocation += 1;
 		break;
 
 	case asmc::TokenType::HEXNUMBER:
@@ -1140,16 +1144,18 @@ void Parser::parseCMP()
 			moveCurrentToken();
 
 			memlay.m_secondPart = rdx::hexToDec(m_currentToken.m_text);
-
+			
+			memlay.m_packetSize = 2;
+			memlay.m_ramIndex = m_ramLocation;
+			m_ramLocation += 2;
 		break;
 	}
-
+	
 	memlay.m_opcode = opcode;
-	memlay.m_ramIndex = m_ramLocation;
-	memlay.m_packetSize = 2;
 	
 	
-	m_ramLocation += 2;
+	
+	
 
 	m_output.push_back(memlay);
 	

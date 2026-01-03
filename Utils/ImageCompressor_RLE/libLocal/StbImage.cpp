@@ -9,6 +9,7 @@
 
 	#define STB_IMAGE_WRITE_IMPLEMENTATION
 	#include "stb_image_write.h"
+#include "StbUtils.h"
 
 #pragma warning(pop)
 
@@ -29,11 +30,17 @@ void StbImage::loadImg(std::string path, bool verticallFlip)
 	{
 		std::cerr << "ERROR::StbImage::loadImg() | check image path or image extension\n";
 		return;
-	}
-} 
+	}		
+}
 
-void StbImage::saveAsPNG(std::string path, bool verticallFlip)
+void StbImage::saveFileAsPNG(std::string path, bool verticallFlip)
 {
+	if (m_file == nullptr)
+	{
+		std::cerr << "Current file is empty\n";
+		return;
+	}
+
 	stbi_flip_vertically_on_write(verticallFlip);
 	if (!stbi_write_png(path.c_str(), m_width, m_height, m_channels, m_file, m_width * m_channels))
 	{
@@ -43,7 +50,18 @@ void StbImage::saveAsPNG(std::string path, bool verticallFlip)
 	}
 }
 
-void StbImage::saveAsBMP(std::string path, bool verticallFlip, int width, int height, int channels, std::vector<stb::Pixel> image)
+void StbImage::saveAsPNG(std::string path, int width, int height, std::vector<stb::Pixel>& image, int channels, bool verticallFlip)
+{
+	stbi_flip_vertically_on_write(verticallFlip);
+	if (!stbi_write_png(path.c_str(), width, height, channels, image.data(), width * channels))
+	{
+		std::cerr << "Failed to write image\n";
+		stbi_image_free(m_file);
+		return;
+	}
+}
+
+void StbImage::saveAsBMP(std::string path, int width, int height, std::vector<stb::Pixel>& image, int channels, bool verticallFlip)
 {
 	stbi_flip_vertically_on_write(verticallFlip);
 	if (!stbi_write_bmp(path.c_str(), width, height, channels, image.data()))
@@ -54,7 +72,9 @@ void StbImage::saveAsBMP(std::string path, bool verticallFlip, int width, int he
 	}
 }
 
-Pixel StbImage::getPixel(size_t x, size_t y)
+
+
+stb::Pixel StbImage::getPixel(size_t x, size_t y)
 {
 	if (m_file == nullptr)
 	{
@@ -73,6 +93,37 @@ Pixel StbImage::getPixel(size_t x, size_t y)
 	return retPixel;
 }
 
+void StbImage::setPixel(size_t x, size_t y, stb::Pixel pixel)
+{
+	int index = (y * m_width + x) * m_channels;
+
+	m_file[index] = pixel.r;
+	m_file[index + 1] = pixel.g;
+	m_file[index + 2] = pixel.b;
+
+}
+
+std::vector<stb::Pixel> StbImage::getImageArr()
+{
+	std::vector<stb::Pixel> imageData;
+	imageData.reserve(m_width * m_height);
+
+	for (size_t i = 0; i < m_width * m_height; i++)
+	{
+		size_t index = i * m_channels;
+
+		stb::Pixel pixel =
+		{
+			m_file[index + 0],
+			m_file[index + 1],
+			m_file[index + 2]
+		};
+		imageData.push_back(pixel);
+	}
+
+	return imageData;
+}
+
 int StbImage::getImageSize()
 {
 	return m_width * m_height * m_channels;
@@ -83,17 +134,17 @@ imageData StbImage::getImage()
 	return m_file;
 }
 
-int StbImage::getImageWidth()
+int StbImage::getWidth()
 {
 	return m_width;
 }
 
-int StbImage::getImageHeight()
+int StbImage::getHeight()
 {
 	return m_height;
 }
 
-int StbImage::getImageChannels()
+int StbImage::getChannels()
 {
 	return m_channels;
 }
@@ -106,6 +157,19 @@ void StbImage::releaseImgData()
 
 		m_file = nullptr;
 	}
+}
+
+void StbImage::createBlankPNG(std::string path, int width, int height, stb::Pixel color, int channels)
+{
+	std::vector<stb::Pixel> imageData;
+	imageData.reserve(width * height);
+
+	for (size_t i = 0; i < width * height; i++)
+	{
+		imageData.push_back(color);
+	}
+
+	saveAsPNG(path, width, height, imageData);
 }
 
 StbImage::~StbImage()

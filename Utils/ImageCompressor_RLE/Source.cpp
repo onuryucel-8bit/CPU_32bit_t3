@@ -13,7 +13,7 @@ namespace fs = std::filesystem;
 
 std::vector<stb::Pixel> readImage(stb::StbImage& stb, std::filesystem::path path)
 {
-	stb.loadImg(path.string(), true);
+	stb.loadImg(path.string());
 
 	if (stb.getImage() == nullptr)
 	{
@@ -22,16 +22,16 @@ std::vector<stb::Pixel> readImage(stb::StbImage& stb, std::filesystem::path path
 
 	std::vector<stb::Pixel> imgRawData;
 
-	imgRawData.reserve(stb.getImageWidth() * stb.getImageHeight() * stb.getImageChannels());
+	imgRawData.reserve(stb.getWidth() * stb.getHeight() * stb.getChannels());
 
 #ifdef DEBUG_PIXEL
 	std::cout << "Print PIXEL\n";
 #endif // DEBUG_PIXEL
 
 	//load image pixels to vector
-	for (size_t i = 0; i < stb.getImageHeight(); i++)
+	for (size_t i = 0; i < stb.getHeight(); i++)
 	{
-		for (size_t j = 0; j < stb.getImageWidth(); j++)
+		for (size_t j = 0; j < stb.getWidth(); j++)
 		{
 			stb::Pixel pixel = stb.getPixel(j, i);
 
@@ -65,7 +65,6 @@ std::vector<stb::Pixel> readImage(stb::StbImage& stb, std::filesystem::path path
 	return imgRawData;
 }
 
-
 void writeRleToFile(std::vector<rleInfo>& data, std::string fileName)
 {
 	std::ofstream file(fileName);
@@ -91,6 +90,38 @@ void writeRleToFile(std::vector<rleInfo>& data, std::string fileName)
 		if ((i + 1) % 8 == 0)
 		{
 			file << "\n";
+		}
+	}
+
+	file.close();
+}
+
+void writeRleToFile(std::vector<stb::Pixel>& data, std::string fileName)
+{
+	std::ofstream file(fileName);
+
+	if (!file.is_open())
+	{
+		std::cout << "ERROR::writeRleToFile:: couldnt open the file\n";
+		return;
+	}
+
+	file << ".db ";
+
+	for (size_t i = 0; i < data.size(); i++)
+	{
+		file << "0x" << std::hex << (int)data[i].r;
+		
+		if (i != data.size() - 1)
+		{
+			file << ",";
+			
+		}
+
+		if ((i + 1) % 32 == 0)
+		{
+			file << "\n";
+			
 		}
 	}
 
@@ -147,8 +178,9 @@ int main(int argc, char* argv[])
 	std::cout << frameIndex << "\n";
 
 	
-	int limit = 219;
+	int limit = 1095;
 	std::vector<rleInfo> dataRLE;
+
 	for (size_t i = 0; i < limit; i++)
 	{	
 		std::cout << "Compressing[" << imagePath.string() << "]\n";
@@ -160,8 +192,12 @@ int main(int argc, char* argv[])
 			return -1;
 		}
 
+		//write data as txt
+		//append
+		//outputRaw.insert(outputRaw.end(), rawdata.begin(), rawdata.end());
+
 		//save output image
-		stb.saveAsBMP("output\\outFrame_" + std::to_string(frameIndex) + ".bmp", true, 128, 128, 3, rawdata);
+		//stb.saveAsBMP("output\\outFrame_" + std::to_string(frameIndex) + ".bmp", 32, 32, rawdata);
 
 		//compressed rle data
 		rle.compressBMP(dataRLE, rawdata, false);
@@ -176,73 +212,10 @@ int main(int argc, char* argv[])
 	}
 
 	//write .txt
+	//writeRleToFile(outputRaw, "rleRAM_data\\output_frame_t5" + std::to_string(frameIndex) + ".txt");
 	writeRleToFile(dataRLE, "rleRAM_data\\output_" + std::to_string(frameIndex) + ".txt");
 
 #endif // INPUT_ARG_TYPE
 	
 }
 
-/*
-
-	int i = 0;
-	int x = 0;
-	int y = 0;
-	while(1)
-	{
-		int rlx = arr[i];
-		int j = 0;
-
-		i++;
-		int color = arr[i];
-
-		while(j < rlx)
-		{						
-			draw x y color
-			j++;
-			
-			if(x == 128)
-			{
-				y++;
-				x = 0;
-			}
-
-			x++;			
-		}
-		i++;
-	}
-
-	load r0,0x4000	;arr ram adr
-	load r1,0x0		;x
-	load r2,0x0		;y
-
-loopWHILE:
-	load r3,@r0		;rlx
-	load r4,0x0		;j
-
-	add r0,0x1		;i++
-	load r5,@r0		;color
-
-	loop:
-		str @color_reg, r5
-		str @posx,	r1
-		str @posy,	r2
-		str @command,	0x1
-
-		add r4,0x1	;j++
-		cmp r1,128dec
-		jne	compx
-			add r2,0x1	;y++
-			load r1,0x0	;x = 0
-		compx:
-
-		add r1,0x1;		;x++
-
-		cmp r4,r3
-	jne loop
-
-
-	add r0,0x1		;i++
-jmp loopWHILE
-
-
-*/
