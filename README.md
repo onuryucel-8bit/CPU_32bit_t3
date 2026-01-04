@@ -1,15 +1,8 @@
-# Hedefler
-
-### Donen kup
-### Donen 3d Model (caydanlik veya dusuk poligonlu model)
-### <ins> Bad Apple (Tamamlandi 03.01.2026 | logisim)</ins>
-### Mandelbrot
-### Pong
-### Xox minmax
-
 ### Logisim
-	- kosullu ziplamalar eklendi 31.12.2025
-	- yigin registerini register file icine koy
+	- sp ve flag reg icin kontrol bitleri tanimla
+	- interrupt reg icin kontrol bitlerini ve baglanti ayarlari ekle
+	- subroutine denemeleri
+	- klavye ekle
 	- flag registerini register file icine koy
 
 ### Assembler 
@@ -17,34 +10,20 @@
 	- f_newline ??
 
 ### Derleyici
-	- if else kosul yapilarini ekle
-	- while dongusunu ekle
-	- ekran karti ile iletisime gecicek fonksiyonu ekle
-	- fonksiyonlari ekle
-	- diziler
-	- mantik operatorlerini ekle & | ^ !
-
+	- if else kosul yapilarini ekle	
+	
 ### Calismakta olan programlar
-	- t0_tty_ayi => ascii ayi cizer (cikti :: tty)
-	- t1_helloWorld_v(0|1) => klasik merhaba dunya programi (cikti :: tty)
-	- t3_yildiz => 5x5 yildiz karesi cizer (cikti :: tty)
+	- t0_tty_ayi => ascii ayi cizer 						(tty)
+	- t1_helloWorld_v(0|1) => klasik merhaba dunya programi (tty)
+	- t3_yildiz => 5x5 yildiz karesi cizer 					(tty)
+	- t4_agac => cam agaci cizer 						    (RGBVideo)
+	- t5_[BadApple] => 32x32 5fps badapple video ciktisi    (RGBVideo)
 
 - Makefile/cmake ekle
+- komutlari kumeden cikar (add rx,@adr + ry , add rx,@ry vb. 32bit_cpu_t4 projesine aktar) 
 - Float(Kesirli sayi) islemlerini ekle 16-32 IEEE veya sabit noktali tanim olucak
 - pi ve sinx hesaplayan program ciktisini TTY birimine gonder
-- Stack(Yigin) [ayri RAM veya RAM_0 icinde belirli bir alan] tanimla
-- Bresenham cizgi algoritma devresini ekran kartina ekle
-- Ekran kartina piksel degerlerini gondererek basit cizim yap
-- Bad Apple denemesi
-- Buzzer devresini tasarla
-- Bad Apple ses ciktisini WAV donustur
-- WAV okuyucusu yaz
-- Ses dosyasini RLE den gecir
-- Bad Apple ses Denemesi
-- Bad Apple video denemesi
-- Derleyici BASIC + C tasarla
-- Mandelbrot 
-- Pong
-- MinMax xox
+- klavyeden gelen girdiyle islem yap
 - Son hata Ayiklamalari
+- emu kismini 32bit_cpu_t4 projesine aktar
 - Rafa kaldiris

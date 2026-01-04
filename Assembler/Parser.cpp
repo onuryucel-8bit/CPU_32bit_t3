@@ -1176,6 +1176,8 @@ void Parser::parsePUSH()
 	uint32_t rx;
 	MemoryLayout memlay;
 
+	opcode = opcode | (0b111 << asmc_ShiftAmount_RegA);
+
 	switch (m_currentToken.m_type)
 	{
 	case asmc::TokenType::REGISTER:
@@ -1184,7 +1186,7 @@ void Parser::parsePUSH()
 
 			opcode = opcode | (rx << asmc_ShiftAmount_RegB);
 			
-			//opcode = asmc_CombineMODBits(opcode, asmc_MOD_Rx_Ry);
+			opcode = asmc_CombineMODBits(opcode, asmc_MOD_Number);
 
 			memlay.m_opcode = opcode;
 			memlay.m_ramIndex = m_ramLocation;

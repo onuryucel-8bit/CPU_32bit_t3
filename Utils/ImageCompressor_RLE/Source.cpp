@@ -35,13 +35,6 @@ std::vector<stb::Pixel> readImage(stb::StbImage& stb, std::filesystem::path path
 		{
 			stb::Pixel pixel = stb.getPixel(j, i);
 
-#ifdef DEBUG_PIXEL
-			std::cout << std::hex << "x[" << j << "] i[" << i <<"]\n"
-				<< (int)pixel.r << " "
-				<< (int)pixel.g << " "
-				<< (int)pixel.b << " " << "\n";
-#endif // DEBUG_PIXEL
-
 			uint8_t averageColor = (pixel.r + pixel.g + pixel.b) / 3;
 
 			//read pixels as white or black

@@ -175,7 +175,7 @@
 [SUB 1]
 [MUL 1]
 [DIV 1]
-//ADD rx,sayi
+//ADD rx,sayif
 {
 	//b = rx
 	//pc++
@@ -238,7 +238,6 @@
 	I3B	
 	#
 }
-
 
 //CALISIYOR 20.12.25
 [AND 5]
@@ -394,7 +393,7 @@
 //jmp label
 [JMP 0]
 [JNE 0]
-[JE 0]`
+[JE 0]
 [JGT 0]
 [JLT 0]
 {
@@ -412,5 +411,36 @@
 	//pc = adr
 	ADR_out
 	PC_load
+	#
+}
+
+
+
+//PUSH rx
+[PUSH 1]
+{
+	POSTA_A_we
+	POSTA_B_we
+	#
+
+	//mar = sp
+	REG_out
+	POSTA_A_out
+	REG_data_out
+	DATA_to_adr
+	PC_mux
+	MAR_we
+	#
+
+	//data_out = rx
+	REG_out
+	POSTA_B_out
+	REG_data_out
+	Write
+	#
+
+	//sp++
+	REG_we
+	POSTA_A_out
 	#
 }
