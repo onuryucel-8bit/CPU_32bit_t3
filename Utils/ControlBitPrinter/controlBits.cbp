@@ -262,7 +262,7 @@
 	TEMP_we
 	#
 
-	//acc = rx (i3b) ry
+	//acc = rx (i-3b) ry
 	POSTA_B_out
 	REG_out
 	I3B
@@ -320,27 +320,6 @@
 	POSTA_B_out
 	#
 	
-}
-
-[DIV 3]
-[MUL 3]
-[SUB 3]
-[ADD 3]
-//ADD rx,@ry
-{
-	POSTA_A_we
-	#
-}
-
-[DIV 4]
-[MUL 4]
-[SUB 4]
-[ADD 4]
-//ADD rx,@adr + ry
-{
-	POSTA_A_we
-	POSTA_B_we
-	#
 }
 
 //CALISIYOR 02.01.26
@@ -414,8 +393,20 @@
 	#
 }
 
+//CALISIYOR 05.01.26
+[POP 0]
+{
+	POSTA_A_we
+	#
 
+	//sp--
+	POSTA_A_out
+	REG_out
+	SP_inc
+	#
+}
 
+//CALISIYOR 04.01.26
 //PUSH rx
 [PUSH 1]
 {
@@ -431,16 +422,89 @@
 	PC_mux
 	MAR_we
 	#
-
-	//data_out = rx
+	
+	//ram[sp] = rx
 	REG_out
 	POSTA_B_out
 	REG_data_out
 	Write
+	//sp++
+	SP_inc
+	SP_updown
+	#
+}
+
+//CALISIYOR 06.01.26
+[RET 0]
+{	
+	//stack pointer 0b111
+	POSTA_A_we
 	#
 
-	//sp++
-	REG_we
+	//sp--
 	POSTA_A_out
+	REG_out
+	SP_inc
 	#
+
+	//mar = stackpointer
+	POSTA_A_out
+	REG_out
+	REG_data_out
+	PC_mux
+	MAR_we
+	DATA_to_adr
+	#
+
+	//mdr = return address
+	Read
+	MDR_we
+	#
+
+	MDR_out
+	DATA_to_adr
+	PC_load
+	PC_enb
+	#
+}
+
+//CALISIYOR 06.01.26
+[CALL 0]
+{
+	//stack pointer 0b111
+	POSTA_A_we
+	//pc++
+	PC_enb
+	MAR_we
+	#
+
+	//function adr
+	MDR_we
+	Read
+	#
+
+	//mar = stackpointer
+	POSTA_A_out
+	REG_out
+	REG_data_out
+	DATA_to_adr
+	PC_mux
+	MAR_we
+	#
+
+	//ram[stackpointer]	= return adr	
+	PC_toDataBus
+	Write
+	//stack pointer++
+	SP_inc
+	SP_updown
+	#
+
+	//pc = function adr
+	MDR_out
+	DATA_to_adr
+	PC_load
+	PC_enb
+	#
+	
 }

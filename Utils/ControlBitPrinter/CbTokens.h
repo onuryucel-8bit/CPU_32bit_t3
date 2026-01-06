@@ -72,12 +72,11 @@ namespace asmc
 		ALU_out,
 		ALU_mux,
 		ACC_we,
-
+				
+		//Sp++
+		SP_inc,
 		
 		
-		//Flag reg
-		FR_cls,
-
 		//Register file
 		REG_out,			
 		REG_we,
@@ -86,9 +85,13 @@ namespace asmc
 		DATA_to_adr,
 
 		TEMP_out,
+		SP_updown,
+		
 
 		END,		
 		//----------------------//
+		PC_toDataBus,
+
 
 		NOP,
 		CONTROL_BIT_LOCATION,
@@ -96,12 +99,13 @@ namespace asmc
 		RPAREN,
 		HASH,
 		COMMENT,
-
-		//WARNING lexer m_currentChar is char type if you get weird error, its caused by char overflow
-		ENDOFFILE,
+						
 		UNKNOWN,
 		NEWLINE,		
-
+		
+		//WARNING lexer m_currentChar is char type if you get weird error, its caused by char overflow
+		//?? 05.01.2025 need a time machine
+		ENDOFFILE
 	};
 }
 

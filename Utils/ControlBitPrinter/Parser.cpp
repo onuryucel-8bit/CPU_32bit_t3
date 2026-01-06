@@ -65,6 +65,17 @@ void Parser::run()
 		{
 
 #pragma region CASE_T0
+		case asmc::TokenType::PC_toDataBus:
+			m_sector.push_back(asmc::TokenType::PC_toDataBus);
+			break;
+
+		case asmc::TokenType::SP_inc:
+			m_sector.push_back(asmc::TokenType::SP_inc);
+			break;
+
+		case asmc::TokenType::SP_updown:
+			m_sector.push_back(asmc::TokenType::SP_updown);
+			break;
 
 		case asmc::TokenType::TEMP_out:
 			m_sector.push_back(asmc::TokenType::TEMP_out);
@@ -172,12 +183,7 @@ void Parser::run()
 
 		case asmc::TokenType::MAR_we:
 			m_sector.push_back(asmc::TokenType::MAR_we);
-			break;
-
-			// Flag register
-		case asmc::TokenType::FR_cls:
-			m_sector.push_back(asmc::TokenType::FR_cls);
-			break;
+			break;					
 
 			// Register file
 		case asmc::TokenType::REG_out:
@@ -293,7 +299,7 @@ void Parser::run()
 void Parser::calculateControlBits()
 { 
 	
-	int res = 0;
+	size_t res = 0;
 	for (size_t i = 0; i < m_sector.size(); i++)
 	{
 		if (m_sector[i] == asmc::TokenType::NOP)

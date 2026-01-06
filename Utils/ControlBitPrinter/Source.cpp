@@ -84,12 +84,16 @@ std::string readFile()
 }
 
 int main()
-{	        
+{	
+	std::cout << "Running...\n";
+
 	asmc::Lexer lex(readFile());
 
 	asmc::Parser parser(lex);
 
 	parser.run();
+
+	std::cout << "Closing...\n";
 
 	return 0;
 }

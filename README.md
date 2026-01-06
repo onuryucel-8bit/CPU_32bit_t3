@@ -1,7 +1,6 @@
 ### Logisim
-	- sp ve flag reg icin kontrol bitleri tanimla
+	- flag reg icin kontrol bitleri tanimla
 	- interrupt reg icin kontrol bitlerini ve baglanti ayarlari ekle
-	- subroutine denemeleri
 	- klavye ekle
 	- flag registerini register file icine koy
 
@@ -26,4 +25,7 @@
 - klavyeden gelen girdiyle islem yap
 - Son hata Ayiklamalari
 - emu kismini 32bit_cpu_t4 projesine aktar
+- assembler argv ekle
+- assembler icin vscode extension ekle
+- cbp guncelle
 - Rafa kaldiris

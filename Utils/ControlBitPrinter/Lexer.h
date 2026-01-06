@@ -42,7 +42,7 @@ namespace asmc
 		Lexer(std::string file);
 		~Lexer();
 		[[nodiscard]] std::array<asmc::Token, MAX_TOKEN_LIST_SIZE> getTokenList();
-		[[nodiscard]] Token getToken();
+		[[nodiscard]] asmc::Token getToken();
 
 		size_t m_lineNumber;
 

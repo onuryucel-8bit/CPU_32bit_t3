@@ -46,13 +46,13 @@ std::array<asmc::Token, MAX_TOKEN_LIST_SIZE> Lexer::getTokenList()
 	return m_tokenArr;
 }
 
-Token Lexer::getToken()
+asmc::Token Lexer::getToken()
 {
 	skipWhiteSpace();
 	skipComments();
 	skipNonEssential();
 	
-	Token token;
+	asmc::Token token;
 
 	//std::cout << m_currentChar;
 

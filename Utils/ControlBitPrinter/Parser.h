@@ -51,7 +51,7 @@ namespace asmc
 		*/
 		std::vector<int> m_sector;
 
-		std::vector<int> m_output;
+		std::vector<uint64_t> m_output;
 
 		std::vector<asmc::adrVec> m_addressROM;
 		asmc::adrVec m_addressVec;		

@@ -8,9 +8,7 @@ Parser::Parser(asmc::Lexer& lexer)
 	m_tokenIndex = 0;
 	m_tokenList = m_lexer.getTokenList();
 
-	m_peekToken = m_tokenList[0];
-
-	moveCurrentToken();
+	m_peekToken = m_tokenList[0];	
 
 	//asmc::TokenElement* elem = m_lexer.getTokenList();
 
@@ -20,6 +18,8 @@ Parser::Parser(asmc::Lexer& lexer)
 	f_error = false;
 	fd_printHexOutput = true;
 	fd_scanTables = false;
+
+#pragma region tables
 
 	//29 used
 
@@ -101,6 +101,7 @@ Parser::Parser(asmc::Lexer& lexer)
 	m_opcodeHexTable[asmc::TokenType::JE] = 0x1D;
 	m_opcodeHexTable[asmc::TokenType::JGT] = 0x1E;
 	m_opcodeHexTable[asmc::TokenType::JLT] = 0x1F;	
+#pragma endregion
 
 }
 
@@ -121,10 +122,13 @@ void Parser::run()
 
 	std::cout << rang::bg::blue << "Running parser..." << rang::style::reset << "\n";
 
-	while (m_tokenList[m_tokenIndex].m_type != asmc::TokenType::ENDOFFILE)
+	moveCurrentToken();
+	
+
+	while (m_currentToken.m_type != asmc::TokenType::ENDOFFILE)
 	{							
-		program();
-				
+		program();		
+
 		if (m_peekToken.m_type == asmc::TokenType::ENDOFFILE)
 		{
 			//if input stream is empty close the loop
@@ -353,6 +357,7 @@ void Parser::checkTables()
 
 void Parser::program()
 {
+	
 	if (m_currentToken.m_type > asmc::TokenType::LABEL || m_currentToken.m_type < 0)
 	{
 		printError("Undefined token");
@@ -1245,6 +1250,9 @@ void Parser::parsePOP()
 {
 	uint32_t opcode = m_opcodeHexTable[asmc::TokenType::POP] << asmc_ShiftAmount_Opcode;
 
+	opcode |= 0b111 << asmc_ShiftAmount_RegA;
+
+
 	MemoryLayout memlay 
 	{
 		.m_opcode = opcode,
@@ -1266,6 +1274,8 @@ void Parser::parseCALL()
 	}
 
 	uint32_t opcode = m_opcodeHexTable[asmc::TokenType::CALL] << asmc_ShiftAmount_Opcode;	
+
+	opcode |= 0b111 << asmc_ShiftAmount_RegA;
 
 	moveCurrentToken();
 
@@ -1369,6 +1379,8 @@ void Parser::parseRET()
 	}
 
 	uint32_t opcode = m_opcodeHexTable[asmc::TokenType::RET] << asmc_ShiftAmount_Opcode;
+
+	opcode |= 0b111 << asmc_ShiftAmount_RegA;
 
 	MemoryLayout memlay;
 
