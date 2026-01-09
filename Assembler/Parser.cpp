@@ -40,6 +40,10 @@ Parser::Parser(asmc::Lexer& lexer)
 	m_parserFuncs[asmc::TokenType::POP]  = &asmc::Parser::parsePOP;
 	m_parserFuncs[asmc::TokenType::FUNC] = &asmc::Parser::parseFUNC;
 
+	//IE
+	m_parserFuncs[asmc::TokenType::IE] = &asmc::Parser::parseIE;
+	m_parserFuncs[asmc::TokenType::KWAIT] = &asmc::Parser::parseKWAIT;
+
 	//ALU
 	m_parserFuncs[asmc::TokenType::ADD] = &asmc::Parser::parseArithmeticPart;
 	m_parserFuncs[asmc::TokenType::SUB] = &asmc::Parser::parseArithmeticPart;
@@ -78,6 +82,10 @@ Parser::Parser(asmc::Lexer& lexer)
 	m_opcodeHexTable[asmc::TokenType::RET] = 0x04;
 	m_opcodeHexTable[asmc::TokenType::PUSH] = 0x5;
 	m_opcodeHexTable[asmc::TokenType::POP] = 0x06;
+
+	//int
+	m_opcodeHexTable[asmc::TokenType::IE] = 0x07;
+	m_opcodeHexTable[asmc::TokenType::KWAIT] = 0x09;
 
 	//ALU
 	m_opcodeHexTable[asmc::TokenType::ADD] = 0x10;
@@ -366,6 +374,13 @@ void Parser::program()
 	{
 		(this->*m_parserFuncs[m_currentToken.m_type])();
 	}
+
+
+	switch (m_currentToken.m_type)
+	{
+
+	}
+
 }
 
 
@@ -390,6 +405,8 @@ asmc::TokenType Parser::toToken(size_t opcode)
 			case 0x4:  return asmc::TokenType::RET;
 			case 0x5:  return asmc::TokenType::PUSH;
 			case 0x6:  return asmc::TokenType::POP;
+			case 0x7:  return asmc::TokenType::IE;
+			case 0x9:  return asmc::TokenType::KWAIT;
 
 			// ALU
 			case 0x10: return asmc::TokenType::ADD;
@@ -1266,9 +1283,40 @@ void Parser::parsePOP()
 	
 }
 
+void Parser::parseIE()
+{
+	uint32_t opcode = m_opcodeHexTable[asmc::TokenType::IE] << asmc_ShiftAmount_Opcode;
+
+	asmc::MemoryLayout memlay;
+
+	memlay.m_opcode = opcode;
+	memlay.m_packetSize = 1;
+	memlay.m_ramIndex = m_ramLocation;
+
+	m_output.push_back(memlay);
+
+	m_ramLocation += 1;
+}
+
+void Parser::parseKWAIT()
+{
+	uint32_t opcode = m_opcodeHexTable[asmc::TokenType::KWAIT] << asmc_ShiftAmount_Opcode;
+
+	asmc::MemoryLayout memlay;
+
+	memlay.m_opcode = opcode;
+	memlay.m_packetSize = 1;
+	memlay.m_ramIndex = m_ramLocation;
+
+	m_output.push_back(memlay);
+
+	m_ramLocation += 1;
+}
+
 void Parser::parseCALL()
 {
-	if (m_peekToken.m_type != asmc::TokenType::ID)
+	if (m_peekToken.m_type != asmc::TokenType::ID &&
+		m_peekToken.m_type != asmc::TokenType::REGADR)
 	{
 		printError("CALL must be followed by a function name");
 	}
@@ -1279,40 +1327,66 @@ void Parser::parseCALL()
 
 	moveCurrentToken();
 
-	//func is defined
-	if (m_symbolTable.contains(m_currentToken))
+	uint32_t rx = 0;
+
+	asmc::MemoryLayout memlay;
+
+	switch (m_currentToken.m_type)
 	{
-		m_symbolTable[m_currentToken].m_status = asmc::LabelStatus::Called;
-		
-		asmc::MemoryLayout memlay;
+	case asmc::TokenType::REGADR:
+
+		opcode = asmc_CombineMODBits(opcode, asmc_MOD_RegAdr);
+
+		rx = std::stoi(m_currentToken.m_text) << asmc_ShiftAmount_RegB;
+
+		opcode |= rx;		
 
 		memlay.m_opcode = opcode;
-		memlay.m_packetSize = 2;
+		memlay.m_packetSize = 1;
 		memlay.m_ramIndex = m_ramLocation;
-		memlay.m_secondPart = m_symbolTable[m_currentToken].m_ramIndex;
 
 		m_output.push_back(memlay);
 
+		m_ramLocation += 1;
+		break;
+
+	case asmc::TokenType::ID:
+		//func is defined
+		if (m_symbolTable.contains(m_currentToken))
+		{
+			m_symbolTable[m_currentToken].m_status = asmc::LabelStatus::Called;
+
+			memlay.m_opcode = opcode;
+			memlay.m_packetSize = 2;
+			memlay.m_ramIndex = m_ramLocation;
+			memlay.m_secondPart = m_symbolTable[m_currentToken].m_ramIndex;
+
+			m_output.push_back(memlay);
+
+		}
+		//func definition after the CALL command ?
+		else
+		{
+			m_symbolTable[m_currentToken].m_status = asmc::LabelStatus::No_FuncDef;
+
+			asmc::UnresolvedEntry entry;
+
+			entry.m_opcode = opcode;
+			entry.m_secondPart = -1;
+			entry.m_ramIndex = m_ramLocation;
+			entry.m_packetSize = 2;
+			entry.m_fileName = m_lexer.getCurrentFileName();
+			entry.m_lineNumber = m_lineNumber;
+			entry.m_status = asmc::LabelStatus::No_Ret;
+
+			m_unresolvedTable[m_currentToken].push_back(entry);
+		}
+
+		m_ramLocation += 2;
+		break;
 	}
-	//func definition after the CALL command ?
-	else
-	{
-		m_symbolTable[m_currentToken].m_status = asmc::LabelStatus::No_FuncDef;
 
-		asmc::UnresolvedEntry entry;
-
-		entry.m_opcode = opcode;
-		entry.m_secondPart = -1;
-		entry.m_ramIndex = m_ramLocation;
-		entry.m_packetSize = 2;
-		entry.m_fileName = m_lexer.getCurrentFileName();
-		entry.m_lineNumber = m_lineNumber;
-		entry.m_status = asmc::LabelStatus::No_Ret;
-		
-		m_unresolvedTable[m_currentToken].push_back(entry);
-	}
-
-	m_ramLocation += 2;
+	
 
 }
 

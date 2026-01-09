@@ -508,3 +508,38 @@
 	#
 	
 }
+
+//call rx
+[CALL 1]
+{
+	//stack pointer 0b111
+	POSTA_A_we
+	//rx
+	POSTA_B_we	
+	#
+
+	//mar = stackpointer
+	POSTA_A_out
+	REG_out
+	REG_data_out
+	DATA_to_adr
+	PC_mux
+	MAR_we
+	#
+
+	//ram[stackpointer]	= return adr	
+	PC_toDataBus
+	Write
+	//stack pointer++
+	SP_inc
+	SP_updown
+	#
+
+	POSTA_B_out
+	REG_out
+	REG_data_out
+	DATA_to_adr
+	PC_load
+	PC_enb	
+	#	
+}

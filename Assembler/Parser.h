@@ -145,6 +145,8 @@ private:
 	void parsePUSH();
 	void parsePOP();
 
+	void parseIE();
+	void parseKWAIT();
 	
 	void parseLabel();
 

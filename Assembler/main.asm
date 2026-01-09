@@ -1,18 +1,25 @@
-CLOSEDEB
+;CLOSEDEB
 
-load r7,0x200
+;IE
+kwait
 
-loop:
-jmp loop
+;CALL @r1
+
+;load r7,0x200
+
+;loop:
+;jmp loop
 
 
 ;i
-.origin 0x100
+;.origin 0x100
 
 
-FUNC readchar
+;FUNC readchar
 	
-	load r0,@fffffff7
-	str @ffffffff,r0
+;	load r0,@fffffff7
+	;str @ffffffff,r0
 
-	RET
+	;RET
+
+
