@@ -469,6 +469,7 @@
 }
 
 //CALISIYOR 06.01.26
+//call <label>
 [CALL 0]
 {
 	//stack pointer 0b111
@@ -509,8 +510,9 @@
 	
 }
 
+//CALISIYOR 09.01.26
 //call rx
-[CALL 1]
+[CALL 3]
 {
 	//stack pointer 0b111
 	POSTA_A_we
@@ -535,6 +537,7 @@
 	SP_updown
 	#
 
+	//pc = rx
 	POSTA_B_out
 	REG_out
 	REG_data_out

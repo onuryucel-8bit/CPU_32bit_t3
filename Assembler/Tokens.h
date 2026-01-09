@@ -33,8 +33,7 @@ namespace asmc
 
 		FUNC,
 		FUNC_NAME,
-
-		IE,
+		
 		KWAIT,
 
 		//ALU

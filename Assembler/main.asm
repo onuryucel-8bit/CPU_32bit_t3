@@ -1,25 +1,30 @@
 ;CLOSEDEB
 
-;IE
-kwait
+load r7,0x200
 
-;CALL @r1
+load r2,0x20
 
-;load r7,0x200
+CALL @r2
 
-;loop:
-;jmp loop
+.origin 0x20
+
+FUNC adl
+	load r0,0x2
+	add r0,0x2
+RET
+
+
 
 
 ;i
-;.origin 0x100
+.origin 0x100
 
-
-;FUNC readchar
+;ISR-keyboard
+FUNC readchar
 	
-;	load r0,@fffffff7
-	;str @ffffffff,r0
+	load r0,@fffffff7
+	str @ffffffff,r0
 
-	;RET
+	RET
 
 

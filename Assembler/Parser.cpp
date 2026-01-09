@@ -40,8 +40,7 @@ Parser::Parser(asmc::Lexer& lexer)
 	m_parserFuncs[asmc::TokenType::POP]  = &asmc::Parser::parsePOP;
 	m_parserFuncs[asmc::TokenType::FUNC] = &asmc::Parser::parseFUNC;
 
-	//IE
-	m_parserFuncs[asmc::TokenType::IE] = &asmc::Parser::parseIE;
+	//IE	
 	m_parserFuncs[asmc::TokenType::KWAIT] = &asmc::Parser::parseKWAIT;
 
 	//ALU
@@ -83,9 +82,8 @@ Parser::Parser(asmc::Lexer& lexer)
 	m_opcodeHexTable[asmc::TokenType::PUSH] = 0x5;
 	m_opcodeHexTable[asmc::TokenType::POP] = 0x06;
 
-	//int
-	m_opcodeHexTable[asmc::TokenType::IE] = 0x07;
-	m_opcodeHexTable[asmc::TokenType::KWAIT] = 0x09;
+	//int	
+	m_opcodeHexTable[asmc::TokenType::KWAIT] = 0x07;
 
 	//ALU
 	m_opcodeHexTable[asmc::TokenType::ADD] = 0x10;
@@ -392,6 +390,8 @@ void Parser::program()
 
 asmc::TokenType Parser::toToken(size_t opcode)
 {
+	
+
 		switch (opcode)
 		{
 
@@ -405,8 +405,8 @@ asmc::TokenType Parser::toToken(size_t opcode)
 			case 0x4:  return asmc::TokenType::RET;
 			case 0x5:  return asmc::TokenType::PUSH;
 			case 0x6:  return asmc::TokenType::POP;
-			case 0x7:  return asmc::TokenType::IE;
-			case 0x9:  return asmc::TokenType::KWAIT;
+			
+			case 0x7:  return asmc::TokenType::KWAIT;
 
 			// ALU
 			case 0x10: return asmc::TokenType::ADD;
@@ -1281,21 +1281,6 @@ void Parser::parsePOP()
 
 	m_output.push_back(memlay);
 	
-}
-
-void Parser::parseIE()
-{
-	uint32_t opcode = m_opcodeHexTable[asmc::TokenType::IE] << asmc_ShiftAmount_Opcode;
-
-	asmc::MemoryLayout memlay;
-
-	memlay.m_opcode = opcode;
-	memlay.m_packetSize = 1;
-	memlay.m_ramIndex = m_ramLocation;
-
-	m_output.push_back(memlay);
-
-	m_ramLocation += 1;
 }
 
 void Parser::parseKWAIT()
