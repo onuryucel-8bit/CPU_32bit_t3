@@ -934,7 +934,6 @@ void Parser::parseMOV()
 		
 	}
 	memlay.m_opcode = opcode;
-	memlay.m_secondPart = 0;
 	memlay.m_packetSize = 1;
 	memlay.m_ramIndex = m_ramLocation;
 	
@@ -1300,11 +1299,17 @@ void Parser::parseKWAIT()
 
 void Parser::parseCALL()
 {
-	if (m_peekToken.m_type != asmc::TokenType::ID &&
+	if (m_peekToken.m_type == asmc::TokenType::REGISTER)
+	{
+		printError("register used as address without @");
+	}
+
+	else if (m_peekToken.m_type != asmc::TokenType::ID &&
 		m_peekToken.m_type != asmc::TokenType::REGADR)
 	{
 		printError("CALL must be followed by a function name");
 	}
+	
 
 	uint32_t opcode = m_opcodeHexTable[asmc::TokenType::CALL] << asmc_ShiftAmount_Opcode;	
 
@@ -1337,7 +1342,7 @@ void Parser::parseCALL()
 
 	case asmc::TokenType::ID:
 		//func is defined
-		if (m_symbolTable.contains(m_currentToken))
+		if (m_symbolTable.contains(m_currentToken) && m_symbolTable[m_currentToken].m_status != asmc::LabelStatus::No_FuncDef)
 		{
 			m_symbolTable[m_currentToken].m_status = asmc::LabelStatus::Called;
 
@@ -1385,6 +1390,8 @@ void Parser::parseFUNC()
 	}
 
 	moveCurrentToken();
+
+	//FIX !! func def - call
 
 	//is func definition in symbol table
 	if (m_symbolTable.contains(m_currentToken))

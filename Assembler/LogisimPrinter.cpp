@@ -14,6 +14,8 @@ void LogisimPrinter::print(std::vector<asmc::MemoryLayout>& array)
 
 	file << "v3.0 hex words plain\n";
 	
+	//file << "v3.0 hex words addressed\n";
+
 	file << std::hex;
 	int romIndex = 0;
 	for (size_t i = 0; i < array.size(); i++)

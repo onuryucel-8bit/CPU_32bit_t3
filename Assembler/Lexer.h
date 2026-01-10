@@ -117,7 +117,7 @@ private:
 
 	//0xff
 	[[nodiscard]] asmc::Token lexHexNumberPart();
-
+	
 	//+,-,@,\n,EOF.... single char
 	[[nodiscard]] asmc::Token lexSingleChar();
 
