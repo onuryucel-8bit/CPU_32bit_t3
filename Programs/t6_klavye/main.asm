@@ -18,7 +18,7 @@ jmp loop
 
 
 ;i
-.origin 0x100
+.origin 0x150
 
 ;ISR-keyboard
 FUNC readchar

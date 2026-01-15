@@ -22,7 +22,7 @@ Parser::Parser(asmc::Lexer& lexer)
 #pragma region tables
 
 	//29 used
-
+	m_parserFuncs[asmc::TokenType::NOP] = &asmc::Parser::parseNOP;
 	m_parserFuncs[asmc::TokenType::INCLUDE] = &asmc::Parser::parseINCLUDE;
 	m_parserFuncs[asmc::TokenType::ORIGIN] = &asmc::Parser::parseORIGIN;
 	m_parserFuncs[asmc::TokenType::DB] = &asmc::Parser::parseDB;
@@ -42,6 +42,8 @@ Parser::Parser(asmc::Lexer& lexer)
 
 	//IE	
 	m_parserFuncs[asmc::TokenType::KWAIT] = &asmc::Parser::parseKWAIT;
+	m_parserFuncs[asmc::TokenType::MWE] = &asmc::Parser::parseMWE;
+	m_parserFuncs[asmc::TokenType::MR] = &asmc::Parser::parseMR;
 
 	//ALU
 	m_parserFuncs[asmc::TokenType::ADD] = &asmc::Parser::parseArithmeticPart;
@@ -71,6 +73,8 @@ Parser::Parser(asmc::Lexer& lexer)
 	//-------------------------------------------------//
 	//-------------------------------------------------//
 	
+	m_opcodeHexTable[asmc::TokenType::NOP] = 0x00;
+
 	//REG-RAM
 	m_opcodeHexTable[asmc::TokenType::LOAD] = 0x01;
 	m_opcodeHexTable[asmc::TokenType::STR] = 0x02;
@@ -83,7 +87,9 @@ Parser::Parser(asmc::Lexer& lexer)
 	m_opcodeHexTable[asmc::TokenType::POP] = 0x06;
 
 	//int	
-	m_opcodeHexTable[asmc::TokenType::KWAIT] = 0x07;
+	m_opcodeHexTable[asmc::TokenType::KWAIT] = 0x09;
+	m_opcodeHexTable[asmc::TokenType::MWE] = 0x0A;
+	m_opcodeHexTable[asmc::TokenType::MR] = 0x0B;
 
 	//ALU
 	m_opcodeHexTable[asmc::TokenType::ADD] = 0x10;
@@ -394,7 +400,7 @@ asmc::TokenType Parser::toToken(size_t opcode)
 
 		switch (opcode)
 		{
-
+			case 0x0:  return asmc::TokenType::NOP;
 			// REG - RAM
 			case 0x1:  return asmc::TokenType::LOAD;
 			case 0x2:  return asmc::TokenType::STR;
@@ -406,7 +412,9 @@ asmc::TokenType Parser::toToken(size_t opcode)
 			case 0x5:  return asmc::TokenType::PUSH;
 			case 0x6:  return asmc::TokenType::POP;
 			
-			case 0x7:  return asmc::TokenType::KWAIT;
+			case 0x9:  return asmc::TokenType::KWAIT;
+			case 0xa:  return asmc::TokenType::MWE;
+			case 0xb:  return asmc::TokenType::MR;
 
 			// ALU
 			case 0x10: return asmc::TokenType::ADD;
@@ -692,6 +700,18 @@ PacketAdrPReg Parser::getAdr_P_RegPart(std::string& operand)
 //-------------REG/RAM---------------------//
 
 
+void Parser::parseNOP()
+{	
+	asmc::MemoryLayout memlay;
+
+	memlay.m_opcode = 0x0;
+	memlay.m_packetSize = 1;
+	memlay.m_ramIndex = m_ramLocation;
+
+	m_ramLocation += 1;
+	m_output.push_back(memlay);
+}
+
 void Parser::parseORIGIN()
 {
 	if (m_peekToken.m_type != asmc::TokenType::HEXNUMBER)
@@ -706,26 +726,53 @@ void Parser::parseORIGIN()
 
 void Parser::parseDB()
 {
-	if (m_peekToken.m_type != asmc::TokenType::HEXNUMBER)
+	if (m_peekToken.m_type != asmc::TokenType::HEXNUMBER &&
+		m_peekToken.m_type != asmc::TokenType::STRING)
 	{
-		printError("Expected hex number after .db");
+		printError("Expected hex number or char after .db");
 	}
 
 	moveCurrentToken();
 
-	while (m_currentToken.m_type == asmc::TokenType::HEXNUMBER)
+	while (m_currentToken.m_type == asmc::TokenType::HEXNUMBER ||
+		m_currentToken.m_type == asmc::TokenType::STRING)
 	{
 		
 		//TODO need optimization
 		asmc::MemoryLayout memlay;
+		
+		if (m_currentToken.m_type == asmc::TokenType::HEXNUMBER)
+		{
+			memlay.m_opcode = rdx::hexToDec(m_currentToken.m_text);
+			memlay.m_packetSize = 1;
+			memlay.m_ramIndex = m_ramLocation;
 
-		memlay.m_opcode = rdx::hexToDec(m_currentToken.m_text);
-		memlay.m_packetSize = 1;
-		memlay.m_ramIndex = m_ramLocation;
-		memlay.m_secondPart = 1;
+			m_ramLocation += 1;
+			m_output.push_back(memlay);
+		}
+		else
+		{
 
-		m_ramLocation += 1;
-		m_output.push_back(memlay);
+			for (size_t i = 0; i < m_currentToken.m_text.length(); i++)
+			{
+				uint8_t ch = (uint8_t)m_currentToken.m_text[i];
+				memlay.m_opcode = ch;
+				memlay.m_packetSize = 1;
+				memlay.m_ramIndex = m_ramLocation;
+
+				m_ramLocation += 1;
+				m_output.push_back(memlay);
+			}
+
+			memlay.m_opcode = '\0';
+			memlay.m_packetSize = 1;
+			memlay.m_ramIndex = m_ramLocation;
+
+			m_ramLocation += 1;
+			m_output.push_back(memlay);
+
+		}
+		
 
 		moveCurrentToken();
 
@@ -1295,6 +1342,30 @@ void Parser::parseKWAIT()
 	m_output.push_back(memlay);
 
 	m_ramLocation += 1;
+}
+
+void Parser::parseMWE()
+{
+	asmc::MemoryLayout memlay;
+
+	memlay.m_opcode = m_opcodeHexTable[asmc::TokenType::MWE] << asmc_ShiftAmount_Opcode;
+	memlay.m_packetSize = 1;
+	memlay.m_ramIndex = m_ramLocation;
+
+	m_ramLocation += 1;
+	m_output.push_back(memlay);
+}
+
+void Parser::parseMR()
+{
+	asmc::MemoryLayout memlay;
+
+	memlay.m_opcode = m_opcodeHexTable[asmc::TokenType::MR] << asmc_ShiftAmount_Opcode;
+	memlay.m_packetSize = 1;
+	memlay.m_ramIndex = m_ramLocation;
+
+	m_ramLocation += 1;
+	m_output.push_back(memlay);
 }
 
 void Parser::parseCALL()

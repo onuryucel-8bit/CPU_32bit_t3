@@ -215,6 +215,9 @@ asmc::Token Lexer::lexSingleChar()
 
 	std::string tokenStr;
 
+
+	size_t length = 1;
+	int startPos = 0;
 	switch (m_currentChar)
 	{
 	
@@ -281,7 +284,7 @@ asmc::Token Lexer::lexSingleChar()
 		nextChar();//skip $
 
 		tokenStr = getSubStr(m_position, 1, std::isxdigit);
-
+		
 		token = {tokenStr, asmc::TokenType::DECNUMBER };
 
 		break;
@@ -289,7 +292,14 @@ asmc::Token Lexer::lexSingleChar()
 	case '"':
 		nextChar();
 		
-		tokenStr = getSubStr(m_position, 1, std::isalnum, false);
+		startPos = m_position;
+		while (std::isalnum(peek()) || peek() == ' ' || peek() == '_')
+		{
+			nextChar();
+			length++;
+		}
+
+		tokenStr = m_program.substr(startPos, length);
 
 		nextChar(); 
 
@@ -317,7 +327,7 @@ asmc::Token Lexer::lexSingleChar()
 
 	case '\'':
 		nextChar();
-		token = { std::string(1, m_currentChar), asmc::TokenType::ASCII};
+		token = { std::string(1, m_currentChar), asmc::TokenType::CHAR};
 		nextChar();
 
 		break;

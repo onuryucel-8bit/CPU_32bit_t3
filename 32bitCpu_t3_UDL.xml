@@ -24,11 +24,11 @@
             <Keywords name="Folders in comment, open"></Keywords>
             <Keywords name="Folders in comment, middle"></Keywords>
             <Keywords name="Folders in comment, close"></Keywords>
-            <Keywords name="Keywords1">LOAD&#x000D;&#x000A;STR&#x000D;&#x000A;MOV&#x000D;&#x000A;CALL&#x000D;&#x000A;RET&#x000D;&#x000A;PUSH&#x000D;&#x000A;POP&#x0009;&#x000D;&#x000A;ADD&#x000D;&#x000A;SUB&#x000D;&#x000A;MUL&#x000D;&#x000A;DIV&#x000D;&#x000A;SHL&#x000D;&#x000A;SHR&#x0009;&#x000D;&#x000A;AND &#x000D;&#x000A;OR&#x000D;&#x000A;NOT&#x000D;&#x000A;XOR&#x000D;&#x000A;CMP&#x000D;&#x000A;JMP&#x000D;&#x000A;JAZ &#x000D;&#x000A;JLZ&#x000D;&#x000A;JGZ&#x000D;&#x000A;JSC&#x000D;&#x000A;JUC&#x000D;&#x000A;JCT &#x000D;&#x000A;JCF</Keywords>
+            <Keywords name="Keywords1">LOAD&#x000D;&#x000A;STR&#x000D;&#x000A;MOV&#x000D;&#x000A;CALL&#x000D;&#x000A;RET&#x000D;&#x000A;PUSH&#x000D;&#x000A;POP&#x0009;&#x000D;&#x000A;ADD&#x000D;&#x000A;SUB&#x000D;&#x000A;MUL&#x000D;&#x000A;DIV&#x000D;&#x000A;SHL&#x000D;&#x000A;SHR&#x0009;&#x000D;&#x000A;AND &#x000D;&#x000A;OR&#x000D;&#x000A;NOT&#x000D;&#x000A;XOR&#x000D;&#x000A;CMP&#x000D;&#x000A;JMP&#x000D;&#x000A;JAZ &#x000D;&#x000A;JLZ&#x000D;&#x000A;JGZ&#x000D;&#x000A;JSC&#x000D;&#x000A;JUC&#x000D;&#x000A;JCT &#x000D;&#x000A;JCF&#x000D;&#x000A;kwait</Keywords>
             <Keywords name="Keywords2">r&#x000D;&#x000A;,</Keywords>
             <Keywords name="Keywords3">@&#x000D;&#x000A;#&#x000D;&#x000A;.&#x000D;&#x000A;</Keywords>
             <Keywords name="Keywords4">+</Keywords>
-            <Keywords name="Keywords5">$</Keywords>
+            <Keywords name="Keywords5">$&#x000D;&#x000A;</Keywords>
             <Keywords name="Keywords6">0x</Keywords>
             <Keywords name="Keywords7">`&#x000D;&#x000A;</Keywords>
             <Keywords name="Keywords8"></Keywords>
@@ -37,7 +37,7 @@
         <Styles>
             <WordsStyle name="DEFAULT" fgColor="13D7EC" bgColor="FFFFFF" colorStyle="1" fontStyle="0" nesting="0" />
             <WordsStyle name="COMMENTS" fgColor="0080FF" bgColor="FFFFFF" colorStyle="1" fontStyle="1" nesting="0" />
-            <WordsStyle name="LINE COMMENTS" fgColor="8080FF" bgColor="FFFFFF" colorStyle="1" fontStyle="3" nesting="0" />
+            <WordsStyle name="LINE COMMENTS" fgColor="0080FF" bgColor="FFFFFF" colorStyle="1" fontStyle="3" nesting="0" />
             <WordsStyle name="NUMBERS" fgColor="000000" bgColor="FFFFFF" fontStyle="0" nesting="0" />
             <WordsStyle name="KEYWORDS1" fgColor="FFFF80" bgColor="408080" colorStyle="1" fontStyle="0" nesting="0" />
             <WordsStyle name="KEYWORDS2" fgColor="008000" bgColor="FFFFFF" colorStyle="1" fontStyle="1" nesting="0" />

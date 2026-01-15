@@ -19,6 +19,7 @@ namespace asmc
 		ENDOFFILE = -1,
 		
 		//Opcodes
+		NOP,
 
 		//REG - RAM
 		LOAD,
@@ -35,6 +36,8 @@ namespace asmc
 		FUNC_NAME,
 		
 		KWAIT,
+		MWE,
+		MR,
 
 		//ALU
 		ADD,
@@ -77,9 +80,9 @@ namespace asmc
 		
 		//Operands
 		
-		DECNUMBER,
-		ASCII,
+		DECNUMBER,		
 		STRING,
+		CHAR,
 		DIRECTORY,
 
 		REGISTER,

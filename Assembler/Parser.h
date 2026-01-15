@@ -9,7 +9,7 @@
 #include <fstream>
 
 #include "../libsLocal/rang.hpp"
-#include "utils/Radix.h"
+#include "../libsLocal/utils/Radix.h"
 
 #include "Lexer.h"
 
@@ -116,7 +116,7 @@ private:
 	* 
 	*	output.push_back(opcode_val);
 	*/
-
+	void parseNOP();
 	void parseORIGIN();
 	void parseDB();
 	void parseDEFINE();
@@ -146,6 +146,8 @@ private:
 	void parsePOP();
 
 	void parseKWAIT();
+	void parseMWE();
+	void parseMR();
 	
 	void parseLabel();
 
