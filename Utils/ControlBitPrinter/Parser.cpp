@@ -39,6 +39,9 @@ Parser::Parser(asmc::Lexer& lexer)
 	m_locationTable["JE"] =  0x1d;
 	m_locationTable["JGT"] = 0x1e;
 	m_locationTable["JLT"] = 0x1f;
+
+	m_locationTable["MWE"] = 0x0a;
+	m_locationTable["MR"] = 0x0b;
 }
 
 Parser::~Parser()
@@ -65,6 +68,15 @@ void Parser::run()
 		{
 
 #pragma region CASE_T0
+
+		case asmc::TokenType::MWE:
+			m_sector.push_back(asmc::TokenType::MWE);
+			break;
+
+		case asmc::TokenType::MR:
+			m_sector.push_back(asmc::TokenType::MR);
+			break;
+
 		case asmc::TokenType::PC_toDataBus:
 			m_sector.push_back(asmc::TokenType::PC_toDataBus);
 			break;

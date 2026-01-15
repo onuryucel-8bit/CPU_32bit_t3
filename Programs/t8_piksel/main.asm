@@ -37,9 +37,7 @@ FUNC readchar
 	;enter?
 	cmp r0,0x0A
 	jne continue
-		add r1,0x1
-		;r5 = 0 => r0
-		mov r0,r5
+		add r1,0x1		
 	continue:
 
 	RET

@@ -30,7 +30,9 @@ namespace asmc
 	};*/
 
 	enum TokenType
-	{		
+	{	
+		ENDOFFILE = -1,
+
 		Read,
 		Write,
 		
@@ -90,8 +92,11 @@ namespace asmc
 
 		END,		
 		//----------------------//
+
 		PC_toDataBus,
 
+		MWE,
+		MR,
 
 		NOP,
 		CONTROL_BIT_LOCATION,
@@ -105,7 +110,7 @@ namespace asmc
 		
 		//WARNING lexer m_currentChar is char type if you get weird error, its caused by char overflow
 		//?? 05.01.2025 need a time machine
-		ENDOFFILE
+		
 	};
 }
 
