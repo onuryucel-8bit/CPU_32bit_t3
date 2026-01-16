@@ -149,9 +149,11 @@ void Parser::run()
 				break;
 			}
 			else
-			{
-				//TODO include file reading
+			{							
 				m_tokenList = m_lexer.getTokenList();
+
+				m_peekToken = m_tokenList[0];
+				m_tokenIndex = 0;
 			}						
 		}
 		

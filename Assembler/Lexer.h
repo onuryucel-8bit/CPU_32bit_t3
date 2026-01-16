@@ -27,7 +27,7 @@ struct Token
 struct FileData
 {
 	std::string m_path;
-	int m_lastPosition = 0;
+	std::streamoff m_lastPosition = 0;
 	char m_currentChar = 0;
 	size_t m_lineNumber = 0;
 };
@@ -97,7 +97,7 @@ private:
 	void skipNonEssential();
 
 	
-	std::string readFile(std::string path);
+	std::string readFile(std::string path, std::streamoff starpos = 0);
 
 	//returns sub part of m_program
 	std::string getSubStr(int startPos, int length ,int (*cmpFunc)(int), bool upper = true);
@@ -131,7 +131,20 @@ private:
 	//------------------------------------------------------//
 	//------------------------------------------------------//
 
+	/*
+		used for return after reading another file
 	
+		#include "stdmath.asm"
+		add r0, r1			 ^
+		add r0, r1			 \-----m_returnPosition / m_returnCurrentChar
+				 ^
+				 \---- m_position/m_currentChar
+	*/
+	size_t m_returnPosition;
+	char m_returnCurrentChar;
+
+
+
 	int m_position;
 	char m_currentChar;
 	bool f_error;

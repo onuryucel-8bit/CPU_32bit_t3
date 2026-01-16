@@ -5,7 +5,6 @@
 	- flag registerini register file icine koy
 
 ### Assembler 
-	- #include hatasi var
 	- f_newline ??
 
 ### Derleyici

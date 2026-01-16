@@ -28,16 +28,19 @@ Lexer::Lexer(std::string path)
 	nextChar();
 }
 
-std::string Lexer::readFile(std::string path)
+std::string Lexer::readFile(std::string path, std::streamoff startpos)
 {
 	std::fstream file(path);
-
+	
 	if (!file.is_open())
 	{
 		std::cout << "ERROR:: couldnt open the file\n";
 		return "";
 	}
 
+	if(startpos != 0)
+		file.seekg(startpos, std::ios_base::beg);
+		
 	std::stringstream ss;
 
 	ss << file.rdbuf();
@@ -317,6 +320,8 @@ asmc::Token Lexer::lexSingleChar()
 			nextChar();//skip "
 
 			token = { tokenStr, asmc::TokenType::DIRECTORY};
+			m_returnPosition = m_position;
+			m_returnCurrentChar = m_currentChar;
 		}
 		else
 		{
@@ -555,8 +560,8 @@ void Lexer::pushFile(std::string path)
 
 	asmc::FileData& filed = m_inputStream.back();
 
-	filed.m_currentChar = m_currentChar;
-	filed.m_lastPosition = m_position;
+	filed.m_currentChar = m_returnCurrentChar;
+	filed.m_lastPosition = m_returnPosition;
 	filed.m_lineNumber = m_lineNumber;
 
 	m_inputStream.push_back({ path });
@@ -575,8 +580,10 @@ void Lexer::pushFile(std::string path)
 
 bool Lexer::popFile()
 {	
+	//get file name from top
 	m_currentFileName = m_inputStream.back().m_path;
 
+	//pop
 	m_inputStream.pop_back();	
 
 	if (m_inputStream.empty())
@@ -588,9 +595,9 @@ bool Lexer::popFile()
 	filed = m_inputStream.back();
 
 	//open file
-	m_program = readFile(filed.m_path);
+	m_program = readFile(filed.m_path, filed.m_lastPosition);
 	m_currentChar = filed.m_currentChar;
-	m_position = filed.m_lastPosition;
+	m_position = 0;
 	m_lineNumber = filed.m_lineNumber;	
 
 	return false;
