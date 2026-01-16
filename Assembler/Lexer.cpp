@@ -21,8 +21,7 @@ Lexer::Lexer(std::string path)
 	m_lineNumber = 1;
 	
 
-	f_error = false;
-	f_newline = true;//TODO ne? ???
+	f_error = false;	
 	fd_debug = true;
 	m_errorCounter = 0;
 
@@ -56,23 +55,17 @@ Token Lexer::getToken()
 	//TODO bosluklari es gecme mekanizmasi ekle
 	skipWhiteSpace();
 
-	//TODO f_newline ????
-
 	Token token;
 
 	//.origin .db
 	if (m_currentChar == '.')
 	{
-		token = lexDotPart();
-
-		f_newline = false;
+		token = lexDotPart();		
 	}
 	//#define, #include
 	else if (m_currentChar == '#')
 	{
-		token = lexMacro();
-
-		f_newline = false;
+		token = lexMacro();		
 	}
 	//Register,[keyword,label] check
 	else if (std::isalpha(m_currentChar))
@@ -86,8 +79,7 @@ Token Lexer::getToken()
 		else
 		{
 			token = lexWord();
-		}
-		f_newline = false;
+		}		
 	}
 	//number check
 	else if (std::isdigit(m_currentChar))
@@ -103,13 +95,10 @@ Token Lexer::getToken()
 			f_error = true;
 
 		}
-		f_newline = false;
-
 	}
 	else
 	{
-		token = lexSingleChar();
-		f_newline = false;
+		token = lexSingleChar();		
 	}
 
 	nextChar();
@@ -227,7 +216,6 @@ asmc::Token Lexer::lexSingleChar()
 	case '\n':
 		//std::cout << "LEXER newline detected\n";
 		token = { std::string(1,m_currentChar), asmc::TokenType::NEWLINE };
-		f_newline = true;
 		break;
 
 		//ADDRESS
@@ -350,15 +338,8 @@ asmc::Token Lexer::lexWord()
 	}
 	else
 	{
-		//TODO f_newline ne lan bu ????
-		//label
-		if (f_newline == true && peek() != ':')
-		{
-			printError("LEXER:: label must end with ':' ");
-			
-		}
 		//valid label examples LOOP: CLEAR: ...
-		else if (peek() == ':')
+		if (peek() == ':')
 		{
 			token = { tokenStr, asmc::TokenType::LABEL, m_lineNumber };
 			nextChar();
@@ -476,8 +457,7 @@ void Lexer::skipComments()
 		while (m_currentChar != '\n' && m_currentChar != ENDOFFILE)
 		{
 			nextChar();
-		}
-		f_newline = true;
+		}	
 	}
 
 	//TODO aciklama satiri icerisinde / olunca hata veriyor duzelt bunu 
@@ -515,12 +495,7 @@ void Lexer::skipWhiteSpace()
 void Lexer::skipNonEssential()
 {
 	while (m_currentChar == ',')
-	{
-		if (m_currentChar == '\n')
-		{
-			f_newline = true;
-		}
-		
+	{				
 		nextChar();
 	}
 }

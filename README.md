@@ -5,7 +5,7 @@
 	- flag registerini register file icine koy
 
 ### Assembler 
-	- f_newline ??
+	
 
 ### Derleyici
 	- if else kosul yapilarini ekle	
