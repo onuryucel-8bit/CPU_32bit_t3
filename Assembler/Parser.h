@@ -95,7 +95,7 @@ private:
 	using funcPtr = void (asmc::Parser::*)();
 
 	funcPtr m_parserFuncs[64];
-	std::array<asmc::Token, MAX_TOKEN_LIST_SIZE> m_tokenList;
+	std::array<asmc::Token, asmc_MAX_TOKEN_LIST_SIZE> m_tokenList;
 	size_t m_tokenIndex;
 
 	asmc::Token m_lastFuncName;
@@ -104,6 +104,7 @@ private:
 	bool fd_printHexOutput;//flag debug fd
 	bool fd_scanTables;
 	
+	size_t m_errorCounter;
 
 	/*
 	*	opcode = opcode_HEX_VAL;

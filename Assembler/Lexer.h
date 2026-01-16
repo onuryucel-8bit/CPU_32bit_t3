@@ -1,5 +1,6 @@
 #pragma once
 
+//TODO pch ekle
 #include "LexerPCH.h"
 
 #include "../LibsLocal/magic_enum/magic_enum.hpp"
@@ -7,7 +8,7 @@
 
 #include "Tokens.h"
 
-#define MAX_TOKEN_LIST_SIZE 30
+#define asmc_MAX_TOKEN_LIST_SIZE 30
 #define asmc_CLOSE_DEBUG_WORD "CLOSEDEB"
 
 namespace asmc
@@ -17,6 +18,7 @@ struct Token
 {
 	std::string m_text = "";
 	TokenType m_type = TokenType::EMPTY;
+	size_t m_lineNumber = 0;
 
 	bool operator==(const Token& other) const
 	{
@@ -24,11 +26,19 @@ struct Token
 	}
 };
 
+//For reading multiple files
+/*
+	//main.asm					  stdmath.asm
+	#include "stdmath.asm"------> add r0,r1
+	...					 ^		  ....
+	..					 \------- ...
+*/
 struct FileData
 {
 	std::string m_path;
 	std::streamoff m_lastPosition = 0;
 	char m_currentChar = 0;
+	//FIXME its broken
 	size_t m_lineNumber = 0;
 };
 
@@ -36,6 +46,7 @@ struct FileData
 
 namespace std
 {
+	//for hash table
 	template<>
 	struct hash<asmc::Token>
 	{
@@ -53,19 +64,16 @@ class Lexer
 {
 public:
 	
+	//TODO use filesystem
 	Lexer(std::string path);
 	
-	
-	[[nodiscard]] std::array<asmc::Token, MAX_TOKEN_LIST_SIZE> getTokenList();
+	[[nodiscard]] std::array<asmc::Token, asmc_MAX_TOKEN_LIST_SIZE> getTokenList();
 
-
-	bool getErrorFlag();
 	bool getDebugFlag();
-
-	size_t m_lineNumber;
 
 	bool isInputStreamEmpty();
 
+	//pushes new file top of the stack(inputStream)
 	void pushFile(std::string path);
 
 	//if input stream is empty return s true
@@ -73,25 +81,27 @@ public:
 
 	std::string getCurrentFileName();
 
+	//TODO private?
+	size_t m_lineNumber;
 private:
 
 	[[nodiscard]] Token getToken();
 	void toUpper(std::string& str);
 
-	//sonraki karakteri isaret eder
 	void nextChar();
 
 	char peek();
 
 	//is 0xfa
 	bool isNumberHex();
+	//checks second part of mnemonic 0xfa or register
 	bool isOperand();
 
+	//sets error flag true
 	void printError(std::string message);
-
-	//bosluklari es gecer
+	
 	void skipWhiteSpace();
-	//aciklama satiri ; sonrasindaki karakterleri es gecer
+	//skip ;
 	void skipComments();
 	//skip ',' '\n'
 	void skipNonEssential();
@@ -99,10 +109,10 @@ private:
 	
 	std::string readFile(std::string path, std::streamoff starpos = 0);
 
+	//TODO remove or fix
 	//returns sub part of m_program
 	std::string getSubStr(int startPos, int length ,int (*cmpFunc)(int), bool upper = true);
-
-	//str token enum icerisinde tanimlimi
+	
 	bool checkIfKeyword(std::string token);
 
 	//------------------------------------------------------//
@@ -136,22 +146,23 @@ private:
 	
 		#include "stdmath.asm"
 		add r0, r1			 ^
-		add r0, r1			 \-----m_returnPosition / m_returnCurrentChar
+		add r0, r1			 \-----m_returnPosition / m_returnCurrentChar / m_retLineNumber
 				 ^
-				 \---- m_position/m_currentChar
+				 \---- m_position/m_currentChar/m_lineNumber
 	*/
 	size_t m_returnPosition;
 	char m_returnCurrentChar;
-
-
+	size_t m_retLineNumber;
 
 	int m_position;
 	char m_currentChar;
+
+	size_t m_errorCounter;
 	bool f_error;
 	bool f_newline;
 	bool fd_debug;
 
-	std::array<asmc::Token, MAX_TOKEN_LIST_SIZE> m_tokenArr;
+	std::array<asmc::Token, asmc_MAX_TOKEN_LIST_SIZE> m_tokenArr;
 
 	std::string m_program;
 	std::string m_currentFileName;
@@ -159,8 +170,6 @@ private:
 	
 
 	std::vector<FileData> m_inputStream;
-
-	//label check
 };
 
 }

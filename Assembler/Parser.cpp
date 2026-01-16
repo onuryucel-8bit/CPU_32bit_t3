@@ -14,6 +14,7 @@ Parser::Parser(asmc::Lexer& lexer)
 
 	m_ramLocation = 0;
 	m_lineNumber = 0;
+	m_errorCounter = 0;
 
 	f_error = false;
 	fd_printHexOutput = true;
@@ -178,7 +179,9 @@ void Parser::run()
 	if (f_error)
 	{
 		std::cout << rang::fg::red
-			<< "Parser or lexer error detected"
+			<< "Parser or lexer error detected\n"
+			<< m_errorCounter 
+			<< " Error found\n"
 			<< rang::style::reset
 			<< "\n";		
 		return;
@@ -504,16 +507,18 @@ void Parser::printError(std::string message)
 	//TODO hold previous token for better error printing..
 
 	std::cout << rang::fg::red		
-		<< "ERROR::Parser:: " << message
-		<< " |file name [" << m_lexer.getCurrentFileName() <<"]"
-		<< " line number [" << m_lexer.m_lineNumber << "]"
+		<< "ERROR::Parser::" 
+		<< "line number[" << m_currentToken.m_lineNumber << "]"
+		<< message
+		<< " |file name[" << m_lexer.getCurrentFileName() <<"]"
 		<< " currentToken.text[" << m_currentToken.m_text << "]"
-		<< " type	[" << magic_enum::enum_name(m_currentToken.m_type) << "]"
-		<< "\n##############################\n"
+		<< " type[" << magic_enum::enum_name(m_currentToken.m_type) << "]"
+		<< "\n-------"
 		<< rang::style::reset
 		<< "\n";
 
 	f_error = true;
+	m_errorCounter++;
 }
 
 void Parser::printWarning(std::string message)
@@ -951,20 +956,29 @@ void Parser::parseMOV()
 {
 	if (m_peekToken.m_type != asmc::TokenType::REGISTER)
 	{
-		printError("expected register for first operand");
+		printError("expected register for first operand [MOV (rx)!, ry]");
+		moveCurrentToken();//current token => rx
+		moveCurrentToken();//current token => ry
+		if (m_currentToken.m_type != asmc::TokenType::REGISTER)
+		{
+			printError("expected register for second operand [MOV rx, (ry)!]");
+		}
+		return;
 	}
 
 	uint32_t opcode = m_opcodeHexTable[asmc::TokenType::MOV] << asmc_ShiftAmount_Opcode;
 	
+	//m_currentToken => rx
 	moveCurrentToken();
 	MemoryLayout memlay;
 
 	uint32_t rx = rdx::hexToDec(m_currentToken.m_text);
 	
+	//m_currentToken => ry
 	moveCurrentToken();
 	if (m_currentToken.m_type != asmc::TokenType::REGISTER)
 	{
-		printError("expected register for second operand");
+		printError("expected register for second operand [MOV rx, (ry)!]");
 		
 	}
 	else

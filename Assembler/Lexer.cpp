@@ -18,12 +18,13 @@ Lexer::Lexer(std::string path)
 
 	m_position = -1;
 	m_currentChar = 0;
-	m_lineNumber = 0;
+	m_lineNumber = 1;
 	
 
 	f_error = false;
 	f_newline = true;//TODO ne? ???
 	fd_debug = true;
+	m_errorCounter = 0;
 
 	nextChar();
 }
@@ -37,9 +38,8 @@ std::string Lexer::readFile(std::string path, std::streamoff startpos)
 		std::cout << "ERROR:: couldnt open the file\n";
 		return "";
 	}
-
-	if(startpos != 0)
-		file.seekg(startpos, std::ios_base::beg);
+	
+	file.seekg(startpos, std::ios_base::beg);
 		
 	std::stringstream ss;
 
@@ -119,16 +119,16 @@ Token Lexer::getToken()
 	return token;
 }
 
-std::array<asmc::Token, MAX_TOKEN_LIST_SIZE> Lexer::getTokenList()
+std::array<asmc::Token, asmc_MAX_TOKEN_LIST_SIZE> Lexer::getTokenList()
 {
 	int i = 0;
-	while (i < MAX_TOKEN_LIST_SIZE)
+	while (i < asmc_MAX_TOKEN_LIST_SIZE)
 	{
 		asmc::Token token = getToken();
 
 		if (token.m_type == asmc::TokenType::ENDOFFILE)
 		{												
-			m_tokenArr[i] = { "EOF", asmc::TokenType::ENDOFFILE };
+			m_tokenArr[i] = { "EOF", asmc::TokenType::ENDOFFILE, m_lineNumber};
 		}
 
 		if (token.m_type != asmc::TokenType::NEWLINE && token.m_type != asmc::TokenType::DEBUG_TOKEN)
@@ -227,8 +227,7 @@ asmc::Token Lexer::lexSingleChar()
 	case '\n':
 		//std::cout << "LEXER newline detected\n";
 		token = { std::string(1,m_currentChar), asmc::TokenType::NEWLINE };
-		f_newline = true;		
-		
+		f_newline = true;
 		break;
 
 		//ADDRESS
@@ -240,7 +239,7 @@ asmc::Token Lexer::lexSingleChar()
 		if (m_currentChar == 'r')
 		{
 			nextChar();
-			token = { std::string(1, m_currentChar), asmc::TokenType::REGADR };
+			token = { std::string(1, m_currentChar), asmc::TokenType::REGADR, m_lineNumber};
 		}
 		else
 		{
@@ -264,31 +263,18 @@ asmc::Token Lexer::lexSingleChar()
 					nextChar();//get register hex value
 					tokenStr += m_currentChar;
 
-					token = { tokenStr, asmc::TokenType::ADR_P_REG};
+					token = { tokenStr, asmc::TokenType::ADR_P_REG, m_lineNumber };
 				}
 			}
 			else
 			{
-				token = { tokenStr, asmc::TokenType::ADDRESS };
+				token = { tokenStr, asmc::TokenType::ADDRESS, m_lineNumber };
 			}
 
 			
 		}
 
 
-
-		break;
-
-	case '+':
-		token = { std::string(1,m_currentChar), asmc::TokenType::PLUS};
-		break;
-
-	case '$':
-		nextChar();//skip $
-
-		tokenStr = getSubStr(m_position, 1, std::isxdigit);
-		
-		token = {tokenStr, asmc::TokenType::DECNUMBER };
 
 		break;
 
@@ -322,27 +308,21 @@ asmc::Token Lexer::lexSingleChar()
 			token = { tokenStr, asmc::TokenType::DIRECTORY};
 			m_returnPosition = m_position;
 			m_returnCurrentChar = m_currentChar;
+			m_retLineNumber = m_lineNumber;
 		}
 		else
 		{
-			token = { tokenStr, asmc::TokenType::STRING };
+			token = { tokenStr, asmc::TokenType::STRING, m_lineNumber };
 		}		
 		
 		break;
 
-	case '\'':
-		nextChar();
-		token = { std::string(1, m_currentChar), asmc::TokenType::CHAR};
-		nextChar();
-
-		break;
-
 	case ENDOFFILE:
-		token = { std::string(1,m_currentChar), asmc::TokenType::ENDOFFILE };
+		token = { std::string(1,m_currentChar), asmc::TokenType::ENDOFFILE, m_lineNumber };
 		break;
+
 	default:
-		printError("LEXER Default CASE! ");
-		//f_error = true;
+		printError("LEXER Default CASE! ");				
 		break;
 	}
 
@@ -361,12 +341,12 @@ asmc::Token Lexer::lexWord()
 	//check if tokenStr is a keyword(LOAD,XOR,AND, ...)
 	if (tokenStr == asmc_CLOSE_DEBUG_WORD)
 	{
-		token = { tokenStr, asmc::TokenType::DEBUG_TOKEN};
+		token = { tokenStr, asmc::TokenType::DEBUG_TOKEN, m_lineNumber };
 	}
 	else if (checkIfKeyword(tokenStr))
 	{
 		std::optional<TokenType> enumVal = magic_enum::enum_cast<TokenType>(tokenStr);
-		token = { tokenStr, enumVal.value() };
+		token = { tokenStr, enumVal.value(), m_lineNumber };
 	}
 	else
 	{
@@ -380,7 +360,7 @@ asmc::Token Lexer::lexWord()
 		//valid label examples LOOP: CLEAR: ...
 		else if (peek() == ':')
 		{
-			token = { tokenStr, asmc::TokenType::LABEL };
+			token = { tokenStr, asmc::TokenType::LABEL, m_lineNumber };
 			nextChar();
 
 		}
@@ -395,11 +375,11 @@ asmc::Token Lexer::lexWord()
 			if (m_lastToken.m_type >= asmc::TokenType::JMP &&
 				m_lastToken.m_type <= asmc::TokenType::JUMP_INST)
 			{
-				token = { tokenStr, TokenType::LABEL};
+				token = { tokenStr, TokenType::LABEL, m_lineNumber };
 			}
 			else
 			{
-				token = { tokenStr, TokenType::ID};
+				token = { tokenStr, TokenType::ID, m_lineNumber };
 			}
 		}
 	}
@@ -420,7 +400,7 @@ asmc::Token Lexer::lexMacro()
 	if (checkIfKeyword(tokenStr))
 	{
 		std::optional<TokenType> enumVal = magic_enum::enum_cast<TokenType>(tokenStr);
-		token = { tokenStr, enumVal.value() };
+		token = { tokenStr, enumVal.value(), m_lineNumber };
 	}
 	else
 	{
@@ -436,6 +416,7 @@ asmc::Token Lexer::lexMacro()
 
 bool Lexer::checkIfKeyword(std::string token)
 {
+	//checks str is it keyword or not
 	std::optional<TokenType> tempToken = magic_enum::enum_cast<TokenType>(token);
 	if (tempToken.has_value())
 	{
@@ -598,7 +579,7 @@ bool Lexer::popFile()
 	m_program = readFile(filed.m_path, filed.m_lastPosition);
 	m_currentChar = filed.m_currentChar;
 	m_position = 0;
-	m_lineNumber = filed.m_lineNumber;	
+	m_lineNumber = m_retLineNumber;
 
 	return false;
 }
@@ -663,20 +644,15 @@ void Lexer::printError(std::string message)
 {
 	std::cout << rang::fg::cyan
 		<< "*****************************\n"
-		<< "ERROR::Lexer::" << message
-		<< "lastToken [" << m_lastToken.m_text <<"] "
-		<< "current char[" << std::string(1, m_currentChar) <<"] "
+		<< "ERROR::Lexer::" << message		
+		<< "current char[" << ((m_currentChar == '\n') ? "/n" : std::string(1, m_currentChar)) << "] "
 		<< "current pos [" << std::to_string(m_position) << "] "
 		<< "line number [" << m_lineNumber <<"]\n"
 		<< "*****************************\n"
 	<< rang::style::reset;
 
+	m_errorCounter++;
 	f_error = true;
-}
-
-bool Lexer::getErrorFlag()
-{
-	return f_error;
 }
 
 bool Lexer::getDebugFlag()

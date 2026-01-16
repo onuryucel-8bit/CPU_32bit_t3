@@ -63,6 +63,7 @@ namespace asmc
 		JGT,
 		JLT,		
 
+		//check lexWord()
 		JUMP_INST,
 
 		DEBUG_TOKEN,
@@ -78,19 +79,14 @@ namespace asmc
 		NEWLINE,				
 		ID,
 		
-		//Operands
-		
-		DECNUMBER,		
+		//Operands	
 		STRING,
-		CHAR,
 		DIRECTORY,
 
 		REGISTER,
 		HEXNUMBER,
 		ADDRESS,
 		REGADR,
-		ADR_P_REG,
-
-		PLUS,
+		ADR_P_REG,		
 	};
 }
