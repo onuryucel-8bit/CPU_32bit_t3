@@ -398,6 +398,8 @@ void Parser::program()
 //------------------PRINT_X()----------------------//
 //-------------------------------------------------//
 
+#pragma region PRINT_X()
+
 #ifdef PARSER_TEST_FUNCS
 
 asmc::TokenType Parser::toToken(size_t opcode)
@@ -533,6 +535,7 @@ void Parser::printWarning(std::string message)
 		<< "\n";
 }
 
+#pragma endregion
 
 //-------------------------------------------------//
 //-------------------------------------------------//
@@ -726,8 +729,10 @@ PacketAdrPReg Parser::getAdr_P_RegPart(std::string& operand)
 	return retVal;
 }
  
-//-------------REG/RAM---------------------//
 
+//----------------MACRO-ASM----------------------//
+
+#pragma region MACRO_ASM
 
 void Parser::parseNOP()
 {	
@@ -818,13 +823,17 @@ void Parser::parseDEFINE()
 	{
 		printError("Expected identifier after #define");
 	}
-	//TODO process define
+	
+	//m_currentToken => id
 	moveCurrentToken();
 
 	asmc::Token tempToken = m_currentToken;	
+
+	//m_currentToken => decimal | hex
 	moveCurrentToken();
 
-	if (m_currentToken.m_type != asmc::TokenType::HEXNUMBER)
+	if (m_currentToken.m_type != asmc::TokenType::HEXNUMBER &&
+		m_currentToken.m_type != asmc::TokenType::DECIMAL)
 	{
 		printError("macro value MUST be a hexnumber");
 		return;
@@ -835,8 +844,18 @@ void Parser::parseDEFINE()
 	// #define abc 0x54
 	sym.m_fileName = m_lexer.getCurrentFileName();
 	sym.m_lineNumber = m_lineNumber;
-	//holds 0x54
-	sym.m_ramIndex = rdx::hexToDec(m_currentToken.m_text);
+
+	
+	switch (m_currentToken.m_type)
+	{
+	case asmc::TokenType::HEXNUMBER:
+		sym.m_ramIndex = rdx::hexToDec(m_currentToken.m_text);
+		break;
+
+	case asmc::TokenType::DECIMAL:
+		sym.m_ramIndex = std::stoi(m_currentToken.m_text);
+		break;
+	}
 
 	m_symbolTable[tempToken] = sym;
 	
@@ -863,6 +882,10 @@ void Parser::parseINCLUDE()
 	//called in run()
 	//moveCurrentToken();  
 }
+
+#pragma endregion
+
+//-------------REG/RAM---------------------//
 
 #pragma region REG_RAM
 
@@ -910,7 +933,7 @@ void Parser::parseSTR()
 		m_peekToken.m_type != asmc::TokenType::REGADR  &&
 		m_peekToken.m_type != asmc::TokenType::ADR_P_REG)
 	{
-		printError("unexpected operand");
+		printError("expected adr,regadr,adr_p_reg [STR (..)!, ...]");
 	}
 
 	MemoryLayout memlay;
@@ -1039,11 +1062,14 @@ void Parser::parseArithmeticPart()
 {
 	if (m_peekToken.m_type != asmc::TokenType::REGISTER)
 	{
-		printError("unexpected operand");
+		printError("expected register for second operand [ALU (rx)!, ...]");
+		moveCurrentToken();
+		moveCurrentToken();
+		return;
 	}
 
 	uint32_t opcode = 0;
-
+	
 	switch (m_currentToken.m_type)
 	{
 	case asmc::TokenType::ADD:
@@ -1065,6 +1091,7 @@ void Parser::parseArithmeticPart()
 
 	opcode = opcode << asmc_ShiftAmount_Opcode;
 
+	//m_currentToken => register
 	moveCurrentToken();
 
 	if (m_peekToken.m_type == asmc::TokenType::EMPTY)
@@ -1077,6 +1104,7 @@ void Parser::parseArithmeticPart()
 	registerPart <<= asmc_ShiftAmount_RegB;
 	opcode |= registerPart;
 
+	//m_currentToken => register | regadr | adr | reg + adr
 	moveCurrentToken();
 
 	MemoryLayout memlay;
@@ -1297,48 +1325,10 @@ void Parser::parsePUSH()
 			memlay.m_opcode = opcode;
 			memlay.m_ramIndex = m_ramLocation;
 			m_ramLocation += 1;			
-		break;
-
-	case asmc::TokenType::REGADR:
-			rx = rdx::hexToDec(m_currentToken.m_text);
-
-			opcode = opcode | (rx << asmc_ShiftAmount_RegB);
-
-			opcode = asmc_CombineMODBits(opcode, asmc_MOD_RegAdr);
-
-			memlay.m_opcode = opcode;
-			memlay.m_ramIndex = m_ramLocation;
-			m_ramLocation += 1;
-		break;
-
-	case asmc::TokenType::ADDRESS:
-			//address
-			rx = rdx::hexToDec(m_currentToken.m_text);
-			
-			opcode = asmc_CombineMODBits(opcode, asmc_MOD_Adr);
-
-			memlay.m_opcode = opcode;
-			memlay.m_secondPart = rx;
-			memlay.m_ramIndex = m_ramLocation;
-			m_ramLocation += 2;
-		break;
-
-	case asmc::TokenType::ADR_P_REG:
-				
-			PacketAdrPReg packet = getAdr_P_RegPart(m_currentToken.m_text);
-						
-			opcode = opcode | (packet.m_regPart << asmc_ShiftAmount_RegB);//shift rx part									
-
-			opcode = asmc_CombineMODBits(opcode, asmc_MOD_Adr_P_Reg);
-
-			memlay.m_opcode = opcode;
-			memlay.m_secondPart = packet.m_adrPart;
-			memlay.m_ramIndex = m_ramLocation;
-			m_ramLocation += 2;
-		break;
+		break;	
 
 	default:
-			printError("unexpected operand");
+			printError("expected register for second operand [PUSH (rx)!]");
 		break;
 	}
 

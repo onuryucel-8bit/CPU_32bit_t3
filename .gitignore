@@ -1,6 +1,8 @@
-Assembler/CMakeFiles/*
 Assembler/*.txt
+Assembler/*.cmake
 Assembler/*.asm
+Assembler/build/*
+
 Utils/ImageCompressor_RLE/images/*
 Utils/ImageCompressor_RLE/output/*
 out.txt
