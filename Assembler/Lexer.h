@@ -9,7 +9,7 @@
 #include "Tokens.h"
 
 #define asmc_MAX_TOKEN_LIST_SIZE 30
-#define asmc_CLOSE_DEBUG_WORD "CLOSEDEB"
+#define asmc_CLOSE_DEBUG_WORD "CLOSE_DEBUG"
 
 namespace asmc
 {
@@ -111,7 +111,7 @@ private:
 
 	//TODO remove or fix
 	//returns sub part of m_program
-	std::string getSubStr(int startPos, int length ,int (*cmpFunc)(int), bool upper = true);
+	std::string getSubStr(int startPos, int length, bool upper = true);
 	
 	bool checkIfKeyword(std::string token);
 

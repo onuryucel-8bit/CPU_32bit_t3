@@ -13,7 +13,8 @@ Parser::Parser(asmc::Lexer& lexer)
 	//asmc::TokenElement* elem = m_lexer.getTokenList();
 
 	m_ramLocation = 0;
-	m_lineNumber = 0;
+	//TODO ????
+	m_lineNumber = 1;
 	m_errorCounter = 0;
 
 	f_error = false;
@@ -558,7 +559,8 @@ MemoryLayout Parser::parseOperand(uint32_t opcode)
 	uint32_t rx;
 
 	switch (m_currentToken.m_type)
-	{
+	{		
+
 	case asmc::TokenType::ID:
 
 		if (m_symbolTable.contains(m_currentToken))
@@ -576,11 +578,31 @@ MemoryLayout Parser::parseOperand(uint32_t opcode)
 		}
 			
 		break;
+	case asmc::TokenType::DECIMAL:
 	case asmc::TokenType::HEXNUMBER:
 			
 			opcode = asmc_CombineMODBits(opcode, asmc_MOD_Number);
 
-			memlay.m_secondPart = rdx::hexToDec(m_currentToken.m_text);
+			if (m_currentToken.m_type == asmc::TokenType::DECIMAL)
+			{
+				try
+				{
+					memlay.m_secondPart = (uint32_t)std::stoi(m_currentToken.m_text);
+				}
+				catch(const std::out_of_range)
+				{
+					printError("decimal value larger than a 32-bit range");
+				}
+			}
+			else
+			{
+				if (m_currentToken.m_text.length() > 8)
+				{
+					m_currentToken.m_text = "0";
+					printError("hex value is larger than a 32-bit range");
+				}
+				memlay.m_secondPart = rdx::hexToDec(m_currentToken.m_text);
+			}
 
 			memlay.m_ramIndex = m_ramLocation;
 			memlay.m_packetSize = 2;

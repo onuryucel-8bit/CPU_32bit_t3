@@ -71,7 +71,8 @@ Token Lexer::getToken()
 	else if (std::isalpha(m_currentChar))
 	{
 		//Register?
-		if (isOperand())
+		//isdigit() checks next char is it number
+		if (m_currentChar == 'r' && std::isdigit(peek()))
 		{
 			token = lexRegPart();
 		}
@@ -85,15 +86,25 @@ Token Lexer::getToken()
 	else if (std::isdigit(m_currentChar))
 	{
 		//HEX NUMBER
-		if (isOperand())
+		if (isNumberHex())
 		{			
 			token = lexHexNumberPart();
-		}			
+		}
+		//DECIMAL
 		else
-		{			
-			//FIXME ???
-			f_error = true;
+		{
+			size_t length = 1;
+			size_t startpos = m_position;
 
+			while (std::isxdigit(peek()))
+			{
+				nextChar();
+				length++;
+			}
+
+			std::string tokenStr = m_program.substr(startpos, length);
+
+			token = { tokenStr, asmc::TokenType::DECIMAL, m_lineNumber };
 		}
 	}
 	else
@@ -151,7 +162,9 @@ asmc::Token Lexer::lexDotPart()
 {
 	asmc::Token token;
 
-	std::string tokenStr = getSubStr(m_position + 1, 0, std::isalpha);
+	//.origin 0xff
+	//returns "origin"
+	std::string tokenStr = getSubStr(m_position + 1, 0);
 
 	toUpper(tokenStr);
 
@@ -159,7 +172,7 @@ asmc::Token Lexer::lexDotPart()
 	{
 		//returns ORIGIN or DB token
 		std::optional<asmc::TokenType> enumVal = magic_enum::enum_cast<asmc::TokenType>(tokenStr);
-		token = { tokenStr, enumVal.value() };
+		token = { tokenStr, enumVal.value() , m_lineNumber };
 	}
 	else
 	{
@@ -174,31 +187,49 @@ asmc::Token Lexer::lexRegPart()
 {	
 	asmc::Token token;
 
-	nextChar();
-	//check peek char is hex number
-	if (isxdigit(static_cast<uint8_t>(peek())))
+	//input r0,r1,r2,r5
+	//skip 'r' part
+	nextChar();	
+
+	//register MUST be range 0-7 and next char CANNOT be alphanumeric
+	if (std::isdigit(static_cast<uint8_t>(peek())) || std::isalpha(peek()))
 	{		
-		printError("invalid reg operand it should be r[0-7]\n");
+		printError("invalid reg operand it MUST be r[0-7]");
 
 		//empty token => error
-		token = { std::string(1,m_currentChar), asmc::TokenType::EMPTY};
+		token = { std::string(1,m_currentChar), asmc::TokenType::EMPTY, m_lineNumber};
 
 		return token;
 	}
 	
-	return token = { std::string(1,m_currentChar), asmc::TokenType::REGISTER };
+	return token = { std::string(1,m_currentChar), asmc::TokenType::REGISTER, m_lineNumber };
 }
 
 asmc::Token Lexer::lexHexNumberPart()
 {
 	asmc::Token token;
 
+	//input 0xff
+	//skips hex suffix '0x'
 	nextChar();//skip 0
 	nextChar();//skip x
-	
-	std::string tokenStr = getSubStr(m_position, 1, std::isxdigit);
 
-	return token = {tokenStr, asmc::TokenType::HEXNUMBER};
+
+	//get ff part
+	//-----------------------//
+	size_t length = 1;
+	size_t startpos = m_position;
+
+	while (std::isxdigit(peek()))
+	{
+		nextChar();
+		length++;
+	}
+
+	std::string tokenStr = m_program.substr(startpos, length);
+	//-----------------------//
+
+	return token = {tokenStr, asmc::TokenType::HEXNUMBER, m_lineNumber };
 }
 
 asmc::Token Lexer::lexSingleChar()
@@ -206,10 +237,9 @@ asmc::Token Lexer::lexSingleChar()
 	asmc::Token token;
 
 	std::string tokenStr;
-
-
 	size_t length = 1;
-	int startPos = 0;
+	size_t startPos = 0;
+	 
 	switch (m_currentChar)
 	{
 	
@@ -218,7 +248,11 @@ asmc::Token Lexer::lexSingleChar()
 		token = { std::string(1,m_currentChar), asmc::TokenType::NEWLINE };
 		break;
 
-		//ADDRESS
+	//ADDRESS
+		//regadr => @r0, @r3
+		//TODO check
+		//adr_p_reg => ?
+		//address => @ff, @f214fa
 	case '@':		
 
 		nextChar();//move cursor to number OR r
@@ -232,7 +266,7 @@ asmc::Token Lexer::lexSingleChar()
 		else
 		{
 			
-			tokenStr = getSubStr(m_position, 1, std::isxdigit);
+			tokenStr = getSubStr(m_position, 1);
 			
 			nextChar();//move cursor to '+' or ' '
 			
@@ -266,6 +300,7 @@ asmc::Token Lexer::lexSingleChar()
 
 		break;
 
+	//string => "qweqrt" or DIRECTORY => "stdmath.asm"
 	case '"':
 		nextChar();
 		
@@ -293,7 +328,7 @@ asmc::Token Lexer::lexSingleChar()
 			}
 			nextChar();//skip "
 
-			token = { tokenStr, asmc::TokenType::DIRECTORY};
+			token = { tokenStr, asmc::TokenType::DIRECTORY, m_lineNumber };
 			m_returnPosition = m_position;
 			m_returnCurrentChar = m_currentChar;
 			m_retLineNumber = m_lineNumber;
@@ -321,16 +356,15 @@ asmc::Token Lexer::lexWord()
 {
 	asmc::Token token;
 	
-	//TODO add std::isalpha && std::isalnum for ID checks #define LR0 0x56 is undefined
-	std::string tokenStr = getSubStr(m_position, 1, std::isalpha);
+	//TODO add std::isalpha && std::isalnum for ID checks #define LR0 0x56 is undefined ???
+	std::string tokenStr = getSubStr(m_position, 1);
 
-	toUpper(tokenStr);
-
-	//check if tokenStr is a keyword(LOAD,XOR,AND, ...)
+	//closes debug info
 	if (tokenStr == asmc_CLOSE_DEBUG_WORD)
 	{
 		token = { tokenStr, asmc::TokenType::DEBUG_TOKEN, m_lineNumber };
 	}
+	//check if tokenStr is a keyword(LOAD,XOR,AND, ...)
 	else if (checkIfKeyword(tokenStr))
 	{
 		std::optional<TokenType> enumVal = magic_enum::enum_cast<TokenType>(tokenStr);
@@ -345,7 +379,7 @@ asmc::Token Lexer::lexWord()
 			nextChar();
 
 		}
-		//variable
+		//else [label] or [id], [id] used for func_name or define
 		else
 		{
 			//if the lastToken is a jump instruction, next token should be a label
@@ -374,9 +408,7 @@ asmc::Token Lexer::lexMacro()
 
 	nextChar();
 
-	std::string tokenStr = getSubStr(m_position, 1, std::isalpha);
-
-	toUpper(tokenStr);
+	std::string tokenStr = getSubStr(m_position, 1);
 
 	if (checkIfKeyword(tokenStr))
 	{
@@ -385,7 +417,7 @@ asmc::Token Lexer::lexMacro()
 	}
 	else
 	{
-		printError("macro is not in list");
+		printError("unknown macro");
 	}
 
 	return token;
@@ -564,9 +596,11 @@ std::string Lexer::getCurrentFileName()
 	return m_currentFileName;
 }
 
-std::string Lexer::getSubStr(int startPos, int length, int (*cmpFunc)(int), bool upper)
+std::string Lexer::getSubStr(int startPos, int length, bool upper)
 {
-	while (cmpFunc(peek()))
+	//allows label like
+	//loop_t0, l0235235, l____t0 ....
+	while (std::isalpha(peek()) || std::isdigit(peek()) || peek() == '_')
 	{
 		nextChar();
 		length++;
@@ -579,7 +613,6 @@ std::string Lexer::getSubStr(int startPos, int length, int (*cmpFunc)(int), bool
 		toUpper(tokenStr);
 	}
 	
-
 	return tokenStr;
 }
 

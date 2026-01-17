@@ -32,8 +32,7 @@ namespace asmc
 		PUSH,
 		POP,
 
-		FUNC,
-		FUNC_NAME,
+		FUNC,		
 		
 		KWAIT,
 		MWE,
@@ -85,6 +84,7 @@ namespace asmc
 
 		REGISTER,
 		HEXNUMBER,
+		DECIMAL,
 		ADDRESS,
 		REGADR,
 		ADR_P_REG,		
