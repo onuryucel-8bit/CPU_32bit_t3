@@ -12,45 +12,37 @@ void LogisimPrinter::print(std::vector<asmc::MemoryLayout>& array)
 {
 	std::ofstream file("logisimRAM_output.txt");
 
-	file << "v3.0 hex words plain\n";
-	
-	//file << "v3.0 hex words addressed\n";
+	file << "v3.0 hex words addressed\n";
 
 	file << std::hex;
-	int romIndex = 0;
+
+	size_t row;
+	size_t col;
+
 	for (size_t i = 0; i < array.size(); i++)
 	{	
-
-		size_t target = array[i].m_ramIndex;
-
-		//Fill gap with zeros
-		while (romIndex < target)
-		{
-			file << "0 ";
-
-			romIndex++;
-			if (romIndex % 16 == 0)
-			{
-				file << "\n";
-			}
-		}
+		size_t address = array[i].m_ramIndex;
 		
+		//write hex address
+		file << rdx::decToHex(address) << ": ";
+
+
 		//write hex values to the file
 		//----------------------------------------------//
-		file << array[i].m_opcode << " ";
-
-		romIndex++;
-
+		//----------------------------------------------//
+		file << array[i].m_opcode << "\n";
+		
 		if (array[i].m_packetSize == 2)
-		{
-			file << array[i].m_secondPart << " ";
-			romIndex++;
-		}
+		{	
+			address += 1;
+						
+			//write hex address
+			file << rdx::decToHex(address) << ": ";			
 
-		if ((i + 1) % 16 == 0)
-		{
-			file << "\n";
-		}		
+			file << array[i].m_secondPart << " ";
+			file << "\n";			
+		}
+		//----------------------------------------------//
 		//----------------------------------------------//
 		
 	}

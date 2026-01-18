@@ -356,7 +356,6 @@ asmc::Token Lexer::lexWord()
 {
 	asmc::Token token;
 	
-	//TODO add std::isalpha && std::isalnum for ID checks #define LR0 0x56 is undefined ???
 	std::string tokenStr = getSubStr(m_position, 1);
 
 	//closes debug info
@@ -666,6 +665,11 @@ void Lexer::printError(std::string message)
 bool Lexer::getDebugFlag()
 {
 	return fd_debug;
+}
+
+size_t Lexer::getErrorAmount()
+{
+	return m_errorCounter;
 }
 
 bool Lexer::isInputStreamEmpty()

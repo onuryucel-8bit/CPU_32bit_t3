@@ -4,29 +4,31 @@
 
 #include "Parser.h"
 
+//#define DEBUG_FILE
 
 int main(int argc, char* argv[])
 {
 
-	/*std::string path = argv[1];
+	//TODO add filesystem
+
+	std::string path;
 	if (argc < 2)
 	{
 		std::cout << "Expected file path...\n";
+
+#ifdef DEBUG_FILE
 		std::cout << "Loading default main.asm\n";
-		
 		path = "main.asm";
-	}*/
-
-	/*
-	switch(flags)
-	{
-		case fd:
-		parser.fd_Print
-		break;
+#else
+		return 0;
+#endif // DEBUG_FILE
 	}
-	*/	
+	else
+	{
+		path = argv[1];
+	}
 
-	asmc::Lexer lexer("main.asm");
+	asmc::Lexer lexer(path);
 
 	asmc::Parser parser(lexer);
 

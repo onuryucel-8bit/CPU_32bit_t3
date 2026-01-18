@@ -38,7 +38,6 @@ struct FileData
 	std::string m_path;
 	std::streamoff m_lastPosition = 0;
 	char m_currentChar = 0;
-	//FIXME its broken
 	size_t m_lineNumber = 0;
 };
 
@@ -70,6 +69,7 @@ public:
 	[[nodiscard]] std::array<asmc::Token, asmc_MAX_TOKEN_LIST_SIZE> getTokenList();
 
 	bool getDebugFlag();
+	size_t getErrorAmount();
 
 	bool isInputStreamEmpty();
 

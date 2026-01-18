@@ -133,8 +133,10 @@ void Parser::run()
 	//parser
 	//--------------------------------------------------------------//
 	uti::Timer timer;
-
-	std::cout << rang::bg::blue << "Running parser..." << rang::style::reset << "\n";
+	if (m_lexer.getDebugFlag())
+	{
+		std::cout << rang::bg::blue << "Running parser..." << rang::style::reset << "\n";
+	}
 
 	moveCurrentToken();
 	
@@ -161,10 +163,33 @@ void Parser::run()
 		
 		moveCurrentToken();		
 	}
-
-	if (m_output.size() > 0)
+	
+	//check for parser or lexer error
+	if (f_error)
 	{
+		std::cout << rang::fg::red
+			<< "Parser or lexer error detected\n"
+			<< m_errorCounter 
+			<< " Parser error\n"
+			<< m_lexer.getErrorAmount()
+			<< " Lexer error\n"			
+			<< "Error found\n"
+			<< rang::style::reset
+			<< "\n";		
+		return;
+	}
 
+	//--------------------------------------------------------------//
+	//check tables / print opcode hex
+	//--------------------------------------------------------------//
+
+
+	checkTables();
+
+	//----------DEBUG-----------------//
+	if (m_lexer.getDebugFlag())
+	{
+		
 		std::cout << rang::fg::blue
 			<< "printing m_symbolTable"
 			<< rang::style::reset
@@ -172,45 +197,21 @@ void Parser::run()
 
 		for (const auto& [key, value] : m_symbolTable)
 		{
-			//std::cout << '[' << key.m_text << "] status [" << magic_enum::enum_name(value.m_info) << "]" << " address[" << value.m_ramIndex << "]\n";
+			std::cerr << '[' << key.m_text << "] status [" << magic_enum::enum_name(value.m_status) << "]" << " address[" << value.m_ramIndex << "]\n";
 		}
-	}
-
-	//check for parser or lexer error
-	if (f_error)
-	{
-		std::cout << rang::fg::red
-			<< "Parser or lexer error detected\n"
-			<< m_errorCounter 
-			<< " Error found\n"
-			<< rang::style::reset
-			<< "\n";		
-		return;
-	}
-
-	//--------------------------------------------------------------//
-	//check tables
-	//--------------------------------------------------------------//
-
-
-	checkTables();
-
-	for (const auto& [key, value] : m_symbolTable)
-	{
-		//std::cout << '[' << key.m_text << "] status [" << magic_enum::enum_name(value.m_status) << "]" << " address[" << value.m_ramIndex << "]\n";
-	}
-
-	
-	if (fd_printHexOutput && m_lexer.getDebugFlag())
-	{
+				
 		std::cerr << rang::bg::green << "printBinHex() BEGIN"<< rang::style::reset << "\n";
+
 		for (size_t i = 0; i < m_output.size(); i++)
 		{
 			printBinHex(m_output[i].m_opcode, m_output[i].m_secondPart);
 		}
+
 		std::cerr << rang::bg::green << "printBinHex() END" << rang::style::reset << "\n";
 	}
-	
+	//----------------------------------//
+
+
 	//if symbol info UNDEFINED
 	if (f_error)
 	{
@@ -225,10 +226,13 @@ void Parser::run()
 	//Generate output Emu/logisim RAM
 	//--------------------------------------------------------------//
 
-
+	//is file empty
 	if (m_ramLocation != 0)
 	{
-		std::cout << rang::bg::blue << "Generating output file..." << rang::style::reset << "\n";
+		if (m_lexer.getDebugFlag())
+		{
+			std::cout << rang::bg::blue << "Generating output file..." << rang::style::reset << "\n";
+		}
 		writeOutput();
 	}	
 
@@ -257,7 +261,7 @@ void Parser::writeOutput()
 	//output EMU file
 	//--------------------------------------------------------------//
 
-	std::ofstream file("out.txt");
+	std::ofstream file("emuHex.txt");
 
 	if (file.is_open())
 	{
@@ -292,7 +296,11 @@ void Parser::writeOutput()
 
 void Parser::checkTables()
 {
-	std::cout << rang::bg::blue << "checkTables()...." << rang::style::reset << "\n";
+
+	if (m_lexer.getDebugFlag())
+	{
+		std::cout << rang::bg::blue << "checkTables()...." << rang::style::reset << "\n";
+	}
 
 	for (const auto& [symKey, value] : m_symbolTable)
 	{
@@ -507,8 +515,6 @@ void Parser::printCurrentPeekToken()
 
 void Parser::printError(std::string message)
 {
-	//TODO hold previous token for better error printing..
-
 	std::cout << rang::fg::red		
 		<< "ERROR::Parser::" 
 		<< "line number[" << m_currentToken.m_lineNumber << "]"
@@ -906,16 +912,15 @@ void Parser::parseLOAD()
 	{
 		printError("Register(s) must be in range [0-7]");
 	}
-
-	registerPart <<= asmc_ShiftAmount_RegB;
-	opcode |= registerPart;
+	
+	opcode = asmc_CombineRegB(opcode, registerPart);
 
 	moveCurrentToken();
 
 	MemoryLayout memlay;
 	if (m_currentToken.m_type == asmc::TokenType::REGISTER)
 	{
-		printError("unexpected operand type");
+		printError("unexpected register for second operand [LOAD rx, (..)!]");
 	}
 	else
 	{
@@ -1101,9 +1106,8 @@ void Parser::parseArithmeticPart()
 
 	uint32_t registerPart = rdx::hexToDec(m_currentToken.m_text);
 
-	registerPart <<= asmc_ShiftAmount_RegB;
-	opcode |= registerPart;
-
+	opcode = asmc_CombineRegB(opcode, registerPart);
+	
 	//m_currentToken => register | regadr | adr | reg + adr
 	moveCurrentToken();
 
