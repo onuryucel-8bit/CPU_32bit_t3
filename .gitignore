@@ -2,6 +2,7 @@ Assembler/*.txt
 Assembler/*.cmake
 Assembler/*.asm
 Assembler/build/*
+Compiler_t2/*.bc
 
 Utils/ImageCompressor_RLE/images/*
 Utils/ImageCompressor_RLE/output/*

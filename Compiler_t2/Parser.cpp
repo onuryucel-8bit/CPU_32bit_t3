@@ -156,8 +156,7 @@ namespace asmc
 
 	<print_stmt> ::= PRINT "(" <id> ")" ";"
 
-	<let_stmt> ::= "LET" <id> (<var_def> | <arr_def>)
-		<arr_def>  ::= [ <number> ] "=" "{" <expression>* "}" ";"
+	<let_stmt> ::= "LET" <id> <var_def>		
 		<var_def>  ::= "=" <expression> ";"
 
 	<expression> ::= <add_expr> (("<" | "<=" | ">" | ">=" | "==" | "!=") <add_expr>)?
@@ -415,42 +414,6 @@ namespace asmc
 				m_varlist.push_back(varvec);
 			}														
 		}
-		//"LET" <id> ([ <number> ])? "=" (<expression> | ({ <expression>* })? ) ";"
-		else if (m_currentToken.m_type == asmc::TokenType::LBRACE)
-		{
-			match(asmc::TokenType::LBRACE);
-
-			asmc::ExprVal arrSize = number();
-
-			match(asmc::TokenType::RBRACE);
-			match(asmc::TokenType::ASSIGN);
-			match(asmc::TokenType::LCPAREN);
-
-			std::vector<ExprVal> elements;
-			elements.reserve(arrSize.m_value);
-
-			while (m_currentToken.m_type == asmc::TokenType::NUMBER)
-			{
-				asmc::ExprVal elem = number();
-				elements.push_back(elem);			
-			}
-
-			if (elements.size() != arrSize.m_value)
-			{
-				printError("arrSize is ");
-			}
-
-			for (asmc::ExprVal& elem : elements)
-			{
-				uint32_t entryVal = std::stoi(elem.m_token.m_text);
-				uint32_t ramIndex = m_memManager.allocVariable();
-				asmc::variableVec varvec = { entryVal ,ramIndex };
-				m_varlist.push_back(varvec);
-			}
-
-			match(asmc::TokenType::RCPAREN);
-		}
-			
 		
 		match(asmc::TokenType::SEMICOLON);
 	}
@@ -575,19 +538,17 @@ namespace asmc
 		
 		*/
 
-		
+		//Posx
 		emit("LOAD r0, @" + getAdr_asString(posx));
 		emit("STR @" + rdx::decToHex(asmc_POSX_adr) + ",r0");
 
+		//Posy
 		emit("LOAD r0, @" + getAdr_asString(posy));
 		emit("STR @" + rdx::decToHex(asmc_POSY_adr) + ",r0");
 
+		//Color
 		emit("LOAD r0,0x" + rdx::decToHex(color.m_value));
-		emit("STR @" + rdx::decToHex(asmc_COLOR_adr) + ",r0");
-		
-		emit("LOAD r0,0x01");
-		emit("STR @" + rdx::decToHex(asmc_KMT_adr) + ",r0");
-		
+		emit("STR @" + rdx::decToHex(asmc_COLOR_adr) + ",r0");					
 
 		match(asmc::TokenType::SEMICOLON);
 	}

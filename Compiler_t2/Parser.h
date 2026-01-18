@@ -160,6 +160,8 @@ namespace asmc
 
 		std::unordered_map<asmc::Token, symbolStatus> m_jumpTable;
 
+		std::fstream m_file;
+
 		uint32_t m_labelIndex;
 
 		bool f_error;
