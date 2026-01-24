@@ -345,16 +345,7 @@ asmc::Token Lexer::lexWord()
 	else if (checkIfKeyword(toUpper(tokenStr)))
 	{
 		printError("mistyped keyword detected ["+ tokenStr +"]: keyword MUST be upper case ");
-	}
-	else if (peek() == ':')
-	{
-		token = { tokenStr, TokenType::LABEL, m_lineNumber };
-		nextChar();
-	}
-	else if (m_lastToken.m_type == asmc::TokenType::GOTO)
-	{
-		token = { tokenStr, TokenType::LABEL, m_lineNumber };
-	}
+	}		
 	else
 	{
 		token = { tokenStr, TokenType::ID, m_lineNumber };

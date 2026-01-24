@@ -18,8 +18,6 @@ namespace asmc
 		WHILE,		
 		PRINT,
 		FUNCTION,
-		GOTO,
-		LABEL,
 		BUZZ,
 		DRAW,
 

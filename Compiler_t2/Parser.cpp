@@ -177,9 +177,7 @@ namespace asmc
 			m_currentToken.m_type == asmc::TokenType::ID	||
 			m_currentToken.m_type == asmc::TokenType::PRINT ||
 			m_currentToken.m_type == asmc::TokenType::IF    ||
-			m_currentToken.m_type == asmc::TokenType::WHILE ||
-			m_currentToken.m_type == asmc::TokenType::GOTO  ||
-			m_currentToken.m_type == asmc::TokenType::LABEL ||
+			m_currentToken.m_type == asmc::TokenType::WHILE ||			
 			m_currentToken.m_type == asmc::TokenType::BUZZ	||
 			m_currentToken.m_type == asmc::TokenType::DRAW)
 
@@ -194,35 +192,7 @@ namespace asmc
 
 			case asmc::TokenType::BUZZ:
 				buzz_stmt();
-				break;
-
-			case asmc::TokenType::LABEL:
-				m_jumpTable[m_currentToken] = asmc::symbolStatus::NOT_USED;
-
-				emit(m_currentToken.m_text + ":");
-
-				match(asmc::TokenType::LABEL);
-				break;
-
-			case asmc::TokenType::GOTO:
-
-				match(asmc::TokenType::GOTO);
-
-				if (!m_jumpTable.contains(m_currentToken))
-				{
-					printError("label is undefined");
-				}
-				else
-				{
-					m_jumpTable[m_currentToken] = asmc::symbolStatus::USED;
-
-					emit("jmp " + m_currentToken.m_text);
-				}
-
-
-				match(asmc::TokenType::LABEL);
-
-				break;
+				break;			
 
 			case asmc::TokenType::WHILE:
 				while_stmt();
