@@ -10,10 +10,7 @@ namespace asmc
 		m_funcPointer = 0;
 		m_stackPointer = 0;
 
-		for (size_t i = 0; i < MAX_REG; i++)
-		{
-			m_registerPool[i] = false;
-		}
+		releaseAllRegister();
 	}
 
 	MemoryManager::~MemoryManager()
@@ -47,6 +44,14 @@ namespace asmc
 
 		m_registerPool[std::stoi(index)] = false;
 		m_activeRegister = -1;
+	}
+
+	void MemoryManager::releaseAllRegister()
+	{
+		for (size_t i = 0; i < MAX_REG; i++)
+		{
+			m_registerPool[i] = false;
+		}
 	}
 
 	uint32_t MemoryManager::allocVariable()

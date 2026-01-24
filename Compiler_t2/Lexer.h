@@ -20,24 +20,6 @@
 namespace asmc
 {
 
-struct Token
-{
-	std::string m_text = "";
-	TokenType m_type = TokenType::EMPTY;
-	size_t m_lineNumber = 0;
-
-	bool operator==(const Token& other) const
-	{
-		return m_text == other.m_text && m_type == other.m_type;
-	}
-
-	//DEBUG
-	friend std::ostream& operator<<(std::ostream& os, const asmc::Token& token)
-	{
-		return os << "lineNumber: [" << token.m_lineNumber << "] text[" + token.m_text + "], token[" + std::string(magic_enum::enum_name(token.m_type)) << + "]";
-	}
-};
-
 struct FileData
 {
 	std::string m_path;

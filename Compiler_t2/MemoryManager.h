@@ -16,6 +16,7 @@ namespace asmc
 		bool allocRegister();
 		void releaseRegister(int index);
 		void releaseRegister(std::string index);
+		void releaseAllRegister();
 
 		uint32_t allocVariable();
 		void defineFunction();

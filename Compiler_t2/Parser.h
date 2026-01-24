@@ -1,7 +1,7 @@
 #pragma once
 
 #include <unordered_map>
-
+#include <stack>
 
 #define to_int(str) std::stoi(str)
 
@@ -11,6 +11,9 @@
 #include "Lexer.h"
 
 #include "MemoryManager.h"
+
+#include "Algos.h"
+#include "Common.h"
 
 #define getAdr_asString(exprVal)(std::to_string(m_symbolTable[exprVal.m_token].m_ramIndex))
 
@@ -45,23 +48,7 @@ namespace asmc
 		uint32_t m_ramIndex;
 	};
 
-	enum class Location
-	{		
-		None,
-		Register,
-		Stack
-	};
-
-	struct ExprVal
-	{				
-		asmc::Token m_token;
-		asmc::Location m_location = Location::None;
-		char m_registerIndex = -1;
-		//rhs right hand side
-		bool m_rhsComputed = false;
-		bool m_recRet = false;
-		uint32_t m_value;
-	};
+	
 
 
 	enum class symbolStatus
@@ -145,6 +132,12 @@ namespace asmc
 		size_t m_tokenIndex;
 		//========================================================//
 
+		//TEST
+		void TEST_printTree(asmc::Node* root);
+
+		asmc::Node* fold(asmc::Node* node);
+		void constantFolding();
+
 		void checkTable(const asmc::ExprVal& expval);
 
 		void match(asmc::TokenType type);
@@ -160,7 +153,9 @@ namespace asmc
 
 		std::unordered_map<asmc::Token, symbolStatus> m_jumpTable;
 
-		std::fstream m_file;
+		std::ofstream m_file;
+
+		algo::ShuntingYard m_shyard;
 
 		uint32_t m_labelIndex;
 

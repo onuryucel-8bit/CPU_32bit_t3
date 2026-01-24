@@ -16,7 +16,13 @@ namespace asmc
 		moveCurrentToken();
 
 		m_labelIndex = 0;
+
+		m_file.open("main.asm");
 		
+		if (!m_file.is_open())
+		{
+			printError("failed to create main.asm");			
+		}
 	}
 
 	Parser::~Parser()
@@ -62,6 +68,7 @@ namespace asmc
 		if (!f_error)
 		{
 			std::cout << str << "\n";
+			m_file << str << "\n";
 		}	
 	}
 
@@ -79,19 +86,7 @@ namespace asmc
 	
 	void Parser::run()
 	{
-		std::cout << "Lexer output...\n"
-				  << "===========================\n";
-
-		for (asmc::Token t : m_tokenList)
-		{
-			std::cout << t <<"\n";
-
-			if (t.m_type == asmc::TokenType::ENDOFFILE)
-			{
-				break;
-			}
-		}
-
+	
 		std::cout << "Parser running... \n"
 				  << "===========================\n";
 
@@ -113,13 +108,13 @@ namespace asmc
 		}*/
 
 		
-		std::cout << ".db ";
+		m_file << ".db ";
 		for (size_t i = 0; i < m_varlist.size(); ++i)
 		{
-			std::cout <<"0x"<< std::hex << m_varlist[i].m_value;
+			m_file <<"0x"<< std::hex << m_varlist[i].m_value;
 			if (i + 1 < m_varlist.size())
 			{
-				std::cout << ",";
+				m_file << ",";
 			}
 		}
 		std::cout << "\n";
@@ -156,8 +151,7 @@ namespace asmc
 
 	<print_stmt> ::= PRINT "(" <id> ")" ";"
 
-	<let_stmt> ::= "LET" <id> <var_def>		
-		<var_def>  ::= "=" <expression> ";"
+	<let_stmt> ::= "LET" <id> "=" <expression> ";"	
 
 	<expression> ::= <add_expr> (("<" | "<=" | ">" | ">=" | "==" | "!=") <add_expr>)?
 	<assing_stmt> ::= <id> "=" <add_expr>* ";"
@@ -330,7 +324,7 @@ namespace asmc
 		match(asmc::TokenType::END);
 	}
 
-	//"LET" <id> ([ <number> ])? "=" (<expression> | ({ <expression>* })? ) ";"
+	//"LET" <id> "=" <expression> ";"
 	void Parser::let_stmt()
 	{
 		match(asmc::TokenType::LET);
@@ -460,13 +454,14 @@ namespace asmc
 			//	}
 			emit("LOAD r0,0x" + getAdr_asString(exprId));
 			emit("LOAD r1,0x" + rdx::decToHex(m_symbolTable[exprId.m_token].m_value));
-			emit("loop: ");
+			emit("l" + std::to_string(m_labelIndex) + ": ");
 				emit("STR @" + rdx::decToHex(asmc_TTY_adr) + ",r1");
 				emit("ADD r0, 0x1");
 				emit("LOAD r1, @r0");
 				emit("CMP r1, 0x0");
-				emit("JNE loop");
+				emit("JNE l" + std::to_string(m_labelIndex));
 
+				m_labelIndex++;
 			break;
 		}
 			
@@ -573,14 +568,17 @@ namespace asmc
 
 		asmc::ExprVal result = add_expr();
 
+		constantFolding();
+		
+		//------------------//
 
 		if (result.m_location == asmc::Location::None)
 		{
-			emit("STR  @" + getAdr_asString(idRes) + ",0x" + rdx::decToHex(result.m_value));
+			emit("STR @" + getAdr_asString(idRes) + ",0x" + rdx::decToHex(result.m_value));
 		}
 		else
 		{
-			emit("STR  @" + getAdr_asString(idRes) + ",r" + std::to_string((int)result.m_registerIndex));
+			emit("STR @" + getAdr_asString(idRes) + ",r" + std::to_string((int)result.m_registerIndex));
 		}
 
 		//m_symbolTable[idRes.m_token].m_value = result.m_value;
@@ -685,27 +683,41 @@ namespace asmc
 	//<add_expr> ::= <mult_expr> ((+ | -) <mult_expr>)* 
 	asmc::ExprVal Parser::add_expr()
 	{
-		asmc::ExprVal exprLeft = primary();
-		
+		asmc::ExprVal exprLeft = primary();				
 
-#pragma region ErrorCheck
-		//check id is defined		
-		checkTable(exprLeft);
-
-		if (exprLeft.m_token.m_type == asmc::TokenType::ID)
-		{
-			m_symbolTable[exprLeft.m_token].m_status = asmc::symbolStatus::USED;
-			exprLeft.m_value = m_symbolTable[exprLeft.m_token].m_value;
-
-			//emit("LOAD rx, @" + getAdr_asString(exprLeft));
-			loadToRegister(exprLeft);
-		}
-		//left int
-		else
+		if (exprLeft.m_token.m_type == asmc::TokenType::NUMBER)
 		{
 			exprLeft.m_value = std::stoi(exprLeft.m_token.m_text);
-		}		
-#pragma endregion
+
+			m_shyard.add(exprLeft.m_token);
+		}
+		else
+		{
+			exprLeft.m_value = m_symbolTable[exprLeft.m_token].m_value;
+			m_shyard.add(exprLeft.m_token);
+
+			//loadToRegister(exprLeft);
+		}
+//		
+//
+//#pragma region ErrorCheck
+//		//check id is defined		
+//		checkTable(exprLeft);
+//
+//		if (exprLeft.m_token.m_type == asmc::TokenType::ID)
+//		{
+//			m_symbolTable[exprLeft.m_token].m_status = asmc::symbolStatus::USED;
+//			exprLeft.m_value = m_symbolTable[exprLeft.m_token].m_value;
+//
+//			//emit("LOAD rx, @" + getAdr_asString(exprLeft));
+//			loadToRegister(exprLeft);
+//		}
+//		//left int
+//		else
+//		{
+//			exprLeft.m_value = std::stoi(exprLeft.m_token.m_text);
+//		}		
+//#pragma endregion
 
 		asmc::ExprVal exprRight;
 
@@ -714,40 +726,117 @@ namespace asmc
 			//get operator
 			asmc::Token op = m_currentToken;
 			
+			switch (op.m_type)
+			{
+			case asmc::TokenType::PLUS:
+				m_shyard.add(op);
+				break;
+
+			case asmc::TokenType::MINUS:
+				m_shyard.add(op);
+				break;
+			}
+			
 			moveCurrentToken();
 			exprRight = primary();
 
 			checkTable(exprRight);
+			
+			//<id> + (<id> | <number>)
+			//if (exprLeft.m_token.m_type == asmc::TokenType::ID)
+			//{			
+			//	switch (op.m_type)
+			//	{
+			//	case asmc::TokenType::PLUS:
+			//		emit("add r" + std::to_string(exprLeft.m_registerIndex) + "," + std::to_string(exprRight.m_value));
+			//		//exprLeft.m_value += exprRight.m_value;
+			//		break;
 
-			//get value, change status of id
-			if (exprRight.m_token.m_type == asmc::TokenType::ID)
+			//	case asmc::TokenType::MINUS:
+			//		//exprLeft.m_value -= exprRight.m_value;
+			//		break;
+			//	}
+			//}
+			//<number> + <number>
+			if (exprRight.m_token.m_type == asmc::TokenType::NUMBER)
 			{
-				exprRight.m_value = m_symbolTable[exprRight.m_token].m_value;
-				m_symbolTable[exprRight.m_token].m_status = asmc::symbolStatus::USED;
+				m_shyard.add(exprRight.m_token);
 
-				loadToRegister(exprRight);
+				switch (op.m_type)
+				{
+					case asmc::TokenType::PLUS:
+						exprLeft.m_value += exprRight.m_value;
+						break;
+
+					case asmc::TokenType::MINUS:
+						exprLeft.m_value -= exprRight.m_value;
+						break;
+				}
+
 			}
-					
-			/*if (exprLeft.m_token.m_type == asmc::TokenType::ID)
+			//<number> + <id>
+			else if (exprRight.m_token.m_type == asmc::TokenType::ID)
 			{
-				exprLeft.m_rhsComputed = true;
-			}*/
-		
-			switch (op.m_type)
-			{
-			case asmc::TokenType::PLUS:
-				 
-				emit("ADD r"+ std::to_string(exprLeft.m_registerIndex) + ", 0x" + std::to_string(exprRight.m_value));								
-				break;
+				m_shyard.add(exprRight.m_token);
 
-			case asmc::TokenType::MINUS:
-				emit("SUB r" + std::to_string(exprLeft.m_registerIndex) + ", 0x" + std::to_string(exprRight.m_value));
-				break;
+				switch (op.m_type)
+				{
+					case asmc::TokenType::PLUS:
+						//emit("LOAD rx,@" + std::to_string(m_symbolTable[exprRight.m_token].m_ramIndex));
+						//loadToRegister(exprRight);
+						//emit("ADD r"+ std::to_string(exprRight.m_registerIndex) + "," + std::to_string(exprLeft.m_value));
+
+						exprLeft = exprRight;
+						break;
+
+					case asmc::TokenType::MINUS:
+						//exprLeft.m_value = exprRight.m_value;
+						break;
+				}
 			}
+
+
+			////get value, change status of id
+			//if (exprRight.m_token.m_type == asmc::TokenType::ID)
+			//{
+			//	exprRight.m_value = m_symbolTable[exprRight.m_token].m_value;
+			//	m_symbolTable[exprRight.m_token].m_status = asmc::symbolStatus::USED;
+
+			//	loadToRegister(exprRight);
+			//}
+			//
+			//
+			//if(exprLeft.m_token.m_type == asmc::TokenType::NUMBER &&
+			//	exprRight.m_token.m_type == asmc::TokenType::NUMBER)
+			//{
+			//	switch (op.m_type)
+			//	{
+			//	case asmc::TokenType::PLUS:
+			//		exprLeft.m_value += exprRight.m_value;
+			//		break;
+
+			//	case asmc::TokenType::MINUS:
+			//		exprLeft.m_value -= exprRight.m_value;
+			//		break;
+			//	}
+			//}			
+			//else
+			//{
+			//	switch (op.m_type)
+			//	{
+			//	case asmc::TokenType::PLUS:
+
+			//		emit("ADD r" + std::to_string(exprLeft.m_registerIndex) + ", 0x" + std::to_string(exprRight.m_value));
+			//		break;
+
+			//	case asmc::TokenType::MINUS:
+			//		emit("SUB r" + std::to_string(exprLeft.m_registerIndex) + ", 0x" + std::to_string(exprRight.m_value));
+			//		break;
+			//	}
+			//}
+			
 
 		}//WHILE END				
-
-		
 
 		return exprLeft;
 	}
@@ -793,12 +882,12 @@ namespace asmc
 				m_symbolTable[exprRight.m_token].m_status = asmc::symbolStatus::USED;
 			}
 
-			if (exprLeft.m_token.m_type == asmc::TokenType::ID)
-			{
-				exprLeft.m_rhsComputed = true;
-			}
+			//if (exprLeft.m_token.m_type == asmc::TokenType::ID)
+			//{
+			//	exprLeft.m_rhsComputed = true;
+			//}
 
-			exprLeft.m_recRet = true;
+			//exprLeft.m_recRet = true;
 
 			switch (op.m_type)
 			{
@@ -895,7 +984,7 @@ namespace asmc
 		if (m_currentToken.m_type == asmc::TokenType::NUMBER)
 		{
 			retval.m_token = m_currentToken;
-			retval.m_value = std::stoi(m_currentToken.m_text);
+			retval.m_value = std::stoi(m_currentToken.m_text);		
 		}
 		else
 		{
@@ -912,6 +1001,140 @@ namespace asmc
 	//---------------------------------------------------------------------------------//
 	//---------------------------------------------------------------------------------//
 	//---------------------------------------------------------------------------------//
+
+	void Parser::TEST_printTree(asmc::Node* root)
+	{
+		//postorder
+
+		if (root == nullptr) return;
+
+		TEST_printTree(root->m_left);
+		TEST_printTree(root->m_right);
+
+		switch (root->m_type)
+		{
+		case asmc::NodeType::BinOp:
+			std::cout << ((asmc::BinOpNode*)root)->m_token.m_text << "\n";
+			break;
+
+		case asmc::NodeType::Constant:
+			std::cout << ((asmc::ConstantNode*)root)->m_value << "\n";
+			break;
+
+		case asmc::NodeType::Variable:
+			std::cout << ((asmc::VariableNode*)root)->m_token.m_text<< "\n";
+			break;
+		}
+	}
+
+	asmc::Node* Parser::fold(asmc::Node* node)
+	{
+		if (node == nullptr)
+		{
+			return nullptr;
+		}
+		
+		node->m_left = fold(node->m_left);
+		node->m_right = fold(node->m_right);
+		
+		if (node->m_type == asmc::NodeType::BinOp) 
+		{
+			asmc::BinOpNode* binop = (asmc::BinOpNode*)node;
+
+			if (binop->m_left->m_type == asmc::NodeType::Constant &&
+				binop->m_right->m_type == asmc::NodeType::Constant) 
+			{
+
+				asmc::ConstantNode* left = (asmc::ConstantNode*)binop->m_left;
+				asmc::ConstantNode* right = (asmc::ConstantNode*)binop->m_right;
+
+				int result = 0;
+
+				switch (binop->m_token.m_type)
+				{
+				case asmc::TokenType::PLUS:
+					result = left->m_value + right->m_value;
+					break;
+
+				case asmc::TokenType::MINUS:
+					result = left->m_value - right->m_value;
+					break;
+					
+				}
+			
+				asmc::ConstantNode* foldedNode = new asmc::ConstantNode(result, nullptr, nullptr);
+				foldedNode->m_type = asmc::NodeType::Constant;
+
+				delete binop;
+				delete left;
+				delete right;
+
+				return foldedNode;
+			}
+		}
+		return node;
+	}
+
+	void Parser::constantFolding()
+	{	
+		std::vector<asmc::Token> postfixList = m_shyard.calc();
+		std::cout << "----------constantFolding()------------ \n";
+
+		//create ast tree for constant folding
+
+		std::stack<asmc::Node*> stack;
+
+		for (const auto& token : postfixList)
+		{
+			if (token.m_type == asmc::TokenType::NUMBER)
+			{
+				asmc::ConstantNode* varnode = new asmc::ConstantNode(std::stoi(token.m_text), nullptr, nullptr);
+				varnode->m_type = asmc::NodeType::Constant;
+				stack.push(varnode);
+			}
+			else if (token.m_type == asmc::TokenType::ID)
+			{
+				asmc::VariableNode* varnode = new asmc::VariableNode(token, nullptr, nullptr);
+				varnode->m_type = asmc::NodeType::Variable;
+				stack.push(varnode);
+			}
+			//operator
+			else
+			{
+				asmc::Node* rhs = stack.top();
+				stack.pop();
+
+				asmc::Node* lhs = stack.top();
+				stack.pop();
+
+				asmc::BinOpNode* binop = new asmc::BinOpNode(token, lhs, rhs);
+				binop->m_type = asmc::NodeType::BinOp;
+				stack.push(binop);
+			}
+		}
+		
+		asmc::Node* root = stack.top();
+		stack.pop();
+
+		std::cout << "--TEST_printTree()-------------------\n";
+		TEST_printTree(root);
+		std::cout << "----------------------\n";
+
+		asmc::Node* res = fold(root);
+
+		std::cout << "--RESULT-------------------\n";
+		TEST_printTree(res);
+		std::cout << "----------------------\n";
+
+		if (res->m_type == asmc::NodeType::Constant)
+		{
+			std::cout << ((asmc::ConstantNode*)res)->m_value << "\n";
+		}
+		
+		//TODO release HEAP data !!!
+
+		std::cout << "----------------------\n";
+	}
 
 	void Parser::checkTable(const asmc::ExprVal& expval)
 	{
@@ -964,7 +1187,7 @@ namespace asmc
 		expval.m_registerIndex = m_memManager.m_activeRegister;
 		expval.m_location = Location::Register;
 
-		if (expval.m_token.m_type == asmc::TokenType::ID && expval.m_rhsComputed == false)
+		if (expval.m_token.m_type == asmc::TokenType::ID)
 		{
 			emit("LOAD r" + std::to_string(expval.m_registerIndex) + ",@" + std::to_string(m_symbolTable[expval.m_token].m_ramIndex));
 		}

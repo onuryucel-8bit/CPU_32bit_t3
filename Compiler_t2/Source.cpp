@@ -41,14 +41,18 @@
 
 
 
+#include <vector>
+#include <stack>
+
+
+
 int main()
-{
+{	
 	asmc::Lexer lexer("Source.bc");
 
 	asmc::Parser parser(lexer);
 
-	parser.run();
-		
+	parser.run();		
 }
 /*
 	---10.12.25---
