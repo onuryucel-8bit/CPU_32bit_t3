@@ -12,7 +12,6 @@
 
 #include "MemoryManager.h"
 
-//#include "Algos.h"
 #include "Common.h"
 
 #define asmc_getAdr_asString(exprVal)(std::to_string(m_symbolTable[exprVal.m_token].m_ramIndex))
@@ -48,8 +47,30 @@ namespace asmc
 		uint32_t m_ramIndex;
 	};
 
-	
+	enum class Location
+	{
+		None,
+		Constant,
+		Register,
+	};
 
+	struct ExprVal
+	{
+		asmc::Token m_token;
+		asmc::Location m_location = Location::None;
+		char m_registerIndex = -1;
+		uint32_t m_value = 0;
+
+		ExprVal()
+		{
+
+		}
+
+		ExprVal(asmc::Token& token)
+		{
+			m_token = token;
+		}
+	};
 
 	enum class symbolStatus
 	{
@@ -131,12 +152,6 @@ namespace asmc
 		std::array<asmc::Token, MAX_TOKEN_LIST_SIZE> m_tokenList;
 		size_t m_tokenIndex;
 		//========================================================//
-
-		//TEST
-		void TEST_printTree(asmc::Node* root);
-
-		asmc::Node* fold(asmc::Node* node);
-		void constantFolding();
 
 		void checkTable(const asmc::ExprVal& expval);
 
