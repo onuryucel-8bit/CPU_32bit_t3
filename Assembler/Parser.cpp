@@ -66,8 +66,8 @@ Parser::Parser(asmc::Lexer& lexer)
 	m_parserFuncs[asmc::TokenType::JMP] = &asmc::Parser::parseJMP;
 	m_parserFuncs[asmc::TokenType::JNE] = &asmc::Parser::parseJMP;
 	m_parserFuncs[asmc::TokenType::JE] = &asmc::Parser::parseJMP;
-	m_parserFuncs[asmc::TokenType::JGT] = &asmc::Parser::parseJMP;
-	m_parserFuncs[asmc::TokenType::JLT] = &asmc::Parser::parseJMP;	
+	m_parserFuncs[asmc::TokenType::JG] = &asmc::Parser::parseJMP;
+	m_parserFuncs[asmc::TokenType::JL] = &asmc::Parser::parseJMP;	
 
 	m_parserFuncs[asmc::TokenType::LABEL] = &asmc::Parser::parseLabel;
 
@@ -113,8 +113,8 @@ Parser::Parser(asmc::Lexer& lexer)
 	m_opcodeHexTable[asmc::TokenType::JMP] = 0x1B;
 	m_opcodeHexTable[asmc::TokenType::JNE] = 0x1C;
 	m_opcodeHexTable[asmc::TokenType::JE] = 0x1D;
-	m_opcodeHexTable[asmc::TokenType::JGT] = 0x1E;
-	m_opcodeHexTable[asmc::TokenType::JLT] = 0x1F;	
+	m_opcodeHexTable[asmc::TokenType::JG] = 0x1E;
+	m_opcodeHexTable[asmc::TokenType::JL] = 0x1F;	
 #pragma endregion
 
 }
@@ -283,8 +283,8 @@ void Parser::writeOutput()
 			
 			//if opcode got second part
 			if (m_output[i].m_packetSize == 2)
-			{
-				file << "\n" << m_output[i].m_ramIndex + 1 << " " << m_output[i].m_secondPart;								
+			{				
+				file << "\n" << m_output[i].m_ramIndex + 1 << " " << m_output[i].m_secondPart;
 			}
 
 			file << "\n";
@@ -451,8 +451,8 @@ asmc::TokenType Parser::toToken(size_t opcode)
 			case 0x1b: return asmc::TokenType::JMP;
 			case 0x1c: return asmc::TokenType::JNE;
 			case 0x1d: return asmc::TokenType::JE;
-			case 0x1e: return asmc::TokenType::JGT;
-			case 0x1f: return asmc::TokenType::JLT;			
+			case 0x1e: return asmc::TokenType::JG;
+			case 0x1f: return asmc::TokenType::JL;			
 		
 			default: return asmc::TokenType::EMPTY;
 		}
@@ -1610,12 +1610,12 @@ void Parser::parseJMP()
 		opcode = m_opcodeHexTable[asmc::TokenType::JE] << asmc_ShiftAmount_Opcode;
 		break;
 
-	case asmc::TokenType::JGT:
-		opcode = m_opcodeHexTable[asmc::TokenType::JGT] << asmc_ShiftAmount_Opcode;
+	case asmc::TokenType::JG:
+		opcode = m_opcodeHexTable[asmc::TokenType::JG] << asmc_ShiftAmount_Opcode;
 		break;
 
-	case asmc::TokenType::JLT:
-		opcode = m_opcodeHexTable[asmc::TokenType::JLT] << asmc_ShiftAmount_Opcode;
+	case asmc::TokenType::JL:
+		opcode = m_opcodeHexTable[asmc::TokenType::JL] << asmc_ShiftAmount_Opcode;
 		break;
 
 	}

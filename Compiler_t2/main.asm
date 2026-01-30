@@ -1,3 +1,8 @@
-STR @1000,0x0
+LOAD r0, 0x2
+STR @FFFFFFF9,r0
+LOAD r0, 0x2
+STR @FFFFFFF8,r0
+LOAD r0, 0x5
+STR @FFFFFFFA,r0
 .origin 0x1000
-.db 0x2,0x3
+.db 

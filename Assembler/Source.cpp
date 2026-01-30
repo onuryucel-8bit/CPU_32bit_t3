@@ -4,7 +4,7 @@
 
 #include "Parser.h"
 
-//#define DEBUG_FILE
+#define DEBUG_FILE
 
 int main(int argc, char* argv[])
 {
@@ -16,7 +16,7 @@ int main(int argc, char* argv[])
 	{
 		std::cout << "Expected file path...\n";
 
-#ifdef DEBUG_FILE
+#ifdef DEBUG_FILE		
 		std::cout << "Loading default main.asm\n";
 		path = "main.asm";
 #else

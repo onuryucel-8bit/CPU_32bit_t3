@@ -26,6 +26,7 @@
 //MOD bits
 //ozel bitler
 
+//TODO enum ?
 #define asmc_MOD_Empty 0
 #define asmc_MOD_Number 1
 //@adr

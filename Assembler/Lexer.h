@@ -28,10 +28,11 @@ struct Token
 
 //For reading multiple files
 /*
-	//main.asm					  stdmath.asm
-	#include "stdmath.asm"------> add r0,r1
-	...					 ^		  ....
-	..					 \------- ...
+	//main.asm						   stdmath.asm
+	#include "stdmath.asm"'\n' ------> add r0,r1
+	...					  ^			   ....
+	...					  |			   ...
+	..					  \------- (after reading stdmath assembler points to '\n')
 */
 struct FileData
 {

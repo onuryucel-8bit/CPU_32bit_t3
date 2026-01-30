@@ -86,10 +86,7 @@ private:
 	//bosluklari es gecer
 	void skipWhiteSpace();
 	//aciklama satiri ; sonrasindaki karakterleri es gecer
-	void skipComments();
-	//skip ',' '\n'
-	void skipNonEssential();
-
+	void skipComments();	
 	
 	std::string readFile(std::string path);
 

@@ -496,14 +496,20 @@ void Lexer::skipComments()
 	{
 		if (peek() == '*')
 		{
-			nextChar();//*
-			nextChar();// \n
-			while (m_currentChar != asmc::TokenType::ENDOFFILE && m_currentChar != '*' && peek() != '/')
+			nextChar();// eat(*)
+			nextChar();// eat(\n)
+			while (m_currentChar != asmc::TokenType::ENDOFFILE)
 			{
+				if (m_currentChar == '*' && peek() == '/')
+				{					
+					nextChar(); // eat(*)
+					nextChar(); // eat(/)
+					break;
+				}
 				nextChar();
 			}
-			nextChar();// /
-			nextChar();// \n
+			
+			nextChar();// eat(\n)
 		}
 		else
 		{

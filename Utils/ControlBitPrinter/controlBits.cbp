@@ -373,8 +373,8 @@
 [JMP 0]
 [JNE 0]
 [JE 0]
-[JGT 0]
-[JLT 0]
+[JG 0]
+[JL 0]
 {
 	//mar = pc
 	//pc++

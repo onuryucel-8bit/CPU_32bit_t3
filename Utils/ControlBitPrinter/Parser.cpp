@@ -37,8 +37,8 @@ Parser::Parser(asmc::Lexer& lexer)
 	m_locationTable["JMP"] = 0x1b;	
 	m_locationTable["JNE"] = 0x1c;
 	m_locationTable["JE"] =  0x1d;
-	m_locationTable["JGT"] = 0x1e;
-	m_locationTable["JLT"] = 0x1f;
+	m_locationTable["JG"] = 0x1e;
+	m_locationTable["JL"] = 0x1f;
 
 	m_locationTable["MWE"] = 0x0a;
 	m_locationTable["MR"] = 0x0b;

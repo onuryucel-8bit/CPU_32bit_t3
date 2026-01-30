@@ -59,8 +59,8 @@ namespace asmc
 		JNE,
 		JE,
 
-		JGT,
-		JLT,		
+		JG,
+		JL,		
 
 		//check lexWord()
 		JUMP_INST,

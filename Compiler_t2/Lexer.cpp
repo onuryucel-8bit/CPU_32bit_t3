@@ -49,7 +49,7 @@ Token Lexer::getToken()
 {
 	skipWhiteSpace();
 	skipComments();
-	skipNonEssential();
+	
 	//TODO bosluklari es gecme mekanizmasi ekle
 	skipWhiteSpace();
 
@@ -206,6 +206,10 @@ asmc::Token Lexer::lexSingleChar()
 
 	switch (m_currentChar)
 	{
+	case ',':
+		token = { std::string(1,m_currentChar), asmc::TokenType::COMMA, m_lineNumber };
+		break;
+
 	case '!':
 		if (peek() == '=')
 		{
@@ -243,11 +247,28 @@ asmc::Token Lexer::lexSingleChar()
 		break;
 
 	case '>':
-		token = { std::string(1,m_currentChar), asmc::TokenType::GREATER_THAN , m_lineNumber };
+		if (peek() == '=')
+		{
+			token = { std::string(1,m_currentChar), asmc::TokenType::GREATER_EQ, m_lineNumber };
+			nextChar();
+		}
+		else
+		{
+			token = { std::string(1,m_currentChar), asmc::TokenType::GREATER_THAN , m_lineNumber };
+		}
 		break;
 
 	case '<':
-		token = { std::string(1,m_currentChar), asmc::TokenType::LESS_THAN, m_lineNumber };
+		if (peek() == '=')
+		{
+			token = { std::string(1,m_currentChar), asmc::TokenType::LESS_EQ, m_lineNumber };
+			nextChar();
+		}
+		else
+		{
+			token = { std::string(1,m_currentChar), asmc::TokenType::LESS_THAN, m_lineNumber };
+		}
+		
 		break;
 
 	case '}':
@@ -494,20 +515,6 @@ void Lexer::skipWhiteSpace()
 	}
 }
 
-//skip ',' 
-void Lexer::skipNonEssential()
-{
-	while (m_currentChar == ',')
-	{
-		if (m_currentChar == '\n')
-		{
-			f_newline = true;
-		}
-		
-		nextChar();
-	}
-}
-
 void Lexer::pushFile(std::string path)
 {	
 	for (size_t i = 0; i < m_inputStream.size(); i++)
@@ -628,7 +635,7 @@ void Lexer::printError(std::string message)
 	std::cout << rang::fg::cyan
 		<< "*****************************\n"
 		<< "ERROR::Lexer::" << message
-		<< "lastToken [" << m_lastToken.m_text <<"] "
+		<< "lastToken [" << (m_lastToken.m_text[0] == '\n' ? "\\n" : m_lastToken.m_text) << "] "
 		<< "current char[" << std::string(1, m_currentChar) <<"] "
 		<< "current pos [" << std::to_string(m_position) << "] "
 		<< "line number [" << m_lineNumber <<"]\n"

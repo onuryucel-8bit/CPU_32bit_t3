@@ -12,10 +12,10 @@
 
 #include "MemoryManager.h"
 
-#include "Algos.h"
+//#include "Algos.h"
 #include "Common.h"
 
-#define getAdr_asString(exprVal)(std::to_string(m_symbolTable[exprVal.m_token].m_ramIndex))
+#define asmc_getAdr_asString(exprVal)(std::to_string(m_symbolTable[exprVal.m_token].m_ramIndex))
 
 const uint32_t asmc_TTY_adr	   = 0xffff'ffff;
 
@@ -155,7 +155,7 @@ namespace asmc
 
 		std::ofstream m_file;
 
-		algo::ShuntingYard m_shyard;
+		//algo::ShuntingYard m_shyard;
 
 		uint32_t m_labelIndex;
 
