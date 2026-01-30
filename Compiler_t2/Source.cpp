@@ -1,9 +1,6 @@
 #include "Lexer.h"
 #include "Parser.h"
 
-//TODO use _DEBUG? msvc macro
-#define DEBUG_FILE
-
 int main(int argc, char* argv[])
 {
 
@@ -14,7 +11,7 @@ int main(int argc, char* argv[])
 	{
 		std::cout << "Expected file path...\n";
 
-#ifdef DEBUG_FILE		
+#ifdef _DEBUG		
 		std::cout << "Loading default Source.bc\n";
 		path = "Source.bc";
 #else
