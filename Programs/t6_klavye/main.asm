@@ -1,4 +1,4 @@
-CLOSEDEB
+close_debug
 
 ;stack = 0x200
 load r7,0x200

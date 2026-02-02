@@ -1,4 +1,4 @@
-CLOSEDEB
+close_debug
 
 ;x
 load r0,0x0		

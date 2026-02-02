@@ -1,3 +1,4 @@
+close_debug
 
 ;posx
 load r1, 0x0

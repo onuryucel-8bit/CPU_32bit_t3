@@ -1,4 +1,4 @@
-CLOSEDEB
+close_debug
 
 load r7,0x500
 
