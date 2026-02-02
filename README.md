@@ -67,3 +67,6 @@
 	- t3_yildiz => 5x5 yildiz karesi cizer 					(tty)
 	- t4_agac => cam agaci cizer 						    (RGBVideo)
 	- t5_[BadApple] => 32x32 5fps badapple video ciktisi    (RGBVideo)
+	- t6_klavye => klavyeden 2 "sayi" alip "toplama" yapar  (ascii donusumu.. lazim)
+	- t7_DENIZ_ANASI_v0 => basit termninal denemesi 		(hatali/eksik)
+	- t8_piksel => enter tusuna basildikca x pozisyonu degisen piksel (kesme/interrupt hatasi var veya MWE komutu hatali)
